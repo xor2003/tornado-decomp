@@ -1,0 +1,280 @@
+/* THIS IS GENERATED FILE */
+
+        
+#include "messages.h"
+
+                
+
+ static bool mainproc(m2c::_offsets _i, struct m2c::_STATE* _state){
+    X86_REGREF
+    __disp = _i;
+
+    if (__disp == 0) goto _begin;
+    else goto __dispatch_call;
+    mainproc:
+    _begin:
+	// 43 FOG_COL_START	EQU	8
+	// 44 FOG_COL_COUNT	EQU	104
+	// 46 NIGHT_COL_START	EQU	24
+	// 47 NIGHT_COL_COUNT	EQU	88
+	// 49 IR_COL_START	EQU	8
+	// 50 IR_COL_COUNT	EQU	104
+	// 54 COL_BLACK	EQU	0
+	// 55 COL_LT_RED	EQU	1
+	// 56 COL_YELLOW	EQU	2
+	// 57 COL_LT_CYAN	EQU	3
+	// 58 COL_WHITE	EQU	4
+	// 62 COL_TEXT_NORM1	EQU	5
+	// 63 COL_TEXT_NORM2	EQU	6
+	// 64 COL_TEXT_ALERT	EQU	7
+	// 68 COL_NT_WHITE1	EQU	8
+	// 69 COL_NT_GREY1	EQU	9
+	// 70 COL_NT_GREY2	EQU	10
+	// 71 COL_NT_GREY3	EQU	11
+	// 72 COL_NT_GREY4	EQU	12
+	// 73 COL_NT_RED1	EQU	13
+	// 74 COL_NT_RED2	EQU	14
+	// 75 COL_NT_RED3	EQU	15
+	// 76 COL_NT_BLUE1	EQU	16
+	// 77 COL_NT_BLUE2	EQU	17
+	// 78 COL_NT_YELLOW1	EQU	18
+	// 79 COL_NT_AMBER1	EQU	19
+	// 80 COL_NT_AMBER2	EQU	20
+	// 81 COL_NT_GREEN1	EQU	21
+	// 82 COL_NT_R_WHITE1	EQU	22
+	// 83 COL_NT_B_WHITE1	EQU	23
+	// 87 COL_WHITE1	EQU	24
+	// 88 COL_GREY1	EQU	25
+	// 89 COL_GREY2	EQU	26
+	// 90 COL_GREY3	EQU	27
+	// 91 COL_GREY4	EQU	28
+	// 92 COL_BLACK1	EQU	29
+	// 93 COL_CYAN_GREY1	EQU	30
+	// 94 COL_CYAN_GREY2	EQU	31
+	// 95 COL_CYAN_GREY3	EQU	32
+	// 96 COL_CYAN_GREY4	EQU	33
+	// 97 COL_CYAN_GREY5	EQU	34
+	// 98 COL_CYAN_GREY6	EQU	35
+	// 99 COL_SAND1	EQU	36
+	// 100 COL_SAND2	EQU	37
+	// 101 COL_SAND3	EQU	38
+	// 102 COL_SAND4	EQU	39
+	// 103 COL_SAND5	EQU	40
+	// 104 COL_RUST1	EQU	41
+	// 105 COL_RUST2	EQU	42
+	// 106 COL_RUST3	EQU	43
+	// 107 COL_RUST4	EQU	44
+	// 108 COL_RUST5	EQU	45
+	// 109 COL_NEW_GREY1	EQU	46
+	// 110 COL_NEW_GREY2	EQU	47
+	// 111 COL_NEW_GREY3	EQU	48
+	// 112 COL_NEW_GREY4	EQU	49
+	// 113 COL_YELLOW1	EQU	50
+	// 114 COL_AMBER1	EQU	51
+	// 115 COL_AMBER2	EQU	52
+	// 116 COL_AMBER3	EQU	53
+	// 117 COL_AMBER4	EQU	54
+	// 118 COL_RED1	EQU	55
+	// 119 COL_GREEN1	EQU	56
+	// 120 COL_GREEN2	EQU	57
+	// 121 COL_GREEN3	EQU	58
+	// 122 COL_GREEN4	EQU	59
+	// 123 COL_DK_CYAN1	EQU	60
+	// 124 COL_DK_CYAN2	EQU	61
+	// 125 COL_DK_CYAN3	EQU	62
+	// 126 COL_DK_CYAN4	EQU	63
+	// 127 COL_OLIVE1	EQU	64
+	// 128 COL_OLIVE2	EQU	65
+	// 129 COL_OLIVE3	EQU	66
+	// 130 COL_OLIVE4	EQU	67
+	// 131 COL_OLIVE5	EQU	68
+	// 132 COL_OLIVE6	EQU	69
+	// 133 COL_NEAR_WHITE1	EQU	70
+	// 134 COL_SMOKE_GREY1	EQU	71
+	// 135 COL_SMOKE_GREY2	EQU	72
+	// 139 COL_ROAD1	EQU	73
+	// 140 COL_RWY1	EQU	74
+	// 141 COL_GND1	EQU	75
+	// 142 COL_GND2	EQU	76
+	// 143 COL_RAIL1	EQU	77
+	// 144 COL_RAIL2	EQU	78
+	// 145 COL_RIVER1	EQU	79
+	// 149 COL_HILL1	EQU	80
+	// 150 COL_HILL2	EQU	81
+	// 151 COL_HILL3	EQU	82
+	// 152 COL_HILL4	EQU	83
+	// 153 COL_HILL5	EQU	84
+	// 154 COL_HILL6	EQU	85
+	// 155 COL_HILL7	EQU	86
+	// 156 COL_HILL8	EQU	87
+	// 157 COL_HILL9	EQU	88
+	// 158 COL_HILL10	EQU	89
+	// 159 COL_HILL11	EQU	90
+	// 160 COL_HILL12	EQU	91
+	// 161 COL_HILL13	EQU	92
+	// 162 COL_HILL14	EQU	93
+	// 163 COL_HILL15	EQU	94
+	// 164 COL_HILL16	EQU	95
+	// 168 COL_SKY1	EQU	96
+	// 169 COL_SKY2	EQU	97
+	// 170 COL_SKY3	EQU	98
+	// 171 COL_SKY4	EQU	99
+	// 172 COL_SKY5	EQU	100
+	// 173 COL_SKY6	EQU	101
+	// 174 COL_SKY7	EQU	102
+	// 175 COL_SKY8	EQU	103
+	// 176 COL_SKY9	EQU	104
+	// 177 COL_SKY10	EQU	105
+	// 178 COL_SKY11	EQU	106
+	// 179 COL_SKY12	EQU	107
+	// 180 COL_SKY13	EQU	108
+	// 181 COL_SKY14	EQU	109
+	// 182 COL_SKY15	EQU	110
+	// 183 COL_SKY16	EQU	111
+	// 187 COL_MAP_HILL1	EQU	112
+	// 188 COL_MAP_HILL2	EQU	113
+	// 189 COL_MAP_HILL3	EQU	114
+	// 190 COL_MAP_HILL4	EQU	115
+	// 191 COL_MAP_HILL5	EQU	116
+	// 192 COL_MAP_HILL6	EQU	117
+	// 193 COL_MAP_HILL7	EQU	118
+	// 194 COL_MAP_HILL8	EQU	119
+	// 195 COL_MAP_HILL9	EQU	120
+	// 196 COL_MAP_HILL10	EQU	121
+	// 197 COL_MAP_HILL11	EQU	122
+	// 198 COL_MAP_HILL12	EQU	123
+	// 199 COL_MAP_HILL13	EQU	124
+	// 200 COL_MAP_HILL14	EQU	125
+	// 201 COL_MAP_HILL15	EQU	126
+	// 202 COL_MAP_HILL16	EQU	127
+	// 206 COL_NEEDLE	EQU	128
+	// 207 COL_COUNTER	EQU	129
+	// 208 COL_RED_NEEDLE	EQU	130
+	// 209 COL_ADI_SKY	EQU	131
+	// 210 COL_ADI_GND	EQU	132
+	// 211 COL_HUD		EQU	133
+	// 212 COL_BUG		EQU	134
+	// 213 COL_AOA		EQU	135
+	// 214 COL_KNEE_PAD	EQU	136
+	// 215 COL_KNEE_INK1	EQU	137
+	// 216 COL_KNEE_INK2	EQU	138
+	// 217 COL_KNEE_PEN	EQU	139
+	// 218 COL_KNEE_NUM	EQU	140
+	// 219 COL_SIGHT	EQU	141
+	// 221 COL_TIALD_SYM	EQU	COL_BLACK
+	// 224 COL_MAP_SYM	EQU	COL_BLACK
+	// 226 COL_REF_SYM	EQU	COL_BLACK
+	// 228 COL_RADAR_MASK	EQU	COL_BLACK
+	// 230 COL_RAD_MISS	EQU	COL_MAP_ENEMY
+	// 231 COL_IR_MISS	EQU	COL_CRT_RED
+	// 233 COL_LOCAL1	EQU	209		;day
+	// 234 COL_LOCAL2	EQU	213
+	// 235 COL_LOCAL3	EQU	215
+	// 236 COL_LOCAL4	EQU	218
+	// 237 COL_LOCAL5	EQU	220
+	// 238 COL_NT_LOCAL1	EQU	233		;night
+	// 239 COL_NT_LOCAL2	EQU	234
+	// 240 COL_NT_LOCAL3	EQU	235
+	// 241 COL_NT_LOCAL4	EQU	236
+	// 242 COL_NT_LOCAL5	EQU	255
+	// 244 COL_GLIDE1	EQU	210		;day
+	// 245 COL_GLIDE2	EQU	216
+	// 246 COL_GLIDE3	EQU	220
+	// 247 COL_NT_GLIDE1	EQU	234		;night
+	// 248 COL_NT_GLIDE2	EQU	235
+	// 249 COL_NT_GLIDE3	EQU	236
+	// 257 COL_MAP_GND1	EQU	144
+	// 258 COL_MAP_ROAD1	EQU	145
+	// 259 COL_MAP_RAIL1	EQU	146
+	// 260 COL_MAP_RWY1	EQU	147
+	// 261 COL_MAP_RIVER1	EQU	148
+	// 262 COL_MAP_GREEN1	EQU	149
+	// 263 COL_MAP_GREEN2	EQU	150
+	// 264 COL_MAP_COMPASS	EQU	151
+	// 265 COL_MAP_LOCATOR	EQU	152
+	// 266 COL_MAP_ALLIED	EQU	153
+	// 267 COL_MAP_BORDER	EQU	154
+	// 268 COL_COMPASS	EQU	155
+	// 269 COL_LOCATOR	EQU	156
+	// 270 COL_MAP_RWY2	EQU	157
+	// 271 COL_MAP_ENEMY	EQU	158
+	// 275 COL_CRT_RED	EQU	159
+	// 276 COL_CRT1	EQU	160
+	// 277 COL_CRT2	EQU	161
+	// 278 COL_CRT3	EQU	162
+	// 279 COL_CRT4	EQU	163
+	// 280 COL_CRT5	EQU	164
+	// 281 COL_CRT6	EQU	165
+	// 282 COL_CRT7	EQU	166
+	// 283 COL_CRT8	EQU	167
+	// 284 COL_CRT9	EQU	168
+	// 285 COL_CRT10	EQU	169
+	// 286 COL_CRT11	EQU	170
+	// 287 COL_CRT12	EQU	171
+	// 288 COL_CRT13	EQU	172
+	// 289 COL_CRT14	EQU	173
+	// 290 COL_CRT15	EQU	174
+	// 291 COL_CRT16	EQU	175
+	// 311 INPUT_ALL	EQU	0
+	// 312 INPUT_ALPHA	EQU	1
+	// 313 INPUT_NUM	EQU	2
+	// 314 P_EXT		EQU	31
+	// 498 PILOTX		EQU	124
+	// 0 ;============================================================================
+	// 499 PILOTY		EQU	114
+	// 500 NAVIGX		EQU	124
+	// 501 NAVIGY		EQU	136
+	// 502 NUM_MSG		EQU	32
+	// 0 ;1 = delay active
+	// 509 CLEAR_DELAY	EQU	25
+	// 510 LONG_DELAY	EQU	5*100
+	// 511 SHORT_DELAY	EQU	2*100
+	// 0 ;* message attributes
+	// 514 MSG_SHORT	EQU	00000001b	;0 = long delay
+	// 0 ;0 = long delay
+	// 0 ;1 = short delay
+	// 516 MSG_CLEAR	EQU	00000010b	;0 = leave message displayed after delay
+	// 0 ;0 = leave message displayed after delay
+	// 0 ;1 = clear message after delay
+	// 518 MSG_PRIOR	EQU	00000100b	;0 = low priority (add to tail of queue)
+	// 0 ;0 = low priority (add to tail of queue)
+	// 0 ;1 = high priority (insert at head of queue)
+	// 520 MSG_ALERT	EQU	00001000b	;0 = no sound
+	// 0 ;0 = no sound
+	// 0 ;1 = alert sound
+	// 522 MSG_EXTRN	EQU	00010000b	;0 = message from internal source
+	// 0 ;0 = message from internal source
+	// 0 ;1 = message from external source
+	// 0 ;----------------
+	// 0 ;* set up strings
+	// 0 ;----------------
+	// 528 COL_LCD		EQU	COL_BLACK
+	// 0 ;-----------------
+	// 0 ;* message strings
+	// 0 ;-----------------
+	// 0 ;* Message Format
+	// 0 ;* --------------
+	// 0 ;*
+	// 0 ;* Attribute byte followed by 2 lines of 19 characters (standard Print$
+	// 0 ;* format string). For example:-
+	// 0 ;*
+	// 0 ;* Msg$		LABEL	BYTE
+	// 0 ;*		DB	MSG_CLEAR+MSG_PRIOR+MSG_ALERT
+	// 0 ;*		DB	" AUTO-PILOT SYSTEM"
+	// 0 ;*		PD_XYMV	-14*4,6
+	// 0 ;*		DB	"MALFUNCTION"
+	// 0 ;*		P_END
+
+            assert(0);
+            __dispatch_call_ext:
+            __dispatch_call:
+        #ifdef DOSBOX_CUSTOM
+            if ((__disp >> 16) == 0xf000)
+            {cs=0xf000;eip=__disp&0xffff;m2c::fix_segs();return false;}  // Jumping to BIOS
+        #endif
+            switch (__disp) {
+                case m2c::kmainproc: 	goto mainproc;
+        default: { bool handled = false; if (!m2c::dispatch_external_code(__disp, _state, &handled)) return false; if (handled) break; if (m2c::m2c_guest_thunk(__disp, _state)) break; m2c::log_error("Don't know how to jump to 0x%x in %s (" __FILE__ ":%d)\n", __disp, __func__, __LINE__);m2c::stackDump(_state); abort(); }
+    };
+}
+

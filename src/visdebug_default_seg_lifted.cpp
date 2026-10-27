@@ -1,0 +1,446 @@
+/* THIS IS GENERATED FILE */
+
+        
+#include "visdebug.h"
+
+                
+
+ static bool mainproc(m2c::_offsets _i, struct m2c::_STATE* _state){
+    X86_REGREF
+    __disp = _i;
+
+    if (__disp == 0) goto _begin;
+    else goto __dispatch_call;
+    mainproc:
+    _begin:
+	// 145 VIEW_REC_SIZE	EQU	TYPE VIEWPOINT
+	// 146 VP_ZFT_LO	EQU	VP_ZFT
+	// 147 VP_ZFT_HI	EQU	VP_ZFT+2
+	// 151 SEC_SCALE1 	EQU	0		;1/1 scale
+	// 152 SEC_SCALE2	EQU	2		;1/2 scale
+	// 153 SEC_SCALE8 	EQU	4		;1/8 scale
+	// 154 SEC_SCALE16 	EQU	6		;1/16 scale
+	// 158 INT_VIEWMODE	EQU	0		;internal views
+	// 159 ALT_VIEWMODE	EQU	2		;alternate internal views
+	// 160 EXT_VIEWMODE	EQU	4		;external views
+	// 161 TV1_VIEWMODE	EQU	6		;TV1 display
+	// 162 TV2_VIEWMODE	EQU	8		;TV2 display
+	// 163 TV3_VIEWMODE	EQU	10		;TV3 display
+	// 164 TV4_VIEWMODE	EQU	12		;TV4 display
+	// 165 TV5_VIEWMODE	EQU	14		;TV5 display
+	// 166 NUL_VIEWMODE	EQU	0		;map null view mode to internal
+	// 170 ROTATE_NULL	EQU	0		;no rotation
+	// 171 ROTATE_VIEW_RT	EQU	2		;look right (90)
+	// 172 ROTATE_VIEW_LT	EQU	4		;look left (90)
+	// 173 ROTATE_VIEW_UP	EQU	6		;look up (45)
+	// 174 ROTATE_VIEW_DN	EQU	8		;look down (90)
+	// 175 ROTATE_VIEW_BK	EQU	10		;look back (90)
+	// 176 ROTATE_VIEW_FT	EQU	12		;look back (90)
+	// 180 $MID		EQU	128
+	// 181 $0		EQU	0
+	// 182 $256		EQU	2
+	// 183 $512		EQU	4
+	// 184 $1024		EQU	8
+	// 185 $2048		EQU	16
+	// 186 $4096		EQU	32
+	// 187 $8192		EQU	64
+	// 196 SEC_REC_SIZE	EQU	TYPE SECTORDATA
+	// 200 MIN_SEC_SCAN	EQU	3		;minimum sector scan range
+	// 201 MAX_SEC_SCAN	EQU	15		;maximum sector scan range
+	// 205 MAP_X_WRAP	EQU	0001fh		;0 .. 31
+	// 206 MAP_Y_WRAP	EQU	0001fh		;0 .. 31
+	// 210 SCTR_Y_THRES	EQU	11600		;approx 8,192 * sqrt(2)
+	// 214 OBJ_SCALE1 	EQU	0		;1/1 scale
+	// 215 OBJ_SCALE2	EQU	2		;2/1 scale
+	// 216 OBJ_SCALE4	EQU	4		;4/1 scale
+	// 217 OBJ_SCALE8 	EQU	6		;8/1 scale
+	// 218 OBJ_SCALE16 	EQU	8		;16/1 scale
+	// 222 MAX_RANGE1 	EQU	16384		;OBJ_SCALE1
+	// 223 MAX_RANGE2	EQU	8192		;OBJ_SCALE2
+	// 224 MAX_RANGE4	EQU	4096		;OBJ_SCALE4
+	// 225 MAX_RANGE8 	EQU	2048		;OBJ_SCALE8
+	// 226 MAX_RANGE16 	EQU	1024		;OBJ_SCALE16
+	// 230 @MID		EQU	64
+	// 231 @0		EQU	0
+	// 232 @16		EQU	2
+	// 233 @32		EQU	4
+	// 234 @48		EQU	6
+	// 235 @64		EQU	8
+	// 236 @80		EQU	10
+	// 237 @96		EQU	12
+	// 238 @112		EQU	14
+	// 239 @128		EQU	16
+	// 240 @192		EQU	24
+	// 241 @256		EQU	32
+	// 242 @384		EQU	48
+	// 243 @512		EQU	64
+	// 261 OBJ_REC_SIZE	EQU	TYPE OBJECTDATA
+	// 263 OBJ_XGRID	EQU	OBJ_USERW1	;x grid
+	// 264 OBJ_YGRID	EQU	OBJ_USERW2	;y grid
+	// 266 OBJ_HDG		EQU	OBJ_USERW1	;heading
+	// 267 OBJ_PITCH	EQU	OBJ_USERW2	;pitch
+	// 268 OBJ_ROLL	EQU	OBJ_USERW3	;roll
+	// 270 OBJ_ANIM_FLAGS	EQU	OBJ_USERB1	;animation flags
+	// 272 OBJ_XSECPOS	EQU	OBJ_USERW1	;x sector centre position
+	// 273 OBJ_YSECPOS	EQU	OBJ_USERW2	;y sector centre position
+	// 274 OBJ_ZSECPOS	EQU	OBJ_USERW3	;z sector centre position
+	// 275 OBJ_MAPINDEX	EQU	OBJ_USERW4	;map index
+	// 276 OBJ_SECSCALE	EQU	OBJ_USERB1	;sector scale
+	// 277 OBJ_FACE_FLAGS	EQU	OBJ_USERB2	;hill face flags
+	// 279 OBJ_YMIN	EQU	OBJ_XPOS	;minimum y position
+	// 281 OBJ_SMOKE_RFT	EQU	OBJ_USERW1	;smoke radius
+	// 282 OBJ_SMOKE_COL	EQU	OBJ_USERB1	;smoke colour
+	// 286 OTYPE_GROUND	EQU	0		;static ground objects
+	// 287 OTYPE_MOBILE1	EQU	2		;mobile objects (skew only)
+	// 288 OTYPE_MOBILE2	EQU	4		;mobile objects (skew and pitch)
+	// 289 OTYPE_MOBILE3	EQU	6		;mobile objects (skew, pitch and roll)
+	// 290 OTYPE_MOBILE4	EQU	8		;mobile objects on bridge (skew and pitch)
+	// 291 OTYPE_HILLFACE	EQU	10		;hill face
+	// 292 OTYPE_SMOKE	EQU	12		;smoke
+	// 306 OBJ_HDR_SIZE	EQU	TYPE OBJECTHEADER
+	// 307 OBJ_FLG_PIXEL	EQU	00000001b	;1 = pixel approximation enabled
+	// 311 NUM_OBJECTS	EQU	256		;max number of objects
+	// 312 NUM_BINS	EQU	64+1		;(64 * 256ft = 16,384ft) + behind bin
+	// 313 NUM_FAR_OBJECTS	EQU	256		;max number of far objects
+	// 314 NUM_FAR_BINS	EQU	64+1		;(64 * 2,048ft = 131,072ft) + behind bin
+	// 315 BEHIND_BIN	EQU	0		;behind bin index
+	// 316 IN_FRONT_BIN	EQU	2		;in front bin index
+	// 320 FACE_EXTENDED	EQU	01000000b	;1 = extended function, 0 = standard function
+	// 321 FACE_DECISION	EQU	00100000b	;1 = decision plane, 0 = standard face
+	// 322 FACE_EXCLUDE	EQU	00010000b	;1 = exclude second choice of decision, 0 = include
+	// 323 FACE_PRIMARY	EQU	00001000b	;1 = primary face, 0 = secondary face
+	// 324 FACE_VISIBLE	EQU	00000100b	;1 = outside / inside visible, 0 = outside visible
+	// 325 FACE_STRUCTURE	EQU	00000010b	;1 = line structure, 0 = polygon structure
+	// 326 FACE_FILL_TYPE	EQU	00000001b	;1 = mesh fill, 0 = solid fill
+	// 336 MOB_REC_SIZE	EQU	TYPE MOBILE
+	// 340 _VP_XSEC	EQU	MOB_REC_SIZE+VP_XSEC
+	// 341 _VP_YSEC	EQU	MOB_REC_SIZE+VP_YSEC
+	// 342 _VP_XFT		EQU	MOB_REC_SIZE+VP_XFT
+	// 343 _VP_YFT		EQU	MOB_REC_SIZE+VP_YFT
+	// 344 _VP_ZFT		EQU	MOB_REC_SIZE+VP_ZFT
+	// 345 _VP_HDG		EQU	MOB_REC_SIZE+VP_HDG
+	// 346 _VP_PITCH	EQU	MOB_REC_SIZE+VP_PITCH
+	// 347 _VP_ROLL 	EQU	MOB_REC_SIZE+VP_ROLL
+	// 348 _VP_ZFT_LO	EQU	MOB_REC_SIZE+VP_ZFT_LO
+	// 349 _VP_ZFT_HI	EQU	MOB_REC_SIZE+VP_ZFT_HI
+	// 353 NUM_MOBILES	EQU	256		;max number of mobiles objects
+	// 359 MSORT_REC_SIZE	EQU	TYPE MOBSORT
+	// 372 GND_REC_SIZE	EQU	TYPE GNDOBJ
+	// 383 STAT_REC_SIZE	EQU	TYPE STATMOB
+	// 387 SURFACE_UNKNOWN	EQU	0
+	// 388 SURFACE_RUNWAY	EQU	2
+	// 389 SURFACE_TAXIWAY	EQU	4
+	// 390 SURFACE_HARD	EQU	6
+	// 391 SURFACE_ROAD	EQU	8
+	// 392 SURFACE_RAILWAY	EQU	10
+	// 393 SURFACE_RIVER	EQU	12
+	// 394 SURFACE_LAKE	EQU	14
+	// 398 NUM_CRATERS	EQU	128
+	// 399 CRATER_NULL	EQU	0
+	// 400 CRATER_SIZE1	EQU	1		;small
+	// 401 CRATER_SIZE2	EQU	2		;large
+	// 402 CRATER_HEAVE	EQU	3		;heave
+	// 403 CRATER_SHELL	EQU	4		;cannon shell
+	// 414 CRATER_REC_SIZE	EQU	TYPE CRATER
+	// 418 NUM_SMOKE	EQU	128
+	// 420 SMOKE_CRATER1	EQU	0		;smoke from crater (min effect)
+	// 421 SMOKE_CRATER2	EQU	2		;smoke from crater (med effect)
+	// 422 SMOKE_CRATER3	EQU	4		;smoke from crater (max effect)
+	// 423 SMOKE_BURNING	EQU	6		;smoke from burning building
+	// 424 SMOKE_KICK_UP	EQU	8		;kick up dust from ground
+	// 425 SMOKE_AIR_EXPLO	EQU	10		;smoke from air explosion
+	// 426 SMOKE_AIR_TRAIL	EQU	12		;smoke from burning aircraft
+	// 428 STYPE_NULL	EQU	0		;no smoke
+	// 429 STYPE_GND1	EQU	2		;ground smoke type 1
+	// 430 STYPE_AIR1	EQU	4		;air smoke type 1
+	// 446 SMOKE_REC_SIZE	EQU	TYPE SMOKE
+	// 447 SMOKE_ZFT_LO	EQU	SMOKE_ZFT
+	// 448 SMOKE_ZFT_HI	EQU	SMOKE_ZFT+2
+	// 449 SFLG_REPRO	EQU	00000001b	;1 = reproduced sibling
+	// 464 FOG_COL_START	EQU	8
+	// 465 FOG_COL_COUNT	EQU	104
+	// 467 NIGHT_COL_START	EQU	24
+	// 468 NIGHT_COL_COUNT	EQU	88
+	// 470 IR_COL_START	EQU	8
+	// 471 IR_COL_COUNT	EQU	104
+	// 475 COL_BLACK	EQU	0
+	// 476 COL_LT_RED	EQU	1
+	// 477 COL_YELLOW	EQU	2
+	// 478 COL_LT_CYAN	EQU	3
+	// 479 COL_WHITE	EQU	4
+	// 483 COL_TEXT_NORM1	EQU	5
+	// 484 COL_TEXT_NORM2	EQU	6
+	// 485 COL_TEXT_ALERT	EQU	7
+	// 489 COL_NT_WHITE1	EQU	8
+	// 490 COL_NT_GREY1	EQU	9
+	// 491 COL_NT_GREY2	EQU	10
+	// 492 COL_NT_GREY3	EQU	11
+	// 493 COL_NT_GREY4	EQU	12
+	// 494 COL_NT_RED1	EQU	13
+	// 495 COL_NT_RED2	EQU	14
+	// 496 COL_NT_RED3	EQU	15
+	// 497 COL_NT_BLUE1	EQU	16
+	// 498 COL_NT_BLUE2	EQU	17
+	// 499 COL_NT_YELLOW1	EQU	18
+	// 500 COL_NT_AMBER1	EQU	19
+	// 501 COL_NT_AMBER2	EQU	20
+	// 502 COL_NT_GREEN1	EQU	21
+	// 503 COL_NT_R_WHITE1	EQU	22
+	// 504 COL_NT_B_WHITE1	EQU	23
+	// 508 COL_WHITE1	EQU	24
+	// 509 COL_GREY1	EQU	25
+	// 510 COL_GREY2	EQU	26
+	// 511 COL_GREY3	EQU	27
+	// 512 COL_GREY4	EQU	28
+	// 513 COL_BLACK1	EQU	29
+	// 514 COL_CYAN_GREY1	EQU	30
+	// 515 COL_CYAN_GREY2	EQU	31
+	// 516 COL_CYAN_GREY3	EQU	32
+	// 517 COL_CYAN_GREY4	EQU	33
+	// 518 COL_CYAN_GREY5	EQU	34
+	// 519 COL_CYAN_GREY6	EQU	35
+	// 520 COL_SAND1	EQU	36
+	// 521 COL_SAND2	EQU	37
+	// 522 COL_SAND3	EQU	38
+	// 523 COL_SAND4	EQU	39
+	// 524 COL_SAND5	EQU	40
+	// 525 COL_RUST1	EQU	41
+	// 526 COL_RUST2	EQU	42
+	// 527 COL_RUST3	EQU	43
+	// 528 COL_RUST4	EQU	44
+	// 529 COL_RUST5	EQU	45
+	// 530 COL_NEW_GREY1	EQU	46
+	// 531 COL_NEW_GREY2	EQU	47
+	// 532 COL_NEW_GREY3	EQU	48
+	// 533 COL_NEW_GREY4	EQU	49
+	// 534 COL_YELLOW1	EQU	50
+	// 535 COL_AMBER1	EQU	51
+	// 536 COL_AMBER2	EQU	52
+	// 537 COL_AMBER3	EQU	53
+	// 538 COL_AMBER4	EQU	54
+	// 539 COL_RED1	EQU	55
+	// 540 COL_GREEN1	EQU	56
+	// 541 COL_GREEN2	EQU	57
+	// 542 COL_GREEN3	EQU	58
+	// 543 COL_GREEN4	EQU	59
+	// 544 COL_DK_CYAN1	EQU	60
+	// 545 COL_DK_CYAN2	EQU	61
+	// 546 COL_DK_CYAN3	EQU	62
+	// 547 COL_DK_CYAN4	EQU	63
+	// 548 COL_OLIVE1	EQU	64
+	// 549 COL_OLIVE2	EQU	65
+	// 550 COL_OLIVE3	EQU	66
+	// 551 COL_OLIVE4	EQU	67
+	// 552 COL_OLIVE5	EQU	68
+	// 553 COL_OLIVE6	EQU	69
+	// 554 COL_NEAR_WHITE1	EQU	70
+	// 555 COL_SMOKE_GREY1	EQU	71
+	// 556 COL_SMOKE_GREY2	EQU	72
+	// 560 COL_ROAD1	EQU	73
+	// 561 COL_RWY1	EQU	74
+	// 562 COL_GND1	EQU	75
+	// 563 COL_GND2	EQU	76
+	// 564 COL_RAIL1	EQU	77
+	// 565 COL_RAIL2	EQU	78
+	// 566 COL_RIVER1	EQU	79
+	// 570 COL_HILL1	EQU	80
+	// 571 COL_HILL2	EQU	81
+	// 572 COL_HILL3	EQU	82
+	// 573 COL_HILL4	EQU	83
+	// 574 COL_HILL5	EQU	84
+	// 575 COL_HILL6	EQU	85
+	// 576 COL_HILL7	EQU	86
+	// 577 COL_HILL8	EQU	87
+	// 578 COL_HILL9	EQU	88
+	// 579 COL_HILL10	EQU	89
+	// 580 COL_HILL11	EQU	90
+	// 581 COL_HILL12	EQU	91
+	// 582 COL_HILL13	EQU	92
+	// 583 COL_HILL14	EQU	93
+	// 584 COL_HILL15	EQU	94
+	// 585 COL_HILL16	EQU	95
+	// 589 COL_SKY1	EQU	96
+	// 590 COL_SKY2	EQU	97
+	// 591 COL_SKY3	EQU	98
+	// 592 COL_SKY4	EQU	99
+	// 593 COL_SKY5	EQU	100
+	// 594 COL_SKY6	EQU	101
+	// 595 COL_SKY7	EQU	102
+	// 596 COL_SKY8	EQU	103
+	// 597 COL_SKY9	EQU	104
+	// 598 COL_SKY10	EQU	105
+	// 599 COL_SKY11	EQU	106
+	// 600 COL_SKY12	EQU	107
+	// 601 COL_SKY13	EQU	108
+	// 602 COL_SKY14	EQU	109
+	// 603 COL_SKY15	EQU	110
+	// 604 COL_SKY16	EQU	111
+	// 608 COL_MAP_HILL1	EQU	112
+	// 609 COL_MAP_HILL2	EQU	113
+	// 610 COL_MAP_HILL3	EQU	114
+	// 611 COL_MAP_HILL4	EQU	115
+	// 612 COL_MAP_HILL5	EQU	116
+	// 613 COL_MAP_HILL6	EQU	117
+	// 614 COL_MAP_HILL7	EQU	118
+	// 615 COL_MAP_HILL8	EQU	119
+	// 616 COL_MAP_HILL9	EQU	120
+	// 617 COL_MAP_HILL10	EQU	121
+	// 618 COL_MAP_HILL11	EQU	122
+	// 619 COL_MAP_HILL12	EQU	123
+	// 620 COL_MAP_HILL13	EQU	124
+	// 621 COL_MAP_HILL14	EQU	125
+	// 622 COL_MAP_HILL15	EQU	126
+	// 623 COL_MAP_HILL16	EQU	127
+	// 627 COL_NEEDLE	EQU	128
+	// 628 COL_COUNTER	EQU	129
+	// 629 COL_RED_NEEDLE	EQU	130
+	// 630 COL_ADI_SKY	EQU	131
+	// 631 COL_ADI_GND	EQU	132
+	// 632 COL_HUD		EQU	133
+	// 633 COL_BUG		EQU	134
+	// 634 COL_AOA		EQU	135
+	// 635 COL_KNEE_PAD	EQU	136
+	// 636 COL_KNEE_INK1	EQU	137
+	// 637 COL_KNEE_INK2	EQU	138
+	// 638 COL_KNEE_PEN	EQU	139
+	// 639 COL_KNEE_NUM	EQU	140
+	// 640 COL_SIGHT	EQU	141
+	// 642 COL_TIALD_SYM	EQU	COL_BLACK
+	// 645 COL_MAP_SYM	EQU	COL_BLACK
+	// 647 COL_REF_SYM	EQU	COL_BLACK
+	// 649 COL_RADAR_MASK	EQU	COL_BLACK
+	// 651 COL_RAD_MISS	EQU	COL_MAP_ENEMY
+	// 652 COL_IR_MISS	EQU	COL_CRT_RED
+	// 654 COL_LOCAL1	EQU	209		;day
+	// 655 COL_LOCAL2	EQU	213
+	// 656 COL_LOCAL3	EQU	215
+	// 657 COL_LOCAL4	EQU	218
+	// 658 COL_LOCAL5	EQU	220
+	// 659 COL_NT_LOCAL1	EQU	233		;night
+	// 660 COL_NT_LOCAL2	EQU	234
+	// 661 COL_NT_LOCAL3	EQU	235
+	// 662 COL_NT_LOCAL4	EQU	236
+	// 663 COL_NT_LOCAL5	EQU	255
+	// 665 COL_GLIDE1	EQU	210		;day
+	// 666 COL_GLIDE2	EQU	216
+	// 667 COL_GLIDE3	EQU	220
+	// 668 COL_NT_GLIDE1	EQU	234		;night
+	// 669 COL_NT_GLIDE2	EQU	235
+	// 670 COL_NT_GLIDE3	EQU	236
+	// 678 COL_MAP_GND1	EQU	144
+	// 679 COL_MAP_ROAD1	EQU	145
+	// 680 COL_MAP_RAIL1	EQU	146
+	// 681 COL_MAP_RWY1	EQU	147
+	// 682 COL_MAP_RIVER1	EQU	148
+	// 683 COL_MAP_GREEN1	EQU	149
+	// 684 COL_MAP_GREEN2	EQU	150
+	// 685 COL_MAP_COMPASS	EQU	151
+	// 686 COL_MAP_LOCATOR	EQU	152
+	// 687 COL_MAP_ALLIED	EQU	153
+	// 688 COL_MAP_BORDER	EQU	154
+	// 689 COL_COMPASS	EQU	155
+	// 690 COL_LOCATOR	EQU	156
+	// 691 COL_MAP_RWY2	EQU	157
+	// 692 COL_MAP_ENEMY	EQU	158
+	// 696 COL_CRT_RED	EQU	159
+	// 697 COL_CRT1	EQU	160
+	// 698 COL_CRT2	EQU	161
+	// 699 COL_CRT3	EQU	162
+	// 700 COL_CRT4	EQU	163
+	// 701 COL_CRT5	EQU	164
+	// 702 COL_CRT6	EQU	165
+	// 703 COL_CRT7	EQU	166
+	// 704 COL_CRT8	EQU	167
+	// 705 COL_CRT9	EQU	168
+	// 706 COL_CRT10	EQU	169
+	// 707 COL_CRT11	EQU	170
+	// 708 COL_CRT12	EQU	171
+	// 709 COL_CRT13	EQU	172
+	// 710 COL_CRT14	EQU	173
+	// 711 COL_CRT15	EQU	174
+	// 712 COL_CRT16	EQU	175
+	// 732 INPUT_ALL	EQU	0
+	// 733 INPUT_ALPHA	EQU	1
+	// 734 INPUT_NUM	EQU	2
+	// 735 P_EXT		EQU	31
+	// 738 LINESPC EQU	12
+	// 0 ;============================================================================
+	// 0 ;		EVEN
+	// 0 ;Info$		LABEL	BYTE
+	// 0 ;		PD_ATTR	0ffh,000h,0ffh,000h,0ffh,000h,COL_HUD,COL_BLACK
+	// 0 ;		P_OVER1
+	// 0 ;		P_CHAR2
+	// 0 ;
+	// 0 ;PX		=	114
+	// 0 ;PY		=	15
+	// 0 ;		PD_XY	PX,PY		;frame rate
+	// 0 ;		DB	"*TEAM CREDITS (1993)*"
+	// 0 ;PX		=	94
+	// 0 ;PY		=	PY+4+LINESPC
+	// 0 ;		PD_XY	PX,PY		;polygon count
+	// 0 ;		DB	"DAVID K MARSHALL: Project Manager"
+	// 0 ;PX		=	8
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;x sector
+	// 0 ;		DB	"KEVIN BEZANT, NICK MASCALL, TONY HOSIER, ROBIN HEYDON, MATTHEW SMITH: Design"
+	// 0 ;PX		=	72
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;x sector
+	// 0 ;		DB	"NICK MASCALL, DAVID MARSHALL: Manual text"
+	// 0 ;PX		=	4
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;x sector
+	// 0 ;		DB	"KERRY LE-GRAY, WENDY HOSKIN: Manual, graphics, artwork & package"
+	// 0 ;PX		=	84
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"DERROL EULING: Technical drawings"
+	// 0 ;PX		=	54
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"ROD SWIFT, RUSSELL ALCOCK, JEFFREY LOVE: Beta testing"
+	// 0 ;PX		=	78
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"ROD COBAIN, STEPHANIE BURNETT: Production"
+	// 0 ;PX		=	110
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"DEBBIE DURRANT: Marketing"
+	// 0 ;PX		=	38
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"VICKI MCBURNIE, JULIE-ANN MERRIT, GILL NIL: Ancillary support"
+	// 0 ;PX		=	100
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"DAVID WHITTAKER: Sound effects"
+	// 0 ;PX		=	32
+	// 0 ;PY		=	PY+LINESPC
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"DAVID PUNSHON, RICHARD WELLS, DOMINIC KING: Music & sound"
+	// 0 ;PX		=	268
+	// 0 ;PY		=	PY+LINESPC+8
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"In memory of"
+	// 0 ;PX		=	188
+	// 0 ;PY		=	PY+8
+	// 0 ;		PD_XY	PX,PY		;xft
+	// 0 ;		DB	"David K. Marshall (1953-2016)"
+	// 0 ;		P_END
+	// 0 ;
+	// 0 ;		EVEN
+
+            assert(0);
+            __dispatch_call_ext:
+            __dispatch_call:
+        #ifdef DOSBOX_CUSTOM
+            if ((__disp >> 16) == 0xf000)
+            {cs=0xf000;eip=__disp&0xffff;m2c::fix_segs();return false;}  // Jumping to BIOS
+        #endif
+            switch (__disp) {
+                case m2c::kmainproc: 	goto mainproc;
+        default: { bool handled = false; if (!m2c::dispatch_external_code(__disp, _state, &handled)) return false; if (handled) break; if (m2c::m2c_guest_thunk(__disp, _state)) break; m2c::log_error("Don't know how to jump to 0x%x in %s (" __FILE__ ":%d)\n", __disp, __func__, __LINE__);m2c::stackDump(_state); abort(); }
+    };
+}
+

@@ -1,0 +1,732 @@
+/* THIS IS GENERATED FILE */
+
+        
+#include "dataxchg.h"
+
+                
+
+ static bool mainproc(m2c::_offsets _i, struct m2c::_STATE* _state){
+    X86_REGREF
+    __disp = _i;
+
+    if (__disp == 0) goto _begin;
+    else goto __dispatch_call;
+    mainproc:
+    _begin:
+	// 126 IDS_TORNADO	EQU	0		;interdictor strike
+	// 127 ADV_TORNADO	EQU	2		;air defence variant
+	// 128 ECR_TORNADO	EQU	4		;electronic combat and reconnaissance
+	// 132 CTRL_DEV_KBD1	EQU	0		;keyboard (self centring)
+	// 133 CTRL_DEV_KBD2	EQU	2		;keyboard
+	// 134 CTRL_DEV_JOY1	EQU	4		;single joystick
+	// 135 CTRL_DEV_JOY2	EQU	6		;dual joysticks
+	// 139 SND_NULL	EQU	0		;no sound card
+	// 140 SND_SPEAKER	EQU	2		;internal speaker
+	// 141 SND_SBLASTER	EQU	4		;SoundBlaster
+	// 142 SND_ADLIB	EQU	6		;AdLib
+	// 143 SND_ROLAND	EQU	8		;Roland LAPC1
+	// 147 SHAKE_OPT_OFF	EQU	0		;shake effects off
+	// 148 SHAKE_OPT_ON	EQU	1		;shake effects on
+	// 152 SOUND_OPT_OFF	EQU	0		;sound off
+	// 153 SOUND_OPT_ON	EQU	1		;sound on (less engine sound)
+	// 154 SOUND_OPT_ENG	EQU	2		;sound on (with engine sound)
+	// 158 VIEW_PILOT	EQU	0 		;pilot's panel view
+	// 159 VIEW_LPILOT	EQU	2		;pilot's left view
+	// 160 VIEW_RPILOT	EQU	4		;pilot's right view
+	// 161 VIEW_NAVIG	EQU	6		;navigator's panel view
+	// 162 VIEW_LNAVIG	EQU	8		;navigator's left view
+	// 163 VIEW_RNAVIG	EQU	10		;navigator's right view
+	// 164 VIEW_TRACKING	EQU	12		;tracking camera
+	// 165 VIEW_SATELLITE	EQU	14		;satellite camera
+	// 166 VIEW_MAP	EQU	16		;map view
+	// 167 VIEW_DRONE	EQU	18		;drone view
+	// 168 VIEW_SPECTATOR	EQU	20		;spectator view
+	// 169 VIEW_REMOTE	EQU	22		;remote view
+	// 170 VIEW_LOOKDOWN	EQU	24		;pilot's look down
+	// 171 VIEW_LOOKUP	EQU	26		;pilot's look up
+	// 172 VIEW_DEMO	EQU	28		;demo view
+	// 173 VIEW_DESTROYED	EQU	30		;Tornado destroyed view
+	// 174 VIEW_WEAPON	EQU	32		;weapon view
+	// 175 VIEW_ZRK EQU 34         ;ZRK ROMB (SA-8) to Tornado view
+	// 176 VIEW_ZSU1 EQU 36         ;ZSU-23-4 Shilka to Tornado view1
+	// 177 VIEW_ZSU2 EQU 38         ;ZSU-23-4 Shilka to Tornado view2
+	// 178 VIEW_ZRK_AAA EQU 40         ;ZSU-23-4 Shilka to Tornado view2
+	// 182 PILOTPAN	EQU	0   	;pilot's front panel
+	// 183 PSIDEPAN	EQU	2		;pilot's left and right side panel
+	// 184 NAVIGPAN	EQU	4		;navigator's front panel
+	// 185 NSIDEPAN	EQU	6		;navigator's left and right side panel
+	// 186 EXTRNPAN	EQU	8		;external panel
+	// 187 LOOKDOWN	EQU	10		;look down panel
+	// 188 LOOKUP		EQU	12		;look up panel
+	// 189 MAPPAN		EQU	14		;map panel
+	// 193 CREW_PILOT	EQU	0		;pilot in control
+	// 194 CREW_NAVIG	EQU	2		;navigator in control
+	// 198 AUTO_OFF	EQU	0		;off (manual)
+	// 199 AUTO_APPROACH	EQU	2		;approach (autoland)
+	// 200 AUTO_TRACK	EQU	4		;track acquire (fly to next waypoint)
+	// 201 AUTO_HOLD	EQU	6		;altitude and heading hold
+	// 202 AUTO_TF		EQU	8		;terrain follow
+	// 206 ALT_MANUAL	EQU	0
+	// 207 ALT_APPROACH	EQU	2
+	// 208 ALT_ACQUIRE	EQU	4
+	// 209 ALT_TF		EQU	6
+	// 213 HDG_MANUAL	EQU	0
+	// 214 HDG_APPROACH	EQU	2
+	// 215 HDG_ACQUIRE	EQU	4
+	// 216 HDG_TRACK	EQU	6
+	// 220 JET_NULL	EQU	0		;nothing
+	// 221 JET_EXT_TANKS	EQU	1		;ext fuel tanks
+	// 222 JET_EXT_STORES	EQU	2		;ext fuel tanks + ext stores
+	// 223 JET_ALL		EQU	3		;ext fuel tanks + ext stores + int fuel
+	// 227 DIE_QUIT	EQU	1		;quit game
+	// 228 DIE_HYPOXIA	EQU	2		;lack of oxygen
+	// 229 DIE_BREAK_UP	EQU	3		;break up due to buffeting
+	// 230 DIE_CRASH_HILL	EQU	4		;crashed into hill
+	// 231 DIE_CRASH_GND	EQU	5		;crashed into ground
+	// 232 DIE_DITCHED	EQU	6		;ditched
+	// 233 DIE_GND_SPD_HI	EQU	7		;crashed - ground speed too high
+	// 234 DIE_SINK_HI	EQU	8		;crashed - sink rate too high
+	// 235 DIE_ROLL_HI	EQU	9		;crashed - roll too high on landing
+	// 236 DIE_NOSE_WHEEL	EQU	10		;crashed - nose wheel collapsed
+	// 237 DIE_TAIL_SCRAPE	EQU	11		;crashed - tail scrape on landing
+	// 238 DIE_COLLAPSE	EQU	12		;crashed - gear collapsed
+	// 239 DIE_FIRE	EQU	13		;destroyed by fire
+	// 240 DIE_EJECT	EQU	14		;ejected
+	// 241 DIE_MISSILE	EQU	15		;shot down by air-to-air missile
+	// 242 DIE_CANNON	EQU	16		;shot down by cannon fire
+	// 243 DIE_SAM		EQU	17		;shot down by surface-to-air missile
+	// 244 DIE_AAA		EQU	18		;shot down by anti-aircraft artillery
+	// 245 DIE_GND_EXPLO	EQU	19		;destroyed by ground explosion
+	// 246 DIE_AIR_EXPLO	EQU	20		;destroyed by air explosion
+	// 247 DIE_HIT_GND_OBJ	EQU	21		;crashed into ground object
+	// 248 DIE_HIT_MOB_OBJ	EQU	22		;crashed into mobile object
+	// 249 DIE_2_PLYR_WIN	EQU	23		;two player win
+	// 250 DIE_2_PLYR_DRAW	EQU	24		;two player draw
+	// 251 DIE_2_PLYR_LOSE	EQU	25		;two player lose
+	// 255 SYS_ERR_MOUSE	EQU	255		;mouse driver not present
+	// 256 SYS_ERR_PANELS	EQU	254		;error occurred loading panel data
+	// 257 SYS_ERR_RGB	EQU	253		;error occurred loading palette RGB data
+	// 258 SYS_ERR_LD_GAME	EQU	252		;error occurred loading GAMEPLAY.IN
+	// 259 SYS_ERR_SV_GAME	EQU	251		;error occurred saving GAMEPLAY.OUT
+	// 260 SYS_ERR_LD_LYR	EQU	250		;error occurred loading LAYER.IN
+	// 261 SYS_ERR_LD_OBJ	EQU	249		;error occurred loading OBSECDEF.IN
+	// 262 SYS_ERR_SV_OBJ	EQU	248		;error occurred saving OBSECDEF.OUT
+	// 263 SYS_ERR_LD_MOB	EQU	247		;error occurred loading MSECDEF.IN
+	// 264 SYS_ERR_SV_MOB	EQU	246		;error occurred saving MSECDEF.OUT
+	// 265 SYS_ERR_MAP_OK	EQU	245		;completed map test ok
+	// 266 SYS_ERR_RESIZE	EQU	244		;error occurred resizing memory
+	// 267 SYS_ERR_SMEM	EQU	243		;error occurred allocating memory for sound driver
+	// 268 SYS_ERR_SDRVR	EQU	242		;error occurred loading sound driver
+	// 269 SYS_ERR_SCARD	EQU	241		;sound card not present
+	// 270 SYS_ERR_LD_PIC	EQU	240		;error occurred loading digitized picture file
+	// 271 SYS_ERR_LD_PREV	EQU	239		;error occurred loading PREVIEW.BT2
+	// 272 SYS_ERR_SV_IMP	EQU	238		;error occurred saving IMPACT.OUT
+	// 273 SYS_ERR_LD_MISC	EQU	237		;error occurred loading MISCDATA.IN
+	// 274 SYS_ERR_TIMEOUT	EQU	236		;global timeout (end of demo)
+	// 275 SYS_ERR_SYNC_TO	EQU	235		;comms sync timeout / user abort
+	// 276 SYS_ERR_MMEM	EQU	234		;error occurred allocating memory for music driver
+	// 277 SYS_ERR_MDRVR	EQU	233		;error occurred loading music driver
+	// 278 SYS_ERR_MCARD	EQU	232		;music card not present
+	// 282 DIP_GLOC	EQU	00000001b	;blackout / redout
+	// 283 DIP_HYPOXIA	EQU	00000010b	;lack of oxygen
+	// 284 DIP_EJECT	EQU	00000100b	;eject
+	// 285 DIP_DESTROYED	EQU	00001000b	;aircraft destroyed
+	// 286 DIP_DEMO	EQU	10000000b	;demo mode
+	// 306 WAY_REC_SIZE	EQU	TYPE WAYPOINT
+	// 307 WP_SPEED	EQU	WP_TIME		;time / speed share same location
+	// 309 WP_TYPE		EQU	00000001b	;1 = target (fly over waypoint)
+	// 311 WP_LINK		EQU	00000010b	;1 = link back to waypoint (where WP_HERE = 1)
+	// 313 WP_HERE		EQU	00000100b	;1 = link back to here label
+	// 315 WP_TF		EQU	00001000b	;1 = terrain follow to waypoint
+	// 317 WP_ILS		EQU	00010000b	;1 = fly ILS glide slope to waypoint (WP_TYPE = 1)
+	// 319 WP_COORD	EQU	00100000b	;1 = calc speed to arrive at specified time
+	// 321 WP_BREAK	EQU	01000000b	;1 = break to here to land label (WP_TYPE = 1)
+	// 323 WP_VALID	EQU	10000000b	;1 = waypoint valid
+	// 325 NUM_WP_LONG	EQU	16		;number of waypoints for long route
+	// 326 NUM_WP_SHORT	EQU	9		;number of waypoints for short route
+	// 335 WPACK_MODE_MASK	EQU	00001111b
+	// 336 WPACK_NUM_MASK	EQU	11110000b
+	// 337 WPACK_NULL	EQU	0		;no package
+	// 338 WPACK_GPB1000	EQU	2		;GPB1000 (laydown)
+	// 339 WPACK_RET1000	EQU	4		;RET1000 (laydown)
+	// 340 WPACK_LGB1000	EQU	6		;LGB1000 (laser guided)
+	// 341 WPACK_BL755	EQU	8		;BL755 (laydown)
+	// 342 WPACK_JP233	EQU	10		;JP233 (laydown)
+	// 343 WPACK_ALARM	EQU	12		;ALARM (indirect)
+	// 344 WPACK_AGM	EQU	14		;AGM (ALARM direct)
+	// 348 NUL_RADAR	EQU	0
+	// 349 GND_RADAR	EQU	2
+	// 350 AIR_RADAR	EQU	4
+	// 368 AF_REC_SIZE	EQU	TYPE AIRFIELD
+	// 369 NUM_AIRFIELDS	EQU	4
+	// 373 DEAD		EQU	0
+	// 374 ALLIED		EQU	1
+	// 375 ENEMY		EQU	2
+	// 379 DRONE_UNKNOWN	EQU	0
+	// 380 DRONE_AIRCRAFT	EQU	2
+	// 381 DRONE_HELICOPT	EQU	4
+	// 382 DRONE_TRUCK	EQU	6
+	// 383 DRONE_TRAIN	EQU	8
+	// 392 NUM_DRONES	EQU	90
+	// 396 _DRONE_TYPE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+DRONE_TYPE
+	// 398 _DRONE_SIDE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+DRONE_SIDE
+	// 400 _DRONE_EVENT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+DRONE_EVENT
+	// 417 VEH_REC_SIZE	EQU	TYPE VEHICLE
+	// 418 NEXT_VEHICLE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_REC_SIZE
+	// 422 _VEH_DRONE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_DRONE
+	// 424 _VEH_SIDE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_SIDE
+	// 426 _VEH_EVENT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_EVENT
+	// 428 _VEH_NODE_PTR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_NODE_PTR
+	// 430 _VEH_DIST	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_DIST
+	// 432 _VEH_DIST_FINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_DIST_FINE
+	// 434 _VEH_XFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_XFINE
+	// 436 _VEH_YFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_YFINE
+	// 438 _VEH_ZFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+VEH_ZFINE
+	// 452 CNVY_REC_SIZE	EQU	TYPE CONVOY
+	// 453 TRUCK		EQU	0
+	// 454 TRAIN		EQU	2
+	// 455 NUM_TRUCKS	EQU	4
+	// 456 NUM_TRAINS	EQU	8
+	// 472 ROUTE_REC_SIZE	EQU	TYPE ROUTE_NODE
+	// 473 NUM_ROUTE_NODES	EQU	32		;num route nodes per route
+	// 477 RN_END		EQU	00000001b	;end of route (terminate here)
+	// 478 RN_LINK		EQU	00000010b	;link back to first node
+	// 480 RN_EVENT	EQU	00000100b	;stop here and wait for event
+	// 481 RN_DELAY	EQU	00001000b	;stop here and wait for delay period
+	// 483 RN_UPSLOPE	EQU	00010000b	;start bridge ramp ascent here
+	// 484 RN_DNSLOPE	EQU	00100000b	;start bridge ramp descent here
+	// 497 RED_OXY		EQU	0000000000000001b	;oxygen system pressure low
+	// 498 RED_L_FIRE	EQU	0000000000000010b	;left engine fire
+	// 499 RED_R_FIRE	EQU	0000000000000100b	;right engine fire
+	// 500 RED_AUT		EQU	0000000000001000b	;auto-pilot disengage
+	// 501 RED_REV		EQU	0000000000010000b	;thrust reversers failure
+	// 502 RED_SPILS	EQU	0000000000100000b	;SPILS failure
+	// 503 RED_UC		EQU	0000000001000000b	;gear damaged (IAS > 350kts)
+	// 504 RED_FUEL	EQU	0000000010000000b	;fuel low
+	// 505 RED_L_ENG	EQU	0000000100000000b	;left engine failure
+	// 506 RED_R_ENG	EQU	0000001000000000b	;right engine failure
+	// 508 RED_CANCEL	EQU	NOT(RED_AUT)
+	// 509 AMB_CNFG	EQU	0000000000000001b	;config error
+	// 510 AMB_ADC		EQU	0000000000000010b	;air data computer failure
+	// 511 AMB_ECM		EQU	0000000000000100b	;ECM failure
+	// 512 AMB_UC		EQU	0000000000001000b	;gear warning (IAS > 250kts)
+	// 513 AMB_WB		EQU	0000000000010000b	;wheelbrakes failure
+	// 514 AMB_AB		EQU	0000000000100000b	;airbrakes failure
+	// 515 AMB_FLPS	EQU	0000000001000000b	;flaps failure
+	// 516 AMB_SWP		EQU	0000000010000000b	;sweep failure
+	// 517 AMB_HUD		EQU	0000000100000000b	;HUD failure
+	// 518 AMB_MFD1	EQU	0000001000000000b	;pilot's MFD failure
+	// 519 AMB_MFD2	EQU	0000010000000000b	;navig's MFD failure
+	// 520 AMB_L_TAB	EQU	0000100000000000b	;lh TAB failure
+	// 521 AMB_R_TAB	EQU	0001000000000000b	;rh TAB failure
+	// 522 AMB_RAD		EQU	0010000000000000b	;radar failure
+	// 523 AMB_RWR		EQU	0100000000000000b	;RWR failure
+	// 525 AMB_CANCEL	EQU	NOT(AMB_CNFG+AMB_UC)
+	// 569 AC_REC_SIZE	EQU	TYPE AIRCRAFT
+	// 570 AC_WAYPOINTS	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_REC_SIZE
+	// 574 _AC_DRONE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_DRONE
+	// 576 _AC_SIDE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_SIDE
+	// 578 _AC_EVENT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_EVENT
+	// 580 _AC_TYPE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_TYPE
+	// 582 _AC_DELAY	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_DELAY
+	// 584 _AC_DRONE_NUM	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_DRONE_NUM
+	// 586 _AC_EVENT_NUM	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_EVENT_NUM
+	// 588 _AC_CTRL_MODE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_CTRL_MODE
+	// 590 _AC_WP_PTR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_WP_PTR
+	// 592 _AC_XFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_XFINE
+	// 594 _AC_YFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_YFINE
+	// 596 _AC_ZFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_ZFINE
+	// 598 _AC_HFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_HFINE
+	// 600 _AC_PFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_PFINE
+	// 602 _AC_RFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_RFINE
+	// 604 _AC_VTAS	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_VTAS
+	// 606 _AC_VTAS_FINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_VTAS_FINE
+	// 608 _AC_LIFT_VCTR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_LIFT_VCTR
+	// 610 _AC_AB_DELAY	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_AB_DELAY
+	// 612 _AC_SWEEP_DELAY	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_SWEEP_DELAY
+	// 614 _AC_TAXI_PTR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_TAXI_PTR
+	// 616 _AC_TAXI_XFT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_TAXI_XFT
+	// 618 _AC_TAXI_YFT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_TAXI_YFT
+	// 620 _AC_ARM_LOCK	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_ARM_LOCK
+	// 622 _AC_FLAGS	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_FLAGS
+	// 624 _AC_DECOY_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_DECOY_TIMER
+	// 626 _AC_AA_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_AA_TIMER
+	// 628 _AC_OPP_PTR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_OPP_PTR
+	// 630 _AC_PREV_PERR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_PREV_PERR
+	// 632 _AC_PREV_PRATE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_PREV_PRATE
+	// 634 _AC_SHELLS	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_SHELLS
+	// 636 _AC_MISSILES	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_MISSILES
+	// 638 _AC_WPN_INT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_WPN_INT
+	// 640 _AC_EVADE_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_EVADE_TIMER
+	// 642 _AC_GMAX_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+AC_GMAX_TIMER
+	// 646 AC_WP_NULL	EQU	0		;no action
+	// 647 AC_WP_TAKEOFF	EQU	2		;takeoff
+	// 648 AC_WP_AIRBORNE	EQU	4		;start airborne
+	// 649 AC_WP_TAXI	EQU	6		;taxi off runway
+	// 650 AC_WP_RESTART	EQU	8		;resupply then restart
+	// 654 GR4_TORNADO	EQU	0
+	// 655 MIG27_FLOGGER	EQU	2
+	// 656 F3_TORNADO	EQU	4
+	// 657 MIG31_FOXHOUND	EQU	6
+	// 658 F15_EAGLE	EQU	8
+	// 659 SU27_FLANKER	EQU	10
+	// 660 F16_FALCON	EQU	12
+	// 661 MIG29_FULCRUM	EQU	14
+	// 662 A10_THUNDERBOLT	EQU	16
+	// 663 SU25_FROGFOOT	EQU	18
+	// 664 E3D_SENTRY	EQU	20
+	// 665 IL76_MAINSTAY	EQU	22
+	// 666 C130_HERCULES	EQU	24
+	// 667 IL76_CANDID	EQU	26
+	// 671 AFLG_IR_LOCK	EQU	0000000000000001b	;IR guided missile has lock
+	// 672 AFLG_RAD_LOCK	EQU	0000000000000010b	;radar guided missile has lock
+	// 673 AFLG_REL_CHAFF	EQU	0000000000000100b	;released chaff
+	// 674 AFLG_REL_FLARE	EQU	0000000000001000b	;released flare
+	// 675 AFLG_EVADE_HI	EQU	0000000000010000b	;evade missile (pull up)
+	// 676 AFLG_EVADE_LO	EQU	0000000000100000b	;evade missile (roll and pull)
+	// 677 AFLG_GMAX	EQU	0000000001000000b	;hard manoeuvring
+	// 678 AFLG_UPRIGHT	EQU	0000000010000000b	;fly upright to break
+	// 679 AFLG_BREAK	EQU	0000000100000000b	;break to land
+	// 708 HC_REC_SIZE	EQU	TYPE HELICOPTER
+	// 709 HC_WAYPOINTS	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_REC_SIZE
+	// 713 _HC_DRONE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_DRONE
+	// 715 _HC_SIDE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_SIDE
+	// 717 _HC_EVENT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_EVENT
+	// 719 _HC_TYPE       	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_TYPE
+	// 721 _HC_DELAY	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_DELAY
+	// 723 _HC_DRONE_NUM	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_DRONE_NUM
+	// 725 _HC_EVENT_NUM	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_EVENT_NUM
+	// 727 _HC_CTRL_MODE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_CTRL_MODE
+	// 729 _HC_WP_PTR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_WP_PTR
+	// 731 _HC_XFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_XFINE
+	// 733 _HC_YFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_YFINE
+	// 735 _HC_ZFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_ZFINE
+	// 737 _HC_HFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_HFINE
+	// 739 _HC_PFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_PFINE
+	// 741 _HC_RFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_RFINE
+	// 743 _HC_VTAS       	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_VTAS
+	// 745 _HC_VTAS_FINE  	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_VTAS_FINE
+	// 747 _HC_LIFT_VCTR	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_LIFT_VCTR
+	// 749 _HC_ACCEL_PFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_ACCEL_PFINE
+	// 751 _HC_FLAGS	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_FLAGS
+	// 753 _HC_DECOY_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+HC_DECOY_TIMER
+	// 757 HC_WP_NULL	EQU	0		;no action
+	// 758 HC_WP_TAKEOFF	EQU	2		;takeoff
+	// 759 HC_WP_AIRBORNE	EQU	4		;start airborne
+	// 760 HC_WP_STOP	EQU	6		;stop
+	// 761 HC_WP_RESTART	EQU	8		;resupply then restart
+	// 765 AH64_APACHE	EQU	0
+	// 766 MI24_HIND	EQU	2
+	// 767 CH47_CHINOOK	EQU	4
+	// 768 MI26_HALO	EQU	6
+	// 772 HFLG_IR_LOCK	EQU	0000000000000001b	;IR guided missile has lock
+	// 773 HFLG_RAD_LOCK	EQU	0000000000000010b	;radar guided missile has lock
+	// 774 HFLG_REL_CHAFF	EQU	0000000000000100b	;released chaff
+	// 775 HFLG_REL_FLARE	EQU	0000000000001000b	;released flare
+	// 780 OBJECT_LIGHTS	EQU	00000000b	;0 = night lighting off
+	// 781 OBJECT_ENEMY	EQU	01000000b	;1 = enemy
+	// 782 OBJECT_DEAD	EQU	10000000b	;1 = dead
+	// 783 OBJECT_CLEAR	EQU	11000000b	;clear animation with mask
+	// 789 WING_SWEEP_FWD	EQU	00000000b
+	// 790 WING_SWEEP_MID	EQU	00000001b
+	// 791 WING_SWEEP_BCK	EQU	00000010b
+	// 792 WING_SWEEP_ALL	EQU	00000011b
+	// 793 GEAR_DOWN	EQU	00000100b
+	// 794 REHEAT_L_ENG	EQU	00001000b
+	// 795 REHEAT_R_ENG	EQU	00010000b
+	// 796 REHEAT_ALL	EQU	00011000b
+	// 797 AC_SPECIALS	EQU	00100000b
+	// 803 ROTOR_POS1	EQU	00000000b
+	// 804 ROTOR_POS2	EQU	00000001b
+	// 805 ROTOR_POS3	EQU	00000010b
+	// 806 ROTOR_ALL	EQU	00000011b
+	// 812 HEADLAMPS	EQU	00000001b
+	// 816 NULL_WEAPON	EQU	-1
+	// 818 GPB1000		EQU	0		;1000lb slick bomb
+	// 819 RET1000		EQU	2		;1000lb retarded bomb
+	// 820 LGB1000		EQU	4		;1000lb laser guided bomb (Paveway II)
+	// 821 BL755		EQU	6		;cluster bomb
+	// 822 JP233		EQU	8		;JP233
+	// 823 ALARM		EQU	10		;ALARM
+	// 825 CANNON		EQU	12		;cannon
+	// 826 SIDEWINDER	EQU	14		;Sidewinder (AIM-9L)
+	// 827 SKYFLASH	EQU	16		;active Sky Flash (ADV only)
+	// 829 PATRIOT		EQU	18		;radar guided SAM
+	// 830 GECKO		EQU	20		;IR guided SAM
+	// 832 CHAFF		EQU	22
+	// 833 FLARE		EQU	24
+	// 837 EXT_GPB1000   	EQU	0		;1000lb slick bomb
+	// 838 EXT_RET1000   	EQU	2		;1000lb retarded bomb
+	// 839 EXT_LGB1000   	EQU	4		;1000lb laser guided bomb (Paveway II)
+	// 840 EXT_BL755     	EQU	6		;cluster bomb
+	// 841 EXT_JP233     	EQU	8		;JP233
+	// 842 EXT_ALARM     	EQU	10		;ALARM
+	// 843 EXT_SIDEWINDER	EQU	12		;Sidewinder (AIM-9L)
+	// 844 EXT_SKYFLASH	EQU	14		;active Sky Flash (ADV only)
+	// 845 EXT_BOZ100    	EQU	16		;chaff / flare dispenser (IDS / ECR only)
+	// 846 EXT_SKYSHADOW	EQU	18		;ECM jamming pod (IDS / ECR only)
+	// 847 EXT_DROPTANK	EQU	20		;external fuel tank
+	// 851 MAX_CANNON	EQU	180
+	// 852 MAX_CHAFF	EQU	120
+	// 853 MAX_FLARES	EQU	28
+	// 857 RETARDED_BOMB	EQU	00000001b	;0 = slick bomb, 1 = retarded bomb
+	// 858 CASING_OFF	EQU	00000010b	;0 = casing on, 1 = casing off
+	// 859 SPLASH1		EQU	00000001b	;0 = stage 2, 1 = stage 1
+	// 860 AIRBURST1	EQU	5		;first stage of airburst animation
+	// 861 FLAME		EQU	00000001b	;0 = no flame, 1 = flame
+	// 862 CHUTE		EQU	00000010b	;0 = no chute, 1 = chute
+	// 864 RHS_CANNON	EQU	00000001b	;rhs cannon
+	// 865 LHS_CANNON	EQU	00000010b	;lhs cannon
+	// 885 WPN_REC_SIZE	EQU	TYPE WEAPON
+	// 886 NUM_WEAPONS	EQU	128
+	// 887 WPN_DATA_SIZE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_REC_SIZE
+	// 892 WPN_BOMB_HVEL	EQU	WPN_USERW1	;horizontal velocity (ft/sec * 8)
+	// 893 WPN_BOMB_VVEL	EQU	WPN_USERW2	;vertical velocity (ft/sec * 8)
+	// 895 WPN_LGB_TGT	EQU	WPN_USERW1	;target waypoint ptr
+	// 896 WPN_LGB_VEL	EQU	WPN_USERW2	;velocity (ft/sec * 8)
+	// 898 WPN_CAN_HVEL	EQU	WPN_USERW1	;horizontal velocity (ft/sec * 8)
+	// 899 WPN_CAN_VVEL	EQU	WPN_USERW2	;vertical velocity (ft/sec * 8)
+	// 900 WPN_CAN_TIMER	EQU	WPN_USERW3	;lifetime (secs * 100)
+	// 901 WPN_CAN_SRC	EQU	WPN_USERW4	;source ptr (source of cannon fire)
+	// 904 WPN_MISS_TGT	EQU	WPN_USERW1	;target ptr (-1 = target lost)
+	// 905 WPN_MISS_VEL	EQU	WPN_USERW2	;velocity (ft/sec * 8)
+	// 906 WPN_MISS_ACCEL	EQU	WPN_USERW3	;acceleration (ft/sec/sec * 8)
+	// 907 WPN_MISS_TIMER	EQU	WPN_USERW4	;burntime / lifetime (secs * 100)
+	// 908 WPN_MISS_DECOY	EQU	WPN_USERW5	;decoy distraction timer (secs * 100)
+	// 910 WPN_ALM_VEL	EQU	WPN_USERW1	;velocity (ft/sec * 8)
+	// 911 WPN_ALM_ACCEL	EQU	WPN_USERW2	;acceleration (ft/sec/sec * 8)
+	// 912 WPN_ALM_TIMER	EQU	WPN_USERW3	;burntime / lifetime (secs * 100)
+	// 913 WPN_ALM_XSEC	EQU	WPN_USERW4	;xsec )
+	// 914 WPN_ALM_YSEC	EQU	WPN_USERW5	;ysec )  target
+	// 915 WPN_ALM_XFT	EQU	WPN_USERW6	;xft  ) position
+	// 916 WPN_ALM_YFT	EQU	WPN_USERW7	;yft  )
+	// 918 WPN_DECOY_HVEL	EQU	WPN_BOMB_HVEL	;horizontal velocity (ft/sec * 8)
+	// 919 WPN_DECOY_VVEL	EQU	WPN_BOMB_VVEL	;vertical velocity (ft/sec * 8)
+	// 920 WPN_DECOY_LIFE	EQU	WPN_USERW3	;lifetime (secs * 100)
+	// 924 WFLG_ALARM_MODE	EQU	0000000000000111b	;ALARM control mode (DO NOT CHANGE)
+	// 925 WFLG_TORNADO	EQU	0000000000001000b	;Tornado weapon release
+	// 926 WFLG_SPLASH	EQU	0000000000010000b	;draw weapon as splash
+	// 927 WFLG_UNGUIDED	EQU	0000000000100000b	;LGB assumes GPB behaviour
+	// 928 WFLG_BOMBLET	EQU	0000000001000000b	;BL755 bomblet
+	// 929 WFLG_BURNOUT	EQU	0000000010000000b	;missile motor burnt out
+	// 930 WFLG_IR_SEEK	EQU	0000000100000000b	;IR missile (else assume radar)
+	// 931 WFLG_AIRBURST	EQU	0000001000000000b	;draw weapon as airburst
+	// 932 WFLG_NO_RADAR	EQU	0000010000000000b	;no radar targets for ALARM
+	// 933 WFLG_TLOCK	EQU	0000100000000000b	;weapon locked onto Tornado
+	// 935 ALARM_DIRECT	EQU	0		;direct
+	// 936 ALARM_KILL	EQU	1		;kill
+	// 937 ALARM_GUIDE	EQU	2		;guide
+	// 938 ALARM_ZOOM	EQU	3		;zoom climb
+	// 939 ALARM_FREEFALL	EQU	4		;freefall
+	// 940 ALARM_LOITER	EQU	5		;loiter
+	// 941 ALARM_DIVE	EQU	6		;dive
+	// 945 _WPN_TYPE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_TYPE
+	// 947 _WPN_FLAGS	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_FLAGS
+	// 949 _WPN_HFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_HFINE
+	// 951 _WPN_PFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_PFINE
+	// 953 _WPN_XFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_XFINE
+	// 955 _WPN_YFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_YFINE
+	// 957 _WPN_ZFINE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ZFINE
+	// 959 _WPN_USERW1	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_USERW1
+	// 961 _WPN_USERW2	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_USERW2
+	// 963 _WPN_USERW3	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_USERW3
+	// 965 _WPN_USERW4	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_USERW4
+	// 966 _WPN_BOMB_HVEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_BOMB_HVEL
+	// 968 _WPN_BOMB_VVEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_BOMB_VVEL
+	// 969 _WPN_LGB_TGT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_LGB_TGT
+	// 971 _WPN_LGB_VEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_LGB_VEL
+	// 972 _WPN_CAN_HVEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_CAN_HVEL
+	// 974 _WPN_CAN_VVEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_CAN_VVEL
+	// 976 _WPN_CAN_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_CAN_TIMER
+	// 977 _WPN_MISS_TGT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_MISS_TGT
+	// 979 _WPN_MISS_VEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_MISS_VEL
+	// 981 _WPN_MISS_ACCEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_MISS_ACCEL
+	// 983 _WPN_MISS_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_MISS_TIMER
+	// 985 _WPN_MISS_DECOY	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_MISS_DECOY
+	// 986 _WPN_ALM_VEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ALM_VEL
+	// 988 _WPN_ALM_ACCEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ALM_ACCEL
+	// 990 _WPN_ALM_TIMER	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ALM_TIMER
+	// 992 _WPN_ALM_XSEC	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ALM_XSEC
+	// 994 _WPN_ALM_YSEC	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ALM_YSEC
+	// 996 _WPN_ALM_XFT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ALM_XFT
+	// 998 _WPN_ALM_YFT	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_ALM_YFT
+	// 999 _WPN_DECOY_HVEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_DECOY_HVEL
+	// 1001 _WPN_DECOY_VVEL	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_DECOY_VVEL
+	// 1003 _WPN_DECOY_LIFE	EQU	MOB_REC_SIZE+VIEW_REC_SIZE+WPN_DECOY_LIFE
+	// 1007 WPN_EFFECT1	EQU	0
+	// 1008 WPN_EFFECT2	EQU	1
+	// 1009 WPN_EFFECT3	EQU	2
+	// 1010 WPN_EFFECT4	EQU	3
+	// 1020 PACK_REC_SIZE	EQU	TYPE PACKAGE
+	// 1021 NUM_PACKAGES	EQU	3
+	// 1025 ARM_OFF		EQU	0		;off
+	// 1026 ARM_MANUAL	EQU	2		;manual bombing
+	// 1027 ARM_LAYDOWN	EQU	4		;laydown bombing
+	// 1028 ARM_LOFT	EQU	6		;loft bombing
+	// 1029 ARM_LGB		EQU	8		;laser guided bomb
+	// 1030 ARM_JP233	EQU	10		;JP233
+	// 1031 ARM_ALARM_DIR	EQU	12		;ALARM (direct attack mode)
+	// 1032 ARM_ALARM_IND	EQU	14		;ALARM (indirect attack mode)
+	// 1033 ARM_CANNON	EQU	16		;cannon
+	// 1034 ARM_SIDEWINDER	EQU	18		;Sidewinder
+	// 1035 ARM_SKYFLASH	EQU	20		;Sky Flash
+	// 1041 SHAKE_NOSE_DOWN	EQU	5		;nose wheel touchdown
+	// 1042 SHAKE_LAND_GOOD	EQU	10		;good landing
+	// 1043 SHAKE_LAND_HVY	EQU	15		;heavy landing
+	// 1044 SHAKE_CANNON	EQU	45		;cannon fire
+	// 1045 SHAKE_JP233	EQU	50		;JP233 release
+	// 1046 SHAKE_DAMAGE	EQU	75		;hit by cannon fire / explosion damage
+	// 1047 SHAKE_COLLIDE	EQU	100		;collide with object
+	// 1049 SHAKE_BRAKE	EQU	240		;not moving, brakes on and reheat on
+	// 1050 SHAKE_BUFFET	EQU	245		;buffet due to excess speed wrt wing sweep
+	// 1051 SHAKE_OFF_HARD	EQU	250		;off hard surface (runway, taxiway etc.)
+	// 1052 SHAKE_WHEELS_UP	EQU	255		;wheels up landing
+	// 1056 LAND_GOOD	EQU	00000001b	;1 = good landing
+	// 1057 LAND_HEAVY	EQU	00000010b	;1 = heavy landing
+	// 1058 LAND_WHEELS_UP	EQU	00000100b	;1 = wheels up landing
+	// 1059 LAND_DEAD_STICK	EQU	00001000b	;1 = dead stick landing
+	// 1060 LAND_ROAD	EQU	00010000b	;1 = landed on road
+	// 1061 LAND_ENEMY	EQU	00100000b	;1 = landed in enemy territory
+	// 1062 LAND_STATIONARY	EQU	01000000b	;1 = stationary (when quit)
+	// 1066 MINOR_DAMAGE	EQU	1
+	// 1067 MAJOR_DAMAGE	EQU	2
+	// 1068 TOTAL_DAMAGE	EQU	3
+	// 1079 ARAD_RNG_LO	EQU	ARAD_RNG
+	// 1080 ARAD_RNG_HI	EQU	ARAD_RNG+2
+	// 1081 ARAD_REC_SIZE	EQU	TYPE ARAD_TRACK
+	// 1082 NUM_TRACKS	EQU	40		;max number of aircraft radar can track
+	// 1086 ARAD_MIN_RANGE	EQU	0		;short range (guns)
+	// 1087 ARAD_MED_RANGE	EQU	2		;medium range (Sidewinder)
+	// 1088 ARAD_MAX_RANGE	EQU	4		;long range (SkyFlash)
+	// 1100 IMP_REC_SIZE	EQU	TYPE IMPACT
+	// 1101 NUM_IMPACTS	EQU	128
+	// 1105 SECT_ENEMY	EQU	10000000b	;1 = enemy occupied sector
+	// 1106 SECT_SAM	EQU	01000000b	;1 = SAM in sector
+	// 1107 SECT_AAA	EQU	00100000b	;1 = AAA in sector
+	// 1108 SECT_EWR	EQU	00010000b	;1 = EWR in sector
+	// 1109 SECT_EWR_NUM	EQU	00001111b	;enemy EWR number (0 .. 15)
+	// 1115 E_EWR_FLOOR	EQU	00001111b	;enemy EWR floor
+	// 1116 A_EWR_FLOOR	EQU	11110000b	;allied EWR floor
+	// 1120 NUM_SAM_AAA	EQU	128
+	// 1121 NUM_EWR		EQU	8
+	// 1129 RAD_REC_SIZE	EQU	TYPE RADARS
+	// 1133 EWR_GROUND	EQU	0		;ground object (SECDATA1)
+	// 1134 EWR_MOBILE	EQU	2		;mobile object (MSECDATA1)
+	// 1144 EWR_REC_SIZE	EQU	EWR
+	// 1148 THREAT_SAM	EQU	0
+	// 1149 THREAT_AAA	EQU	2
+	// 1150 THREAT_EWR	EQU	4
+	// 1151 THREAT_AC	EQU	6
+	// 1152 THREAT_RAD_MSL	EQU	8
+	// 1153 THREAT_IR_MSL	EQU	10
+	// 1167 RWR_RNG_LO	EQU	RWR_RNG
+	// 1168 RWR_RNG_HI	EQU	RWR_RNG+2
+	// 1169 RWR_REC_SIZE	EQU	RWR
+	// 1170 NUM_RWR_THREATS	EQU	16
+	// 1174 RWR_SAM		EQU	00010000b
+	// 1175 RWR_AAA		EQU	00001000b
+	// 1176 RWR_EWR		EQU	00000100b
+	// 1177 RWR_AC		EQU	00000010b
+	// 1178 RWR_MSL		EQU	00000001b
+	// 1183 DAM_HARD_MASK	EQU	00000011b	;(DO NOT CHANGE)
+	// 1184 DAM_HARD1	EQU	00000000b	;soft
+	// 1185 DAM_HARD2	EQU	00000001b
+	// 1186 DAM_HARD3	EQU	00000010b
+	// 1187 DAM_HARD4	EQU	00000011b	;hard
+	// 1189 DAM_DEBRIS_MASK	EQU	00011100b	;(DO NOT CHANGE)
+	// 1190 DAM_DEBRIS1	EQU	00000000b	;crater 1	) MOBILES CAN ONLY
+	// 1191 DAM_DEBRIS2	EQU	00000100b	;crater 2	) USE THESE VALUES
+	// 1192 DAM_DEBRIS3	EQU	00001000b	;crater 3
+	// 1193 DAM_DEBRIS4	EQU	00001100b	;NS road bridge
+	// 1194 DAM_DEBRIS5	EQU	00010000b	;EW road bridge
+	// 1195 DAM_DEBRIS6	EQU	00010100b	;NS rail bridge
+	// 1196 DAM_DEBRIS7	EQU	00011000b	;EW rail bridge
+	// 1197 DAM_DEBRIS8	EQU	00011100b	;embankment crater
+	// 1200 DAM_EXPLO_MASK	EQU	11111111b	;(DO NOT CHANGE)
+	// 1201 DAM_EXPLO1	EQU	00000000b	;burn only
+	// 1202 DAM_EXPLO2	EQU	00100000b	;crater size 1 * 2
+	// 1203 DAM_EXPLO3	EQU	01000000b	;crater size 2 * 2
+	// 1204 DAM_EXPLO4	EQU	01100000b	;crater size 2 * 4
+	// 1206 DAM_INVALID	EQU	10000000b	;(DO NOT CHANGE)
+	// 1227 COMMS_REC_SIZE	EQU	TYPE COMMS
+	// 1228 COMMS_ZFT_LO	EQU	COMMS_ZFT
+	// 1229 COMMS_ZFT_HI	EQU	COMMS_ZFT+2
+	// 1234 I_FIRE_CANNON	EQU	00000001b	;I have fired a cannon shell
+	// 1235 I_FIRE_AIM9L	EQU	00000010b	;I have launched a Sidewinder
+	// 1236 I_FIRE_SKYFLASH	EQU	00000100b	;I have launched a Sky Flash
+	// 1237 I_REL_CHAFF	EQU	00001000b	;I have released chaff
+	// 1238 I_REL_FLARE	EQU	00010000b	;I have released flare
+	// 1239 I_EMIT_RADAR	EQU	00100000b	;I am emitting radar
+	// 1240 I_EMIT_ECM	EQU	01000000b	;I am emitting ECM
+	// 1241 I_ILLUM_YOU	EQU	10000000b	;I am illuminating you (on radar)
+	// 1243 I_PAUSED	EQU	00000001b	;I have paused
+	// 1244 I_RESUMED	EQU	00000010b	;I have resumed
+	// 1246 I_NO_WEAPONS	EQU	00000001b	;I have no weapons
+	// 1247 I_KILLED	EQU	00000010b	;I have been destroyed
+	// 1248 I_EJECTED	EQU	00000100b	;I have ejected
+	// 1249 I_QUIT		EQU	00001000b	;I have quit
+	// 1250 I_KILLED_YOU	EQU	00010000b	;I have destroyed you
+	// 1259 RDAM_REC_SIZE	EQU	TYPE RUNWAY_DAMAGE
+	// 1260 NUM_RUNWAYS	EQU	8
+	// 1283 VIEW_REC_SIZE	EQU	TYPE VIEWPOINT
+	// 1284 VP_ZFT_LO	EQU	VP_ZFT
+	// 1285 VP_ZFT_HI	EQU	VP_ZFT+2
+	// 1289 SEC_SCALE1 	EQU	0		;1/1 scale
+	// 1290 SEC_SCALE2	EQU	2		;1/2 scale
+	// 1291 SEC_SCALE8 	EQU	4		;1/8 scale
+	// 1292 SEC_SCALE16 	EQU	6		;1/16 scale
+	// 1296 INT_VIEWMODE	EQU	0		;internal views
+	// 1297 ALT_VIEWMODE	EQU	2		;alternate internal views
+	// 1298 EXT_VIEWMODE	EQU	4		;external views
+	// 1299 TV1_VIEWMODE	EQU	6		;TV1 display
+	// 1300 TV2_VIEWMODE	EQU	8		;TV2 display
+	// 1301 TV3_VIEWMODE	EQU	10		;TV3 display
+	// 1302 TV4_VIEWMODE	EQU	12		;TV4 display
+	// 1303 TV5_VIEWMODE	EQU	14		;TV5 display
+	// 1304 NUL_VIEWMODE	EQU	0		;map null view mode to internal
+	// 1308 ROTATE_NULL	EQU	0		;no rotation
+	// 1309 ROTATE_VIEW_RT	EQU	2		;look right (90)
+	// 1310 ROTATE_VIEW_LT	EQU	4		;look left (90)
+	// 1311 ROTATE_VIEW_UP	EQU	6		;look up (45)
+	// 1312 ROTATE_VIEW_DN	EQU	8		;look down (90)
+	// 1313 ROTATE_VIEW_BK	EQU	10		;look back (90)
+	// 1314 ROTATE_VIEW_FT	EQU	12		;look back (90)
+	// 1318 $MID		EQU	128
+	// 1319 $0		EQU	0
+	// 1320 $256		EQU	2
+	// 1321 $512		EQU	4
+	// 1322 $1024		EQU	8
+	// 1323 $2048		EQU	16
+	// 1324 $4096		EQU	32
+	// 1325 $8192		EQU	64
+	// 1334 SEC_REC_SIZE	EQU	TYPE SECTORDATA
+	// 1338 MIN_SEC_SCAN	EQU	3		;minimum sector scan range
+	// 1339 MAX_SEC_SCAN	EQU	15		;maximum sector scan range
+	// 1343 MAP_X_WRAP	EQU	0001fh		;0 .. 31
+	// 1344 MAP_Y_WRAP	EQU	0001fh		;0 .. 31
+	// 1348 SCTR_Y_THRES	EQU	11600		;approx 8,192 * sqrt(2)
+	// 1352 OBJ_SCALE1 	EQU	0		;1/1 scale
+	// 1353 OBJ_SCALE2	EQU	2		;2/1 scale
+	// 1354 OBJ_SCALE4	EQU	4		;4/1 scale
+	// 1355 OBJ_SCALE8 	EQU	6		;8/1 scale
+	// 1356 OBJ_SCALE16 	EQU	8		;16/1 scale
+	// 1360 MAX_RANGE1 	EQU	16384		;OBJ_SCALE1
+	// 1361 MAX_RANGE2	EQU	8192		;OBJ_SCALE2
+	// 1362 MAX_RANGE4	EQU	4096		;OBJ_SCALE4
+	// 1363 MAX_RANGE8 	EQU	2048		;OBJ_SCALE8
+	// 1364 MAX_RANGE16 	EQU	1024		;OBJ_SCALE16
+	// 1368 @MID		EQU	64
+	// 1369 @0		EQU	0
+	// 1370 @16		EQU	2
+	// 1371 @32		EQU	4
+	// 1372 @48		EQU	6
+	// 1373 @64		EQU	8
+	// 1374 @80		EQU	10
+	// 1375 @96		EQU	12
+	// 1376 @112		EQU	14
+	// 1377 @128		EQU	16
+	// 1378 @192		EQU	24
+	// 1379 @256		EQU	32
+	// 1380 @384		EQU	48
+	// 1381 @512		EQU	64
+	// 1399 OBJ_REC_SIZE	EQU	TYPE OBJECTDATA
+	// 1401 OBJ_XGRID	EQU	OBJ_USERW1	;x grid
+	// 1402 OBJ_YGRID	EQU	OBJ_USERW2	;y grid
+	// 1404 OBJ_HDG		EQU	OBJ_USERW1	;heading
+	// 1405 OBJ_PITCH	EQU	OBJ_USERW2	;pitch
+	// 1406 OBJ_ROLL	EQU	OBJ_USERW3	;roll
+	// 1408 OBJ_ANIM_FLAGS	EQU	OBJ_USERB1	;animation flags
+	// 1410 OBJ_XSECPOS	EQU	OBJ_USERW1	;x sector centre position
+	// 1411 OBJ_YSECPOS	EQU	OBJ_USERW2	;y sector centre position
+	// 1412 OBJ_ZSECPOS	EQU	OBJ_USERW3	;z sector centre position
+	// 1413 OBJ_MAPINDEX	EQU	OBJ_USERW4	;map index
+	// 1414 OBJ_SECSCALE	EQU	OBJ_USERB1	;sector scale
+	// 1415 OBJ_FACE_FLAGS	EQU	OBJ_USERB2	;hill face flags
+	// 1417 OBJ_YMIN	EQU	OBJ_XPOS	;minimum y position
+	// 1419 OBJ_SMOKE_RFT	EQU	OBJ_USERW1	;smoke radius
+	// 1420 OBJ_SMOKE_COL	EQU	OBJ_USERB1	;smoke colour
+	// 1424 OTYPE_GROUND	EQU	0		;static ground objects
+	// 1425 OTYPE_MOBILE1	EQU	2		;mobile objects (skew only)
+	// 1426 OTYPE_MOBILE2	EQU	4		;mobile objects (skew and pitch)
+	// 1427 OTYPE_MOBILE3	EQU	6		;mobile objects (skew, pitch and roll)
+	// 1428 OTYPE_MOBILE4	EQU	8		;mobile objects on bridge (skew and pitch)
+	// 1429 OTYPE_HILLFACE	EQU	10		;hill face
+	// 1430 OTYPE_SMOKE	EQU	12		;smoke
+	// 1444 OBJ_HDR_SIZE	EQU	TYPE OBJECTHEADER
+	// 1445 OBJ_FLG_PIXEL	EQU	00000001b	;1 = pixel approximation enabled
+	// 1449 NUM_OBJECTS	EQU	256		;max number of objects
+	// 1450 NUM_BINS	EQU	64+1		;(64 * 256ft = 16,384ft) + behind bin
+	// 1451 NUM_FAR_OBJECTS	EQU	256		;max number of far objects
+	// 1452 NUM_FAR_BINS	EQU	64+1		;(64 * 2,048ft = 131,072ft) + behind bin
+	// 1453 BEHIND_BIN	EQU	0		;behind bin index
+	// 1454 IN_FRONT_BIN	EQU	2		;in front bin index
+	// 1458 FACE_EXTENDED	EQU	01000000b	;1 = extended function, 0 = standard function
+	// 1459 FACE_DECISION	EQU	00100000b	;1 = decision plane, 0 = standard face
+	// 1460 FACE_EXCLUDE	EQU	00010000b	;1 = exclude second choice of decision, 0 = include
+	// 1461 FACE_PRIMARY	EQU	00001000b	;1 = primary face, 0 = secondary face
+	// 1462 FACE_VISIBLE	EQU	00000100b	;1 = outside / inside visible, 0 = outside visible
+	// 1463 FACE_STRUCTURE	EQU	00000010b	;1 = line structure, 0 = polygon structure
+	// 1464 FACE_FILL_TYPE	EQU	00000001b	;1 = mesh fill, 0 = solid fill
+	// 1474 MOB_REC_SIZE	EQU	TYPE MOBILE
+	// 1478 _VP_XSEC	EQU	MOB_REC_SIZE+VP_XSEC
+	// 1479 _VP_YSEC	EQU	MOB_REC_SIZE+VP_YSEC
+	// 1480 _VP_XFT		EQU	MOB_REC_SIZE+VP_XFT
+	// 1481 _VP_YFT		EQU	MOB_REC_SIZE+VP_YFT
+	// 1482 _VP_ZFT		EQU	MOB_REC_SIZE+VP_ZFT
+	// 1483 _VP_HDG		EQU	MOB_REC_SIZE+VP_HDG
+	// 1484 _VP_PITCH	EQU	MOB_REC_SIZE+VP_PITCH
+	// 1485 _VP_ROLL 	EQU	MOB_REC_SIZE+VP_ROLL
+	// 1486 _VP_ZFT_LO	EQU	MOB_REC_SIZE+VP_ZFT_LO
+	// 1487 _VP_ZFT_HI	EQU	MOB_REC_SIZE+VP_ZFT_HI
+	// 1491 NUM_MOBILES	EQU	256		;max number of mobiles objects
+	// 1497 MSORT_REC_SIZE	EQU	TYPE MOBSORT
+	// 1510 GND_REC_SIZE	EQU	TYPE GNDOBJ
+	// 1521 STAT_REC_SIZE	EQU	TYPE STATMOB
+	// 1525 SURFACE_UNKNOWN	EQU	0
+	// 1526 SURFACE_RUNWAY	EQU	2
+	// 1527 SURFACE_TAXIWAY	EQU	4
+	// 1528 SURFACE_HARD	EQU	6
+	// 1529 SURFACE_ROAD	EQU	8
+	// 1530 SURFACE_RAILWAY	EQU	10
+	// 1531 SURFACE_RIVER	EQU	12
+	// 1532 SURFACE_LAKE	EQU	14
+	// 1536 NUM_CRATERS	EQU	128
+	// 1537 CRATER_NULL	EQU	0
+	// 1538 CRATER_SIZE1	EQU	1		;small
+	// 1539 CRATER_SIZE2	EQU	2		;large
+	// 1540 CRATER_HEAVE	EQU	3		;heave
+	// 1541 CRATER_SHELL	EQU	4		;cannon shell
+	// 1552 CRATER_REC_SIZE	EQU	TYPE CRATER
+	// 1556 NUM_SMOKE	EQU	128
+	// 1558 SMOKE_CRATER1	EQU	0		;smoke from crater (min effect)
+	// 1559 SMOKE_CRATER2	EQU	2		;smoke from crater (med effect)
+	// 1560 SMOKE_CRATER3	EQU	4		;smoke from crater (max effect)
+	// 1561 SMOKE_BURNING	EQU	6		;smoke from burning building
+	// 1562 SMOKE_KICK_UP	EQU	8		;kick up dust from ground
+	// 1563 SMOKE_AIR_EXPLO	EQU	10		;smoke from air explosion
+	// 1564 SMOKE_AIR_TRAIL	EQU	12		;smoke from burning aircraft
+	// 1566 STYPE_NULL	EQU	0		;no smoke
+	// 1567 STYPE_GND1	EQU	2		;ground smoke type 1
+	// 1568 STYPE_AIR1	EQU	4		;air smoke type 1
+	// 1584 SMOKE_REC_SIZE	EQU	TYPE SMOKE
+	// 1585 SMOKE_ZFT_LO	EQU	SMOKE_ZFT
+	// 1586 SMOKE_ZFT_HI	EQU	SMOKE_ZFT+2
+	// 1587 SFLG_REPRO	EQU	00000001b	;1 = reproduced sibling
+	// 0 ;OBSECDEF.IN file size
+	// 0 ;MSECDEF.IN file size
+	// 0 ;* "in" files
+	// 0 ;* "out" files
+
+            assert(0);
+            __dispatch_call_ext:
+            __dispatch_call:
+        #ifdef DOSBOX_CUSTOM
+            if ((__disp >> 16) == 0xf000)
+            {cs=0xf000;eip=__disp&0xffff;m2c::fix_segs();return false;}  // Jumping to BIOS
+        #endif
+            switch (__disp) {
+                case m2c::kmainproc: 	goto mainproc;
+        default: { bool handled = false; if (!m2c::dispatch_external_code(__disp, _state, &handled)) return false; if (handled) break; if (m2c::m2c_guest_thunk(__disp, _state)) break; m2c::log_error("Don't know how to jump to 0x%x in %s (" __FILE__ ":%d)\n", __disp, __func__, __LINE__);m2c::stackDump(_state); abort(); }
+    };
+}
+
