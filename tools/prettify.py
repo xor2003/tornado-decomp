@@ -37,7 +37,7 @@ overrider final'''.split())
 
 STRUCT_RE = re.compile(r'struct\s+([A-Za-z_]\w*)\s*\{([^}]*)\}\s*;', re.S)
 FIELD_DECL_RE = re.compile(
-    r'^\s*([A-Za-z_]\w*(?:\s+[A-Za-z_]\w*)*)\s+([A-Za-z_]\w*)(\s*\[\s*(\d+)\s*\])?\s*;')
+    r'^\s*([A-Za-z_]\w*(?:\s+[A-Za-z_]\w*)*)\s+([A-Za-z_]\w*)(\s*\[\s*(\d+)\s*\])?\s*;?\s*$')
 OFFSETOF_RE = re.compile(
     r'offsetof\s*\(\s*struct\s+([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*\)')
 
@@ -50,8 +50,9 @@ def parse_structs(headers_text):
         name, body = m.group(1), m.group(2)
         order.append(name)
         fields[name] = []
-        for line in body.split('\n'):
-            line = line.split('//')[0].strip()
+        body = re.sub(r'//[^\n]*', '', body)
+        for line in re.split(r'[;\n]', body):
+            line = line.strip()
             if not line:
                 continue
             fm = FIELD_DECL_RE.match(line)
@@ -447,7 +448,7 @@ def split_top(expr):
         if depth == 0 and c in '+-' and cur.strip():
             prev = expr[i - 1]
             if prev not in '+-*/%&|^~(<>=!,':
-                if not (c == '-' and prev == '>'):
+                if not (c == '-' and i + 1 < len(expr) and expr[i + 1] == '>'):
                     terms.append((sign, cur.strip()))
                     cur, sign = '', c
                     i += 1
