@@ -9,3 +9,8 @@ tests/transcript_current.txt
 test_probe
 test_probe_all
 tests/diffspec.txt.raw
+.codebase-memory/
+tests/*.raw
+tests/diffspec.log
+tests/diffspec.err
+*.LBM

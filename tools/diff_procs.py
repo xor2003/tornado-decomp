@@ -23,7 +23,7 @@ usage: tools/diff_procs.py <specfile> [--probe ./test_probe] [--exe FLIGHT.EXE]
     vec<N>=<a,c,d,b,s,i,p>   hex words overriding input vector N
     manual         proc needs setup this harness can't provide; count as skip
 """
-import argparse, os, re, subprocess, sys, tempfile
+import argparse, bisect, functools, glob, os, re, subprocess, sys, tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 EXE      = '/home/xor/games/Tornado/TORNADO/FLIGHT/FLIGHT.EXE'
@@ -55,38 +55,44 @@ REG_NAMES = {'ax','bx','cx','dx','si','di','bp','sp','cs','ds','es','ss',
              'al','ah','bl','bh','cl','ch','dl','dh','word','byte','ptr',
              'offset','seg','far','near','short','dword','qword','tbyte'}
 
-def parse_lst_pattern(path, proc):
+def parse_lst_pattern(path, proc, maxlen=64):
     """Returns (pattern, kind, syms): pattern is the first <=64 encoded bytes
     with relocated/relative operands wildcarded (None); kind is 'near'/'far';
     syms maps data-symbol name -> (proc byte offset of its disp16, seg)."""
-    lines = open(path, errors='replace').read().splitlines()
-    procre = re.compile(r'\b' + re.escape(proc) + r'\b')
-    out, inproc, kind = [], False, 'far'
-    syms = {}
-    poff = 0
-    for ln in lines:
+    entry = _lst_procs(path).get(proc.lower())
+    if not entry:
+        return [], 'far', {}
+    kind, plines = entry
+    out, syms, poff = [], {}, 0
+    for ln in plines:
         m = re.match(r'\s*([0-9A-Fa-f]{4})\s+(.*?)\s{2,}(.*)$', ln)
         if not m:
-            if procre.search(ln) and 'PROC' in ln.upper():
-                inproc = True
-                if 'NEAR' in ln.upper(): kind = 'near'
             continue
         enc, asm = m.group(2).strip(), m.group(3)
-        if procre.search(ln) and 'PROC' in ln.upper():
-            inproc = True
-            if 'NEAR' in ln.upper(): kind = 'near'
-            continue
-        if inproc and 'ENDP' in ln.upper():
-            break
-        if not inproc or not enc:
+        if not enc:
             continue
         toks = enc.split()
-        has_R = toks[-1] in ('R', 'E')
-        bs = []
+        has_R = any(t in ('R', 'E') for t in toks)
+        bs, marked = [], []
         for t in toks:
-            if t in ('R', 'E'): break
+            if t in ('R', 'E'):
+                # reloc marker follows the field it annotates: wildcard the
+                # bytes of the most recent real token (a disp16/off16), not
+                # whatever happens to be last — e.g. 'C7 06 0000 E 0002'
+                # marks the disp16, keeping the 0002 imm literal
+                for i in range(len(bs) - 1, -1, -1):
+                    if bs[i] is not None:
+                        wstart = i - 1 if i > 0 else 0
+                        marked += [wstart, wstart + 1]
+                        break
+                continue
             t = t.rstrip(':')
-            if re.fullmatch(r'[0-9A-Fa-f]+', t):
+            if re.fullmatch(r'-+', t):
+                # unlinked placeholder field ('----' = word) — occupies real
+                # bytes in the encoding; emit wildcards or the pattern
+                # misaligns every byte after it
+                bs += [None] * (len(t) // 2)
+            elif re.fullmatch(r'[0-9A-Fa-f]+', t):
                 if len(t) == 4:
                     bs += [int(t[2:4], 16), int(t[0:2], 16)]
                 elif len(t) == 2:
@@ -96,7 +102,7 @@ def parse_lst_pattern(path, proc):
                         bs.append(int(t[i:i+2], 16))
         if not bs:
             continue
-        if has_R and len(bs) >= 2:
+        if has_R and marked:
             # record the data symbol for later shipped-displacement reads:
             # first identifier in the operand text that isn't a register/keyword
             ops = asm.split(None, 1)[1] if len(asm.split(None, 1)) > 1 else ''
@@ -111,9 +117,10 @@ def parse_lst_pattern(path, proc):
                         msym.group(1).lower() not in MNEMONICS:
                     name = msym.group(1)
                     if name not in syms:
-                        syms[name] = (poff + len(bs) - 2, seg, is_imm)
+                        syms[name] = (poff + marked[0], seg, is_imm)
                     break
-            bs[-2] = bs[-1] = None
+            for mi in marked:
+                bs[mi] = None
         # relative jump/call displacements shift between builds: wildcard them
         # EB rel8, E8/E9 rel16, 70-7F rel8, 0F 80-8F rel16
         if bs:
@@ -128,21 +135,54 @@ def parse_lst_pattern(path, proc):
                 if len(bs) >= 3: bs[-2] = bs[-1] = None
             elif op == 0x0f and len(bs) >= 4 and bs[oi+1] is not None and 0x80 <= bs[oi+1] <= 0x8f:
                 bs[-2] = bs[-1] = None
-        if len(out) <= 64:
+        if len(out) < maxlen:
             out.extend(bs)
         poff += len(bs)
     return out, kind, syms
 
-def locate(exe, pat):
-    hits, n = [], len(pat)
-    base = HDRPARAS * 16
-    for i in range(base, len(exe) - n):
-        for j, p in enumerate(pat):
-            if p is not None and exe[i+j] != p:
-                break
+@functools.lru_cache(maxsize=None)
+def _lst_procs(path):
+    """{procname_lower: (kind, [lines inside proc])} in one file pass.
+    Listings are multi-MB; scanning once per proc was quadratic."""
+    procs, cur, curkind = {}, None, 'far'
+    mre = re.compile(r'\b([A-Za-z_?][\w?@]*)\s+(PROC|ENDP)\b', re.I)
+    for ln in open(path, errors='replace').read().splitlines():
+        m = mre.search(ln)
+        if m:
+            kw = m.group(2).upper()
+            if kw == 'PROC':
+                cur = m.group(1).lower()
+                curkind = 'near' if 'NEAR' in ln.upper() else 'far'
+                procs.setdefault(cur, (curkind, []))
+                continue
+            if kw == 'ENDP':
+                cur = None
+                continue
+        if cur is not None:
+            procs[cur][1].append(ln)
+    return procs
+
+@functools.lru_cache(maxsize=None)
+def _pat_regex(pat):
+    """pattern (None=wildcard) -> compiled bytes regex; runs of N wildcards
+    collapse to .{N} so the match stays C-speed regardless of anchor size"""
+    out, wild = [], 0
+    for p in pat:
+        if p is None:
+            wild += 1
         else:
-            hits.append(i - base)
-    return hits
+            if wild:
+                out.append(b'.' if wild == 1 else b'.{%d}' % wild)
+                wild = 0
+            out.append(re.escape(bytes([p])))
+    if wild:
+        out.append(b'.' if wild == 1 else b'.{%d}' % wild)
+    return re.compile(b''.join(out), re.DOTALL)
+
+def locate(exe, pat):
+    base = HDRPARAS * 16
+    return [m.start() - base for m in
+            _pat_regex(tuple(pat)).finditer(exe, base)]
 
 def real_cs_map(exe):
     """flat_target -> cs used by far call/jmp sites in the image. Procs that do
@@ -161,6 +201,19 @@ def real_cs_map(exe):
         if flat not in m or seg < m[flat]:
             m[flat] = seg
     return m
+
+def near_call_targets(exe):
+    """flat offsets that are targets of near calls (e8 rel16) — a proc
+    entry reached by real code is overwhelmingly likely to be the genuine
+    hit among several identical signature bodies."""
+    s = set()
+    img, n = HDRPARAS * 16, len(exe)
+    for i in range(img, n - 3):
+        if exe[i] != 0xe8:
+            continue
+        rel = int.from_bytes(exe[i+1:i+3], 'little', signed=True)
+        s.add(i - img + 3 + rel)
+    return s
 
 RESULT_RE = re.compile(r'ax=([0-9a-f]+) bx=([0-9a-f]+) cx=([0-9a-f]+) dx=([0-9a-f]+) '
                        r'si=([0-9a-f]+) di=([0-9a-f]+) sp=([0-9a-f]+) bp=([0-9a-f]+) '
@@ -181,7 +234,8 @@ def run_original(addr, vec, pokes=(), timeout=25):
     for r, v in zip(REGS, vec):
         cmd.insert(-3, f'--call-set={r}:{v:#x}')
     try:
-        out = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        out = subprocess.run(cmd, capture_output=True, text=True, errors='replace',
+                    timeout=timeout)
     except subprocess.TimeoutExpired:
         return 'TIMEOUT'
     m = RESULT_RE.search(out.stdout + out.stderr)
@@ -190,22 +244,32 @@ def run_original(addr, vec, pokes=(), timeout=25):
 def run_port(probe, proc, vec, pokes=()):
     # vec order ax,cx,dx,bx,si,di,bp -> probe order ax,bx,cx,dx,si,di,bp
     ax,cx,dx,bx,si,di,bp = vec
-    args = [probe, proc,
-            f'{ax:x}', f'{bx:x}', f'{cx:x}', f'{dx:x}',
-            f'{si:x}', f'{di:x}', f'{bp:x}']
+    rv = lambda v: v if isinstance(v, str) else f'{v:x}'
+    args = [os.path.abspath(probe), proc,
+            rv(ax), rv(bx), rv(cx), rv(dx), rv(si), rv(di), rv(bp)]
     if pokes:
         args += ['7', '7']          # ds es defaults (seg_para(data))
         for sn, v in pokes:
             args.append(f'poke={sn}:{v}' if isinstance(v, str)
                         else f'poke={sn}:{v:x}')
+    # file-writing procs (SaveFile etc.) must not litter the repo —
+    # run the probe inside a scratch dir
+    scratch = os.path.join(tempfile.gettempdir(), 'diff_procs_scratch')
+    os.makedirs(scratch, exist_ok=True)
     try:
-        out = subprocess.run(args, capture_output=True, text=True, timeout=10)
+        out = subprocess.run(args, capture_output=True, text=True,
+                             errors='replace', timeout=10, cwd=scratch)
     except subprocess.TimeoutExpired:
         return 'TIMEOUT'
     m = RESULT_RE.search(out.stdout)
     return m.groups() if m else 'NORESULT'
 
 FIELD = ('ax','bx','cx','dx','si','di','sp','bp','flags','ds','es','ss')
+# reg -> index inside the vec tuple (ax,cx,dx,bx,si,di,bp)
+VECIDX = {'ax': 0, 'cx': 1, 'dx': 2, 'bx': 3, 'si': 4, 'di': 5, 'bp': 6}
+# scratch arrays for pin= struct-pointer args (first wins, both sides
+# must know the name: port_syms for the probe, gsyms for the orig disp)
+SCRATCH = ('lhsx', 'rhsx', 'clipxtable', 'scanlinetable')
 
 def parse_spec_line(line):
     """-> (lstfile, proc, pat_override, kind_override, skipregs, vecs, manual,
@@ -217,7 +281,7 @@ def parse_spec_line(line):
     lst, proc = parts[0], parts[1]
     pat_ov = kind_ov = None
     skip, vecs, manual, pokes = set(), {}, False, []
-    cls = None
+    pin, cls = [], None
     for o in parts[2:]:
         if o.startswith('@@'):
             pat_ov = [None if t == '??' else int(t, 16) for t in o[2:].split()]
@@ -239,11 +303,13 @@ def parse_spec_line(line):
                 pokes.append((sn, int(sv, 16), int(sv, 16), size))
         elif o.startswith('kind='):
             kind_ov = o[5:]
+        elif o.startswith('pin='):
+            pin = o[4:].split(',')
         elif o.startswith('class='):
             cls = o[6:]
-        elif o == 'manual':
+        elif o in ('manual', 'postpone'):
             manual = True
-    return (lst, proc, pat_ov, kind_ov, skip, vecs, manual, pokes, cls)
+    return (lst, proc, pat_ov, kind_ov, skip, vecs, manual, pokes, cls, pin)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -252,6 +318,8 @@ def main():
     ap.add_argument('--exe', default=EXE)
     ap.add_argument('-j', '--jobs', type=int, default=4)
     ap.add_argument('--replay', help='reclassify a saved results file, no calls')
+    ap.add_argument('--locate-only', action='store_true',
+                    help='stop after the locate phase')
     ap.add_argument('--auto', action='store_true',
                     help='auto-seed every data sym a proc references with '
                          'per-vector edge values; *ptr syms get @<peer> pokes')
@@ -271,8 +339,31 @@ def main():
         port_procs = set(n for n, _f in re.findall(
             r'^    \{"(\w+)",\s*(\w+)\},\s*$',
             open(pcpp).read(), re.M))
+    # which module owns each weak wrapper: a same-name proc in another
+    # module is `static` and unreachable — testing that spec entry would
+    # bind the wrong implementation (a guaranteed false DIFF)
+    weak_owner = {}
+    for lf in glob.glob('src/*_lifted.cpp'):
+        stem = os.path.basename(lf).replace('_lifted.cpp', '')
+        for wm in re.finditer(
+                r'__attribute__\(\(weak\)\)\s*bool\s+(\w+)\s*\(',
+                open(lf, errors='replace').read()):
+            weak_owner.setdefault(wm.group(1), stem)
     addrs, symoff = {}, {}
     csmap = real_cs_map(exe)
+    calltgts = near_call_targets(exe) | set(csmap)
+    # linker map: public symbol -> linked seg:off. Map segs are pre-load;
+    # real flat = seg*16 + off + LOADBIAS where LOADBIAS is a per-image
+    # constant resolved below from unambiguous signature hits
+    pubs = {}
+    mapf = sorted(glob.glob('/home/xor/inertia_player/examples/Tornado/*/*.map'))
+    if mapf:
+        for mline in open(mapf[0], errors='replace'):
+            mm = re.match(r'\s*([0-9A-Fa-f]{4}):([0-9A-Fa-f]{4})\s+'
+                          r'([A-Za-z_?][\w?@]*)\s*$', mline)
+            if mm:
+                pubs[mm.group(3).upper()] = (
+                    int(mm.group(1), 16) * 16 + int(mm.group(2), 16))
     img = HDRPARAS * 16
     # proc/label names are immediates even without the OFFSET keyword
     # (`mov ax,_PolyFill`); collect them from every listing in the spec
@@ -286,12 +377,31 @@ def main():
         lp0 = lst0 if os.path.isabs(lst0) else os.path.join(
             '/home/xor/inertia_player/examples/Tornado', lst0)
         try:
-            for ln0 in open(lp0):
+            for ln0 in open(lp0, errors='replace'):
                 m0 = re.match(r'\s*([A-Za-z_?][\w?@]*)\s+PROC\b', ln0, re.I)
                 if m0:
                     known_labels.add(m0.group(1).lower().lstrip('_'))
         except OSError:
             pass
+    loadbias = 0
+    deltas = []
+    for line in open(a.spec):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        lst0, proc0 = parse_spec_line(line)[:2]
+        mflat = pubs.get(proc0.upper())
+        if mflat is None:
+            continue
+        lp0 = lst0 if os.path.isabs(lst0) else os.path.join(
+            '/home/xor/inertia_player/examples/Tornado', lst0)
+        pat0, _k0, _s0 = parse_lst_pattern(lp0, proc0)
+        h0 = locate(exe, pat0) if pat0 else []
+        if len(h0) == 1:
+            deltas.append(h0[0] + img - mflat)
+    if deltas:
+        deltas.sort()
+        loadbias = deltas[len(deltas) // 2]
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
@@ -309,18 +419,74 @@ def main():
                 if not im and n.lower().lstrip('_') in known_labels:
                     syms[n] = (o, s, True)
         hits = locate(exe, pat) if pat else []
+        if len(hits) > 1 and pat_ov is None:
+            # longer signature: relative-branch tails differentiate
+            # shared prologues
+            long_pat, _k2, _s2 = parse_lst_pattern(lp, proc, maxlen=256)
+            if len(long_pat) > len(pat):
+                h2 = locate(exe, long_pat)
+                if h2:
+                    hits, pat = h2, long_pat
+        if len(hits) > 1:
+            # prefer hits that are real call targets (e8 rel16 + 9a/ea far
+            # sites); public procs are called, junk signature twins are not
+            ct = {h for h in hits if h in calltgts}
+            if len(ct) == 1:
+                hits = list(ct)
+        if len(hits) > 1:
+            # link-map tiebreak: thunk procs share one signature and sit
+            # ~0x15 bytes apart in a dispatch table, so pick the hit
+            # nearest the map's linked address (bias varies <=±16, half
+            # the thunk spacing) — a fixed "unique within window" test
+            # cannot separate them
+            mflat = pubs.get(proc.upper()) or pubs.get(
+                proc.split('__')[0].upper())
+            if mflat is not None:
+                best = min(hits, key=lambda h: abs(h + img - mflat - loadbias))
+                if abs(best + img - mflat - loadbias) <= 48:
+                    hits = [best]
+        if len(hits) > 1:
+            # residual multi-hits are duplicate bodies present twice in
+            # the exe (two modules sharing one helper); all remaining
+            # candidates are call targets, so any copy is a valid
+            # original — take the lowest address deterministically
+            print(f'{lst}:{proc}: {len(hits)} identical bodies, '
+                  f'using {hits[0]+img:#x}', file=sys.stderr)
+            hits = hits[:1]
         if len(hits) == 1:
             h = hits[0]
             flat = LOAD_FLAT + h
             seg = csmap.get(flat, flat // 16)
-            addrs[proc] = (seg, flat - seg * 16, kind)
+            addrs[(lst, proc)] = (seg, flat - seg * 16, kind)
             # shipped displacements for the proc's data symbols
-            symoff[proc] = {n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'), im)
-                            for n, (o, s, im) in syms.items()}
+            symoff[(lst, proc)] = {
+                n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'), im)
+                for n, (o, s, im) in syms.items()}
         else:
-            addrs[proc] = None
-            print(f'{proc}: locate failed ({len(hits)} hits)', file=sys.stderr)
+            addrs[(lst, proc)] = None
+            print(f'{lst}:{proc}: locate failed ({len(hits)} hits)',
+                  file=sys.stderr)
 
+    # .lst/.LST pairs and alias spec lines often resolve to the same
+    # shipped address — run the vectors once, mark the rest as 'dup'.
+    # .lst variants (the base build) win over .LST so their syms drive
+    # seeding; iterate keys sorted with .lst first.
+    dedup = {}
+    def _dup_sort(key):
+        return (0 if key[0].endswith('.lst') else 1, key[0], key[1])
+    for key in sorted(addrs, key=_dup_sort):
+        addr = addrs[key]
+        if not addr:
+            continue
+        if addr in dedup:
+            addrs[key] = 'dup'
+        else:
+            dedup[addr] = key
+    if a.locate_only:
+        ok = sum(1 for v in addrs.values() if v and v != 'dup')
+        dup = sum(1 for v in addrs.values() if v == 'dup')
+        print(f'== located={ok} dup={dup} failed={len(addrs)-ok-dup}')
+        sys.exit(0)
     # global sym->(seg, disp, is_imm) union over every located proc: data
     # displacements are segment-absolute, so a sym learned from one proc's
     # instruction is valid for all — lets --auto also seed globals used by
@@ -329,22 +495,24 @@ def main():
     for so in symoff.values():
         for n, (s, disp, im) in so.items():
             gsyms.setdefault(n, (s, disp, im))
+    gsyms_sorted = sorted(gsyms)
+    gsyms_l = {n.lower(): v for n, v in gsyms.items()}
 
     tasks, nskip = [], 0
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
             continue
-        lst, proc, _p, _k, skip, vecs, manual, pokes, cls = parse_spec_line(line)
-        addr = addrs.get(proc)
-        if not addr or manual:
+        lst, proc, _p, _k, skip, vecs, manual, pokes, cls, pin = parse_spec_line(line)
+        addr = addrs.get((lst, proc))
+        if not addr or addr == 'dup' or manual:
             nskip += 1
             continue
         # resolve spec pokes: orig-side --poke-word/--poke-byte at the
         # symbol's shipped displacement; port-side probe poke=<name>:<val>.
         # A poke unresolved on EITHER side would seed asymmetric state, so
         # any missing symbol skips the whole proc.
-        so = symoff.get(proc, {})
+        so = symoff.get((lst, proc), {})
         opokes, ppokes, missing = [], [], []
         for sn, ov, pv, sz in pokes:
             hit = next((v for n, v in so.items()
@@ -371,6 +539,16 @@ def main():
                   file=sys.stderr)
             nskip += 1
             continue
+        # module-mismatch binding: same-name procs in other modules are
+        # static in the lifted TUs; without a <proc>__<stem> alias the
+        # probe binds whichever module emitted the weak symbol
+        stem_l = os.path.splitext(os.path.basename(lst))[0].lower()
+        pn_l = f'{proc.lower()}__{stem_l}'
+        owner_l = weak_owner.get(proc.lower())
+        if (port_procs is not None and pn_l not in port_procs
+                and owner_l is not None and owner_l != stem_l):
+            nskip += 1
+            continue
         EDGE = [0x0000, 0xffff, 0x0001, 0x8000, 0x55aa, 0x7f7f]
         # *vector*/callback cells hold code addresses — leave them at their
         # natural linked values so internal `call word [x]` works.
@@ -379,13 +557,69 @@ def main():
         CODEPTRRE = re.compile(r'(vector|handler|callback|intr|_polyfill)\d*$',
                                re.I)
         PTRRE = re.compile(r'ptr\d*$', re.I)
+        if a.auto:
+            # seed every sym this proc references plus the global union
+            # (transitive: nested calls read globals not in this listing);
+            # own syms first, then globals — capped under NUM_POKES.
+            # gsyms_sorted is built once globally: set-difference per
+            # vector over ~50k names was the old quadratic stall.
+            own = sorted(set(so))
+            own_set = set(so)
+            names = own + [g for g in gsyms_sorted if g not in own_set]
+            # ptr-redirection candidates indexed once per proc: sorted
+            # (lower, orig) pairs so each *ptr sym's same-prefix target is
+            # a bisect probe, not a full scan of the union
+            cidx = sorted(
+                (t.lower(), t) for t in names
+                if not CODEPTRRE.search(t) and
+                t.lower().lstrip('_') not in known_labels and
+                (port_syms is None or t.lower() in port_syms))
+
+            def pref_of(stem):
+                i = bisect.bisect_left(cidx, (stem, ''))
+                r = []
+                while i < len(cidx) and cidx[i][0].startswith(stem):
+                    r.append(cidx[i][1]); i += 1
+                return r
+        # pin= redirects struct-pointer register args at scratch arrays
+        # seeded identically on both sides (regs that procs stash into
+        # *Ptr cells, e.g. AAAFire's `mov SourcePtr,si`).  The first
+        # available scratch syms are used, one per pinned reg.
+        pinmap = {}
+        sol = {k.lower(): v for k, v in so.items()}
+        for reg in pin:
+            if VECIDX.get(reg) is None:
+                continue
+            for s in SCRATCH:
+                if s in pinmap.values():
+                    continue
+                if port_syms is not None and s not in port_syms:
+                    continue
+                e = sol.get(s) or gsyms_l.get(s)
+                if e is None:
+                    # not referenced by any spec proc — fall back to the
+                    # linker map: data publics' seg:off is already the
+                    # DGROUP-relative disp (seg 0000 = data-image base)
+                    mf = pubs.get(s.upper())
+                    if mf is not None:
+                        e = ('ds', mf, True)
+                if e is None:
+                    continue
+                pinmap[reg] = (s, e)
+                break
         for vi in range(len(VECTORS)):
             op, pp = list(opokes), list(ppokes)
+            ov = list(vecs.get(vi, VECTORS[vi]))
+            pv = list(ov)
+            for reg, (s, e) in pinmap.items():
+                ov[VECIDX[reg]] = e[1]
+                pv[VECIDX[reg]] = '@' + s
+                # seed 128 bytes of scratch struct on both sides
+                for k in range(64):
+                    rv = EDGE[(vi + k) % len(EDGE)]
+                    op.append((DS_SEG, e[1] + 2*k, rv, 2))
+                    pp.append((s + '+%x' % (2*k), rv))
             if a.auto:
-                # seed every sym this proc references plus the global union
-                # (transitive: nested calls read globals not in this listing);
-                # own syms first, then globals — capped under NUM_POKES
-                names = sorted(set(so)) + sorted(set(gsyms) - set(so))
                 for i, n in enumerate(names):
                     s_kind, disp, is_imm = so.get(n) or gsyms[n]
                     if s_kind != 'ds' or is_imm:
@@ -407,16 +641,13 @@ def main():
                         # imm syms are valid targets too — a *ptr cell
                         # should point at a real array/label base (RhsPtr
                         # -> RhsX); only code-addr cells are excluded
-                        cands = [t for t in names
-                                 if t != n and
-                                 not CODEPTRRE.search(t) and
-                                 t.lower().lstrip('_') not in known_labels and
-                                 (port_syms is None or t.lower() in port_syms)]
-                        pref = [t for t in cands
-                                if len(stem) >= 3 and
-                                t.lower().startswith(stem)]
+                        pref = [t for t in (pref_of(stem)
+                                          if len(stem) >= 3 else [])
+                                if t != n]
                         if pref:
                             cands = pref
+                        else:
+                            cands = [t for _l, t in cidx if t != n]
                         if not cands and                                 (port_syms is None or ln in port_syms):
                             cands = [n]
                         if not cands:
@@ -449,11 +680,11 @@ def main():
                         break           # NUM_POKES headroom
             if os.environ.get('DIFF_DEBUG_PROC') == proc:
                 print(f'DBG {proc} v{vi}: op={op} pp={pp}', file=sys.stderr)
-            tasks.append((proc, vi, vecs.get(vi, VECTORS[vi]), addr, skip,
+            tasks.append((proc, vi, tuple(ov), tuple(pv), addr, skip,
                           tuple(op), tuple(pp), lst, cls))
 
     def run_task(t):
-        proc, vi, vec, addr, _, opokes, ppokes, lst, _c = t
+        proc, vi, ovec, pvec, addr, _, opokes, ppokes, lst, _c = t
         # name collisions across modules: the translator renamed dup procs
         # to <proc>__<srcstem>; prefer that alias when it exists
         pn = f"{proc.lower()}__{os.path.splitext(os.path.basename(lst))[0].lower()}"
@@ -461,15 +692,19 @@ def main():
             procname = pn
         else:
             procname = proc.lower()
-        return proc, vi, run_original(addr, vec, opokes), \
-            run_port(a.probe, procname, vec, ppokes)
+        return (lst, proc), vi, run_original(addr, ovec, opokes), \
+            run_port(a.probe, procname, pvec, ppokes)
 
     npass = ndiff = nto = 0
     xdiff = {}
     if a.replay:
         results = []
         for ln in open(a.replay):
-            proc, vi, rest = ln.split(None, 2)
+            key, vi, rest = ln.split(None, 2)
+            if '/' in key:
+                lst, proc = key.rsplit(':', 1)
+            else:
+                lst, proc = '', key
             # rest = '<ro> <rp>' where each is a tuple repr or a status word;
             # tuple reprs contain spaces, so split on the " (" boundary
             if rest.startswith('('):
@@ -482,22 +717,25 @@ def main():
                 ro = eval(ro)
             if rp.startswith('('):
                 rp = eval(rp)
-            results.append((proc, int(vi), ro, rp))
+            results.append(((lst, proc), int(vi), ro, rp))
     else:
         raw = open(a.spec + '.raw', 'w')
         with ThreadPoolExecutor(max_workers=a.jobs) as pool:
             results = list(pool.map(run_task, tasks))
-        for proc, vi, ro, rp in results:
-            raw.write(f'{proc} {vi} {ro} {rp}\n')
+        for (lst, proc), vi, ro, rp in results:
+            raw.write(f'{lst}:{proc} {vi} {ro} {rp}\n')
         raw.close()
     ridx = {'ax':0,'bx':1,'cx':2,'dx':3,'si':4,'di':5,'bp':7}
-    skip_of = {t[0]: t[4] for t in tasks}
-    class_of = {t[0]: t[8] for t in tasks}
+    skip_of = {(t[8], t[0]): t[5] for t in tasks}
+    class_of = {(t[8], t[0]): t[9] for t in tasks}
+    in_tasks = {(t[8], t[0]) for t in tasks}
     byproc = {}
-    for proc, vi, ro, rp in results:
-        byproc.setdefault(proc, []).append((vi, ro, rp))
-    for proc, rows in byproc.items():
-        skip = skip_of[proc]
+    for key, vi, ro, rp in results:
+        byproc.setdefault(key, []).append((vi, ro, rp))
+    for (lst, proc), rows in byproc.items():
+        if (lst, proc) not in in_tasks:
+            continue  # stale raw row: postponed/dup/unlocated in this spec
+        skip = skip_of.get((lst, proc), set())
         # a reg is a linked-layout pointer when its orig-vs-port delta is
         # constant across every completed vector (table bases differ between
         # builds) — normalize bx/cx/si/di/bp; ax/dx stay strict (outputs).
@@ -528,11 +766,11 @@ def main():
                 norm.add(r)
         for vi, ro, rp in rows:
             if ro in ('TIMEOUT','NORESULT'):
-                print(f'{proc} v{vi}: original={ro} port={rp}')
+                print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
                 nto += 1
                 continue
             if rp in ('TIMEOUT','NORESULT'):
-                print(f'{proc} v{vi}: original={ro} port={rp}')
+                print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
                 nto += 1
                 continue
             # compare functional fields: ax..bp, flags; skip sp/ss/ds/es
@@ -546,14 +784,35 @@ def main():
                 and fl_o == fl_p
             if same:
                 npass += 1
-            elif class_of[proc]:
+            elif not class_of.get((lst, proc)) and len(ok) >= 2:
+                # every differing reg has one constant orig-vs-port delta
+                # across vectors -> linked-layout pointer outputs
+                # (table bases differ between builds), not a logic bug
+                dregs = {r for r, i in ridx.items()
+                         if r not in ign and any(
+                             ro[i] != rp[i] for ro, rp in ok)}
+                if dregs and all(
+                        len({int(ro[ridx[r]], 16) - int(rp[ridx[r]], 16)
+                             for ro, rp in ok}) == 1 for r in dregs):
+                    xdiff['ptrlayout'] = xdiff.get('ptrlayout', 0) + 1
+                    print(f'{lst}:{proc} v{vi} XDIFF(ptrlayout)')
+                    continue
+                if class_of.get((lst, proc)) is None:
+                    ndiff += 1
+                    print(f'{lst}:{proc} v{vi} DIFF\n  orig: {ro}\n  port: {rp}')
+                else:
+                    xdiff[class_of[(lst, proc)]] = xdiff.get(
+                        class_of[(lst, proc)], 0) + 1
+                    print(f'{lst}:{proc} v{vi} XDIFF({class_of[(lst, proc)]})')
+            elif class_of.get((lst, proc)):
                 # expected environment/variant divergence — bucketed, not a
                 # regression signal
-                xdiff[class_of[proc]] = xdiff.get(class_of[proc], 0) + 1
-                print(f'{proc} v{vi} XDIFF({class_of[proc]})')
+                xdiff[class_of[(lst, proc)]] = xdiff.get(
+                    class_of[(lst, proc)], 0) + 1
+                print(f'{lst}:{proc} v{vi} XDIFF({class_of[(lst, proc)]})')
             else:
                 ndiff += 1
-                print(f'{proc} v{vi} DIFF\n  orig: {ro}\n  port: {rp}')
+                print(f'{lst}:{proc} v{vi} DIFF\n  orig: {ro}\n  port: {rp}')
     print(f'== pass={npass} diff={ndiff} xdiff={sum(xdiff.values())} '
           f'{xdiff} timeout={nto} skip={nskip}')
     sys.exit(1 if ndiff else 0)

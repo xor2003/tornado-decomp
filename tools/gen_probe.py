@@ -105,6 +105,20 @@ def main():
     src.append("""\
 static _STATE st;
 
+/* Resolve a register arg: plain hex, or @<sym> = the sym's offset inside
+   the translated data image (for struct-pointer args). */
+static unsigned long regval(const char* s) {
+    if (s[0] != '@') return std::strtoul(s, 0, 16);
+    for (const SymEnt& e : SYMS)
+        if (!std::strcmp(e.name, s + 1)) {
+            void* tp = *e.slot;
+            if (tp) return (unsigned long)((char*)tp - (char*)segbasep);
+            break;
+        }
+    std::fprintf(stderr, "unknown reg sym %s\\n", s);
+    std::exit(2);
+}
+
 int main(int argc, char** argv) {
     if (argc < 9) {
         std::fprintf(stderr, "usage: %s proc ax bx cx dx si di bp [ds es]\\n", argv[0]);
@@ -125,13 +139,13 @@ int main(int argc, char** argv) {
     *(dw*)m2c::raddr_(st.ss, 0xff00) = 0;
     *(dw*)m2c::raddr_(st.ss, 0xff00 + 2) = 0;
 
-    st.eax = std::strtoul(argv[2], 0, 16);
-    st.ebx = std::strtoul(argv[3], 0, 16);
-    st.ecx = std::strtoul(argv[4], 0, 16);
-    st.edx = std::strtoul(argv[5], 0, 16);
-    st.esi = std::strtoul(argv[6], 0, 16);
-    st.edi = std::strtoul(argv[7], 0, 16);
-    st.ebp = std::strtoul(argv[8], 0, 16);
+    st.eax = regval(argv[2]);
+    st.ebx = regval(argv[3]);
+    st.ecx = regval(argv[4]);
+    st.edx = regval(argv[5]);
+    st.esi = regval(argv[6]);
+    st.edi = regval(argv[7]);
+    st.ebp = regval(argv[8]);
     if (argc > 10) {
         st.ds = (dw)std::strtoul(argv[9], 0, 16);
         st.es = (dw)std::strtoul(argv[10], 0, 16);

@@ -17,5 +17,5 @@ LIB8086/POLYFILL.lst:Octant1
 LIB8086/POLYFILL.lst:Octant4
 LIB8086/POLYFILL.lst:Octant8
 LIB8086/VGA_DRVR.lst:ReadDACBlock:class=hwio
-LIB8086/OVERFLOW.lst:PrintWord:class=dosio
+LIB8086/OVERFLOW.lst:PrintWord:postpone
 LIB8086/CGA_DRVR.lst:CGA_CalcAddr:class=variant
