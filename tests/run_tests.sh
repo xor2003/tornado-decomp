@@ -54,3 +54,8 @@ if [ -f tests/smoke_expected.txt ]; then
 else
     echo "no tests/smoke_expected.txt - first run saved; commit it as baseline"
 fi
+
+# 5. End-to-end golden: deterministic tick+frame hashes (skip: SKIP_GOLDEN=1)
+if [ "${SKIP_GOLDEN:-0}" != "1" ]; then
+    bash tools/test_golden.sh
+fi
