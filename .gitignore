@@ -4,5 +4,8 @@ tornado_lifted
 test_procs
 *.o
 __pycache__/
-test_smoke
-tests/smoke_current.txt
+test_transcript
+tests/transcript_current.txt
+test_probe
+test_probe_all
+tests/diffspec.txt.raw
