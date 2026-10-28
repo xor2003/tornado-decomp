@@ -60,3 +60,14 @@ fi
 if [ "${SKIP_GOLDEN:-0}" != "1" ]; then
     bash tools/test_golden.sh
 fi
+
+# 6. Differential smoke: original FLIGHT.EXE procs (kvikdos) vs translated
+#    procs, normal + edge vectors, seeded globals.  Needs kvikdos and the
+#    shipped binary; skipped when absent.  Any unclassified DIFF fails.
+if [ "${SKIP_DIFF:-0}" != "1" ] && \
+   [ -x /home/xor/kvikdos/kvikdos ] && \
+   [ -f /home/xor/games/Tornado/TORNADO/FLIGHT/FLIGHT.EXE ]; then
+    sh tests/run_difftests.sh tests/smoke_spec.txt
+else
+    echo "diff-procs: skipped (kvikdos or FLIGHT.EXE unavailable)"
+fi

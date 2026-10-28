@@ -3,7 +3,9 @@
 lifted weak proc by name with caller-supplied registers, and print the result
 in kvikdos-call-result format for tools/diff_procs.py.
 
-usage: tools/gen_probe.py <objdir> <out.cpp>
+usage: tools/gen_probe.py <objdir> <out.cpp> [data.h]
+  data.h: optional globals header; emits a SYM table so the probe accepts
+  poke=name:hexval args (word writes to translated globals by name).
 """
 import re, subprocess, sys
 
@@ -55,9 +57,26 @@ struct ProcEnt { const char* name; ProcFn fn; };
 """
 
 
+def data_globals(path):
+    """name -> (elemsize, decl) from `extern db& x;` / `extern dw (&a)[N];`
+    declarations at global scope."""
+    out = {}
+    txt = open(path, errors='replace').read()
+    for m in re.finditer(r'extern\s+(db|dw|dd)\s*&\s*(\w+)\s*;', txt):
+        t, n = m.groups()
+        out[n] = ({'db': 1, 'dw': 2, 'dd': 4}[t], f'extern {t}& {n};')
+    for m in re.finditer(
+            r'extern\s+(db|dw|dd)\s*\(&\s*(\w+)\)\s*\[\s*(\d+)\s*\]\s*;', txt):
+        t, n, cnt = m.groups()
+        out[n] = ({'db': 1, 'dw': 2, 'dd': 4}[t],
+                  f'extern {t} (&{n})[{cnt}];')
+    return out
+
+
 def main():
     objdir, out = sys.argv[1], sys.argv[2]
     names = weak_proc_names(objdir)
+    globs = data_globals(sys.argv[3]) if len(sys.argv) > 3 else {}
     src = [HEAD]
     for n in names:
         src.append(f"extern bool {n}(m2c::_offsets, _STATE*) "
@@ -65,6 +84,23 @@ def main():
     src.append("\nstatic const ProcEnt PROCS[] = {\n")
     for n in names:
         src.append(f'    {{"{n}", {n}}},\n')
+    src.append("};\n\n")
+    # Every data global is `extern T& name` — a BSS pointer slot that the
+    # _data_refs TU fills at ITS static-init time. Capturing &name (the
+    # referent) in a static table here races with that init order (NULL
+    # capture). Instead bind `void* sym__n` to the ref OBJECT via asm
+    # label: &sym__n is a link-time constant (safe in a static table) and
+    # *(void**)slot at call time yields the referent lazily. This also
+    # avoids C++ name collisions with proc wrappers entirely.
+    # _seg_data is an inline ref to the data image: its symbol is the ref
+    # slot, so the SLOT VALUE (not &slot) is the guest offset-0 base.
+    src.append("extern void* segbasep __asm__(\"_seg_data\");\n")
+    src.append("struct SymEnt { const char* name; void* const* slot; int esz; };\n")
+    for n in globs:
+        src.append(f'extern void* sym__{n} __asm__("{n}");\n')
+    src.append("static const SymEnt SYMS[] = {\n")
+    for n, (esz, _d) in sorted(globs.items()):
+        src.append(f'    {{"{n}", &sym__{n}, {esz}}},\n')
     src.append("};\n\n")
     src.append("""\
 static _STATE st;
@@ -99,6 +135,40 @@ int main(int argc, char** argv) {
     if (argc > 10) {
         st.ds = (dw)std::strtoul(argv[9], 0, 16);
         st.es = (dw)std::strtoul(argv[10], 0, 16);
+    }
+    for (int i = 11; i < argc; ++i) {
+        /* poke=<sym>:<hexval> — write a global by name (elem-sized store) */
+        char* eq;
+        if (std::strncmp(argv[i], "poke=", 5) != 0 ||
+            !(eq = std::strchr(argv[i] + 5, ':'))) continue;
+        *eq = 0;
+        const char* sn = argv[i] + 5;
+        /* poke=<sym>+<delta>:<val> writes <delta> bytes past the sym —
+           seeds array elements adjacent to a named cell */
+        const char* adj = std::strchr(sn, '+');
+        long delta = 0;
+        if (adj) delta = std::strtol(adj + 1, 0, 16);
+        size_t nl = adj ? (size_t)(adj - sn) : std::strlen(sn);
+        const SymEnt* se = nullptr;
+        for (const SymEnt& s : SYMS)
+            if (!std::strncmp(s.name, sn, nl) && !s.name[nl])
+                { se = &s; break; }
+        void* p = se ? (char*)*se->slot + delta : nullptr;
+        if (!p) { std::fprintf(stderr, "unknown poke sym %s\\n", sn); return 2; }
+        unsigned long v;
+        if (eq[1] == '@') {          /* poke=<sym>:@<target> - guest offset */
+            const SymEnt* te = nullptr;
+            for (const SymEnt& s : SYMS)
+                if (!std::strcmp(s.name, eq + 2)) { te = &s; break; }
+            void* tp = te ? *te->slot : nullptr;
+            if (!tp) { std::fprintf(stderr, "unknown poke target %s\\n", eq + 2); return 2; }
+            v = (unsigned long)((char*)tp - (char*)segbasep);
+        } else {
+            v = std::strtoul(eq + 1, 0, 16);
+        }
+        if (se->esz == 1) *(unsigned char*)p = (unsigned char)v;
+        else if (se->esz == 2) *(unsigned short*)p = (unsigned short)v;
+        else *(unsigned*)p = (unsigned)v;
     }
 
     std::fprintf(stderr, "[probe] calling %s\\n", name);

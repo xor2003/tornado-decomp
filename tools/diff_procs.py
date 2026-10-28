@@ -44,12 +44,26 @@ VECTORS = [
 ]
 REGS = ('ax','cx','dx','bx','si','di','bp')
 
+MNEMONICS = {'mov','cmp','sub','add','lea','jmp','call','push','pop','xor',
+             'and','or','inc','dec','shl','shr','sar','xchg','ret','test',
+             'loop','int','in','out','mul','div','imul','idiv','neg','not',
+             'nop','stosb','stosw','lodsb','lodsw','movsb','movsw','xlat',
+             'cbw','cwd','ror','rol','rcr','rcl','word','byte','ptr','dword',
+             'offset','dup','far','near','short','seg','equ','assume','adc',
+             'sbb','lds','les','scasb','scasw','cmpsb','cmpsw','jcxz'}
+REG_NAMES = {'ax','bx','cx','dx','si','di','bp','sp','cs','ds','es','ss',
+             'al','ah','bl','bh','cl','ch','dl','dh','word','byte','ptr',
+             'offset','seg','far','near','short','dword','qword','tbyte'}
+
 def parse_lst_pattern(path, proc):
-    """Returns (pattern, kind): pattern is the first <=64 encoded bytes with
-    relocated/relative operands wildcarded (None); kind is 'near' or 'far'."""
+    """Returns (pattern, kind, syms): pattern is the first <=64 encoded bytes
+    with relocated/relative operands wildcarded (None); kind is 'near'/'far';
+    syms maps data-symbol name -> (proc byte offset of its disp16, seg)."""
     lines = open(path, errors='replace').read().splitlines()
     procre = re.compile(r'\b' + re.escape(proc) + r'\b')
     out, inproc, kind = [], False, 'far'
+    syms = {}
+    poff = 0
     for ln in lines:
         m = re.match(r'\s*([0-9A-Fa-f]{4})\s+(.*?)\s{2,}(.*)$', ln)
         if not m:
@@ -83,6 +97,22 @@ def parse_lst_pattern(path, proc):
         if not bs:
             continue
         if has_R and len(bs) >= 2:
+            # record the data symbol for later shipped-displacement reads:
+            # first identifier in the operand text that isn't a register/keyword
+            ops = asm.split(None, 1)[1] if len(asm.split(None, 1)) > 1 else ''
+            seg = 'ss' if any(b == 0x36 for b in bs[:2]) else 'ds'
+            # immediate operands (OFFSET x, lea) carry an address value:
+            # poking the operand redirects the base to unsynchronized
+            # memory — only memory-operand cells are safe to seed
+            is_imm = ('offset' in ops.lower() or
+                      asm.split(None, 1)[0].strip().lower() == 'lea')
+            for msym in re.finditer(r'([A-Za-z_][\w]*)', ops):
+                if msym.group(1).lower() not in REG_NAMES and \
+                        msym.group(1).lower() not in MNEMONICS:
+                    name = msym.group(1)
+                    if name not in syms:
+                        syms[name] = (poff + len(bs) - 2, seg, is_imm)
+                    break
             bs[-2] = bs[-1] = None
         # relative jump/call displacements shift between builds: wildcard them
         # EB rel8, E8/E9 rel16, 70-7F rel8, 0F 80-8F rel16
@@ -98,10 +128,10 @@ def parse_lst_pattern(path, proc):
                 if len(bs) >= 3: bs[-2] = bs[-1] = None
             elif op == 0x0f and len(bs) >= 4 and bs[oi+1] is not None and 0x80 <= bs[oi+1] <= 0x8f:
                 bs[-2] = bs[-1] = None
-        out.extend(bs)
-        if len(out) > 64:
-            break
-    return out, kind
+        if len(out) <= 64:
+            out.extend(bs)
+        poff += len(bs)
+    return out, kind, syms
 
 def locate(exe, pat):
     hits, n = [], len(pat)
@@ -136,15 +166,18 @@ RESULT_RE = re.compile(r'ax=([0-9a-f]+) bx=([0-9a-f]+) cx=([0-9a-f]+) dx=([0-9a-
                        r'si=([0-9a-f]+) di=([0-9a-f]+) sp=([0-9a-f]+) bp=([0-9a-f]+) '
                        r'flags=([0-9a-f]+) ds=([0-9a-f]+) es=([0-9a-f]+) ss=([0-9a-f]+)')
 
-def run_original(addr, vec, timeout=25):
+def run_original(addr, vec, pokes=(), timeout=25):
     seg, off, kind = addr
     cmd = [KVIKDOS, '--video=off', '--tty-in=-3', '--diag=off']
     if kind == 'near':
         cmd += [f'--call-cs={seg:#06x}', f'--call-near={off:#06x}']
     else:
         cmd += [f'--call-far={seg:#06x}:{off:#06x}']
-    cmd += [f'--call-ds={DS_SEG:#06x}', f'--call-ss={SS}',
-            '--root=' + ROOT, '--drive=C', 'FLIGHT.EXE']
+    cmd += [f'--call-ds={DS_SEG:#06x}', f'--call-ss={SS}']
+    for s, o, v, sz in pokes:
+        cmd.append(f'--poke-byte={s:#06x}:{o:#06x}:{v:#06x}' if sz == 1
+                   else f'--poke-word={s:#06x}:{o:#06x}:{v:#06x}')
+    cmd += ['--root=' + ROOT, '--drive=C', 'FLIGHT.EXE']
     for r, v in zip(REGS, vec):
         cmd.insert(-3, f'--call-set={r}:{v:#x}')
     try:
@@ -154,12 +187,17 @@ def run_original(addr, vec, timeout=25):
     m = RESULT_RE.search(out.stdout + out.stderr)
     return m.groups() if m else 'NORESULT'
 
-def run_port(probe, proc, vec):
+def run_port(probe, proc, vec, pokes=()):
     # vec order ax,cx,dx,bx,si,di,bp -> probe order ax,bx,cx,dx,si,di,bp
     ax,cx,dx,bx,si,di,bp = vec
     args = [probe, proc,
             f'{ax:x}', f'{bx:x}', f'{cx:x}', f'{dx:x}',
             f'{si:x}', f'{di:x}', f'{bp:x}']
+    if pokes:
+        args += ['7', '7']          # ds es defaults (seg_para(data))
+        for sn, v in pokes:
+            args.append(f'poke={sn}:{v}' if isinstance(v, str)
+                        else f'poke={sn}:{v:x}')
     try:
         out = subprocess.run(args, capture_output=True, text=True, timeout=10)
     except subprocess.TimeoutExpired:
@@ -170,11 +208,16 @@ def run_port(probe, proc, vec):
 FIELD = ('ax','bx','cx','dx','si','di','sp','bp','flags','ds','es','ss')
 
 def parse_spec_line(line):
-    """-> (lstfile, proc, pat_override, kind_override, skipregs, vecs, manual)"""
+    """-> (lstfile, proc, pat_override, kind_override, skipregs, vecs, manual,
+          pokes, cls) where cls is an expected-diff class tag where pokes = [(SymName, oval, pval, size)]: oval is the
+          orig-side poke value, pval the port-side value (differ for
+          pointer globals via poke=n:oval=pval); size 2=word, 1=byte
+          (pokeb=)"""
     parts = line.split(':')
     lst, proc = parts[0], parts[1]
     pat_ov = kind_ov = None
-    skip, vecs, manual = set(), {}, False
+    skip, vecs, manual, pokes = set(), {}, False, []
+    cls = None
     for o in parts[2:]:
         if o.startswith('@@'):
             pat_ov = [None if t == '??' else int(t, 16) for t in o[2:].split()]
@@ -183,70 +226,263 @@ def parse_spec_line(line):
         elif o.startswith('vec') and '=' in o:
             n, vals = o[3:].split('=', 1)
             vecs[int(n)] = tuple(int(t, 16) for t in vals.split(','))
+        elif o.startswith('poke=') or o.startswith('pokeb='):
+            body = o[o.index('=') + 1:]
+            size = 1 if o.startswith('pokeb=') else 2
+            sn, sv = body.rsplit(':', 1) if ':' in body else (body, '0')
+            if sv.startswith('@'):   # poke=n:@target - guest offset of target
+                pokes.append((sn, '@' + sv[1:], '@' + sv[1:], size))
+            elif '=' in sv:  # poke=n:oval=pval - asymmetric (pointer globals)
+                ov, pv = sv.split('=', 1)
+                pokes.append((sn, int(ov, 16), int(pv, 16), size))
+            else:
+                pokes.append((sn, int(sv, 16), int(sv, 16), size))
         elif o.startswith('kind='):
             kind_ov = o[5:]
+        elif o.startswith('class='):
+            cls = o[6:]
         elif o == 'manual':
             manual = True
-    return lst, proc, pat_ov, kind_ov, skip, vecs, manual
+    return (lst, proc, pat_ov, kind_ov, skip, vecs, manual, pokes, cls)
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('spec')
-    ap.add_argument('--probe', default='./test_probe')
+    ap.add_argument('--probe', default='./test_probe_all')
     ap.add_argument('--exe', default=EXE)
     ap.add_argument('-j', '--jobs', type=int, default=4)
     ap.add_argument('--replay', help='reclassify a saved results file, no calls')
+    ap.add_argument('--auto', action='store_true',
+                    help='auto-seed every data sym a proc references with '
+                         'per-vector edge values; *ptr syms get @<peer> pokes')
     a = ap.parse_args()
     exe = open(a.exe, 'rb').read()
-    addrs, csmap = {}, real_cs_map(exe)
+    # port-side valid poke symbols (from the generated probe's SYMS table)
+    port_syms = None
+    pcpp = os.path.join(os.path.dirname(a.spec) or '.', 'probe_all.cpp')
+    pcpp = pcpp if os.path.exists(pcpp) else 'tests/probe_all.cpp'
+    port_esz = {}
+    port_procs = None
+    if os.path.exists(pcpp):
+        for nm, es in re.findall(r'^    \{"([a-z0-9_]+)",\s*&sym__\w+,\s*(\d+)\}',
+                                 open(pcpp).read(), re.M):
+            port_esz[nm] = int(es)
+        port_syms = set(port_esz)
+        port_procs = set(n for n, _f in re.findall(
+            r'^    \{"(\w+)",\s*(\w+)\},\s*$',
+            open(pcpp).read(), re.M))
+    addrs, symoff = {}, {}
+    csmap = real_cs_map(exe)
+    img = HDRPARAS * 16
+    # proc/label names are immediates even without the OFFSET keyword
+    # (`mov ax,_PolyFill`); collect them from every listing in the spec
+    known_labels = set()
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
             continue
-        lst, proc, pat_ov, kind_ov, _s, _v, _m = parse_spec_line(line)
+        lst0, proc0 = parse_spec_line(line)[:2]
+        known_labels.add(proc0.lower().lstrip('_'))
+        lp0 = lst0 if os.path.isabs(lst0) else os.path.join(
+            '/home/xor/inertia_player/examples/Tornado', lst0)
+        try:
+            for ln0 in open(lp0):
+                m0 = re.match(r'\s*([A-Za-z_?][\w?@]*)\s+PROC\b', ln0, re.I)
+                if m0:
+                    known_labels.add(m0.group(1).lower().lstrip('_'))
+        except OSError:
+            pass
+    for line in open(a.spec):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        lst, proc, pat_ov, kind_ov = parse_spec_line(line)[:4]
+        syms = {}
         if pat_ov is not None:
             pat, kind = pat_ov, kind_ov or 'far'
         else:
             lp = lst if os.path.isabs(lst) else os.path.join(
                 '/home/xor/inertia_player/examples/Tornado', lst)
-            pat, kind = parse_lst_pattern(lp, proc)
+            pat, kind, syms = parse_lst_pattern(lp, proc)
             if kind_ov: kind = kind_ov
+            for n, (o, s, im) in list(syms.items()):
+                if not im and n.lower().lstrip('_') in known_labels:
+                    syms[n] = (o, s, True)
         hits = locate(exe, pat) if pat else []
         if len(hits) == 1:
             h = hits[0]
             flat = LOAD_FLAT + h
             seg = csmap.get(flat, flat // 16)
             addrs[proc] = (seg, flat - seg * 16, kind)
+            # shipped displacements for the proc's data symbols
+            symoff[proc] = {n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'), im)
+                            for n, (o, s, im) in syms.items()}
         else:
             addrs[proc] = None
             print(f'{proc}: locate failed ({len(hits)} hits)', file=sys.stderr)
+
+    # global sym->(seg, disp, is_imm) union over every located proc: data
+    # displacements are segment-absolute, so a sym learned from one proc's
+    # instruction is valid for all — lets --auto also seed globals used by
+    # nested calls (e.g. CircleFill -> [FillVector] -> _PolyFill reads)
+    gsyms = {}
+    for so in symoff.values():
+        for n, (s, disp, im) in so.items():
+            gsyms.setdefault(n, (s, disp, im))
 
     tasks, nskip = [], 0
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
             continue
-        lst, proc, _p, _k, skip, vecs, manual = parse_spec_line(line)
+        lst, proc, _p, _k, skip, vecs, manual, pokes, cls = parse_spec_line(line)
         addr = addrs.get(proc)
         if not addr or manual:
             nskip += 1
             continue
+        # resolve spec pokes: orig-side --poke-word/--poke-byte at the
+        # symbol's shipped displacement; port-side probe poke=<name>:<val>.
+        # A poke unresolved on EITHER side would seed asymmetric state, so
+        # any missing symbol skips the whole proc.
+        so = symoff.get(proc, {})
+        opokes, ppokes, missing = [], [], []
+        for sn, ov, pv, sz in pokes:
+            hit = next((v for n, v in so.items()
+                        if n.lower() == sn.lower()), None)
+            if hit is None:
+                missing.append(f'{sn}(orig)')
+                continue
+            s, disp, _im = hit
+            if isinstance(ov, str):      # @target: orig value = its shipped disp
+                th = next((v for n, v in so.items()
+                           if n.lower() == ov[1:].lower()), None)
+                if th is None:
+                    missing.append(f'{ov}(orig)')
+                    continue
+                ov = th[1]
+            opokes.append((DS_SEG if s == 'ds' else int(SS.split(':')[0], 16),
+                           disp, ov, sz))
+            if port_syms is not None and sn.lower() not in port_syms:
+                missing.append(f'{sn}(port)')
+                continue
+            ppokes.append((sn.lower(), pv))
+        if missing:
+            print(f'{proc}: poke syms unresolved: {missing} - skipped',
+                  file=sys.stderr)
+            nskip += 1
+            continue
+        EDGE = [0x0000, 0xffff, 0x0001, 0x8000, 0x55aa, 0x7f7f]
+        # *vector*/callback cells hold code addresses — leave them at their
+        # natural linked values so internal `call word [x]` works.
+        # *ptr* cells hold data addresses — point them at a peer sym via
+        # @target so both layouts see equivalent pointed-to memory.
+        CODEPTRRE = re.compile(r'(vector|handler|callback|intr|_polyfill)\d*$',
+                               re.I)
+        PTRRE = re.compile(r'ptr\d*$', re.I)
         for vi in range(len(VECTORS)):
-            tasks.append((proc, vi, vecs.get(vi, VECTORS[vi]), addr, skip))
+            op, pp = list(opokes), list(ppokes)
+            if a.auto:
+                # seed every sym this proc references plus the global union
+                # (transitive: nested calls read globals not in this listing);
+                # own syms first, then globals — capped under NUM_POKES
+                names = sorted(set(so)) + sorted(set(gsyms) - set(so))
+                for i, n in enumerate(names):
+                    s_kind, disp, is_imm = so.get(n) or gsyms[n]
+                    if s_kind != 'ds' or is_imm:
+                        continue        # ss-syms + immediate bases left alone
+                    ln = n.lower()
+                    if any(sn == ln for sn, _v in pp):
+                        continue        # explicit spec poke wins
+                    if port_syms is not None and ln not in port_syms:
+                        continue        # not translated under this name
+                    if CODEPTRRE.search(n):
+                        continue        # code-ptr cell: keep linked value
+                    if PTRRE.search(n):
+                        # pointer global: point it at a peer sym, resolved in
+                        # each side's own layout (@target).  Prefer a sym
+                        # sharing the ptr's name prefix — ptrs index their
+                        # array (RhsPtr->RhsX[i]); a random scalar target
+                        # makes adjacent-cell reads diverge.
+                        stem = re.sub(r'ptr\d*$', '', ln)
+                        # imm syms are valid targets too — a *ptr cell
+                        # should point at a real array/label base (RhsPtr
+                        # -> RhsX); only code-addr cells are excluded
+                        cands = [t for t in names
+                                 if t != n and
+                                 not CODEPTRRE.search(t) and
+                                 t.lower().lstrip('_') not in known_labels and
+                                 (port_syms is None or t.lower() in port_syms)]
+                        pref = [t for t in cands
+                                if len(stem) >= 3 and
+                                t.lower().startswith(stem)]
+                        if pref:
+                            cands = pref
+                        if not cands and                                 (port_syms is None or ln in port_syms):
+                            cands = [n]
+                        if not cands:
+                            continue
+                        tgt = cands[i % len(cands)]
+                        op.append((DS_SEG, disp,
+                                   (so.get(tgt) or gsyms[tgt])[1], 2))
+                        pp.append((ln, '@' + tgt.lower()))
+                        # range-seed only a same-prefix target (RhsPtr->RhsX
+                        # is its real array; +2k stays inside it on both
+                        # layouts).  A random peer target isn't walked.
+                        if pref:
+                            tdisp = (so.get(tgt) or gsyms[tgt])[1]
+                            for k in range(1, 8):
+                                rv = EDGE[(vi + i + k) % len(EDGE)]
+                                op.append((DS_SEG, tdisp + 2*k, rv, 2))
+                                pp.append((tgt.lower() + '+%x' % (2*k), rv))
+                    else:
+                        esz = port_esz.get(ln, 2)
+                        v = EDGE[(vi + i) % len(EDGE)]
+                        if esz == 1:
+                            v &= 0xff
+                        op.append((DS_SEG, disp, v, esz))
+                        pp.append((ln, v))
+                        # NOTE: no range-seeding of plain scalars — disp+N
+                        # hits a different logical cell in each layout, so
+                        # wild-index reads (AttrTable[screenmode]) stay a
+                        # class=array limitation rather than a seeded case
+                    if len(op) > 1000:
+                        break           # NUM_POKES headroom
+            if os.environ.get('DIFF_DEBUG_PROC') == proc:
+                print(f'DBG {proc} v{vi}: op={op} pp={pp}', file=sys.stderr)
+            tasks.append((proc, vi, vecs.get(vi, VECTORS[vi]), addr, skip,
+                          tuple(op), tuple(pp), lst, cls))
 
     def run_task(t):
-        proc, vi, vec, addr, _ = t
-        return proc, vi, run_original(addr, vec), \
-            run_port(a.probe, proc.lower(), vec)
+        proc, vi, vec, addr, _, opokes, ppokes, lst, _c = t
+        # name collisions across modules: the translator renamed dup procs
+        # to <proc>__<srcstem>; prefer that alias when it exists
+        pn = f"{proc.lower()}__{os.path.splitext(os.path.basename(lst))[0].lower()}"
+        if port_procs is not None and pn in port_procs:
+            procname = pn
+        else:
+            procname = proc.lower()
+        return proc, vi, run_original(addr, vec, opokes), \
+            run_port(a.probe, procname, vec, ppokes)
 
     npass = ndiff = nto = 0
+    xdiff = {}
     if a.replay:
         results = []
         for ln in open(a.replay):
-            proc, vi, ro, rp = ln.split(None, 3)
-            results.append((proc, int(vi), ro,
-                            rp.strip() if rp.strip() == 'NORESULT'
-                            else eval(rp)))
+            proc, vi, rest = ln.split(None, 2)
+            # rest = '<ro> <rp>' where each is a tuple repr or a status word;
+            # tuple reprs contain spaces, so split on the " (" boundary
+            if rest.startswith('('):
+                i = rest.index(')') + 1          # first ')' ends the ro tuple
+                ro, rp = rest[:i], rest[i:].strip()
+            else:
+                ro, _, rp = rest.partition(' ')
+                rp = rp.strip()
+            if ro.startswith('('):
+                ro = eval(ro)
+            if rp.startswith('('):
+                rp = eval(rp)
+            results.append((proc, int(vi), ro, rp))
     else:
         raw = open(a.spec + '.raw', 'w')
         with ThreadPoolExecutor(max_workers=a.jobs) as pool:
@@ -256,6 +492,7 @@ def main():
         raw.close()
     ridx = {'ax':0,'bx':1,'cx':2,'dx':3,'si':4,'di':5,'bp':7}
     skip_of = {t[0]: t[4] for t in tasks}
+    class_of = {t[0]: t[8] for t in tasks}
     byproc = {}
     for proc, vi, ro, rp in results:
         byproc.setdefault(proc, []).append((vi, ro, rp))
@@ -274,6 +511,20 @@ def main():
             i = ridx[r]
             deltas = {int(ro[i],16) - int(rp[i],16) for ro, rp in ok}
             if len(deltas) == 1 and deltas != {0}:
+                norm.add(r)
+        # ax/dx stay strict UNLESS their (constant) delta equals a
+        # normalized pointer reg's delta — i.e. the proc genuinely returns
+        # a data pointer in ax (Octant* leave the advanced ptr there)
+        for r in ('ax', 'dx'):
+            if r in skip or len(ok) < 2:
+                continue
+            i = ridx[r]
+            deltas = {int(ro[i],16) - int(rp[i],16) for ro, rp in ok}
+            if len(deltas) != 1 or deltas == {0}:
+                continue
+            d = next(iter(deltas))
+            if any(next(iter({int(ro[ridx[pr]],16) - int(rp[ridx[pr]],16)
+                              for ro, rp in ok})) == d for pr in norm):
                 norm.add(r)
         for vi, ro, rp in rows:
             if ro in ('TIMEOUT','NORESULT'):
@@ -295,9 +546,16 @@ def main():
                 and fl_o == fl_p
             if same:
                 npass += 1
+            elif class_of[proc]:
+                # expected environment/variant divergence — bucketed, not a
+                # regression signal
+                xdiff[class_of[proc]] = xdiff.get(class_of[proc], 0) + 1
+                print(f'{proc} v{vi} XDIFF({class_of[proc]})')
             else:
                 ndiff += 1
                 print(f'{proc} v{vi} DIFF\n  orig: {ro}\n  port: {rp}')
-    print(f'== pass={npass} diff={ndiff} timeout={nto} skip={nskip}')
+    print(f'== pass={npass} diff={ndiff} xdiff={sum(xdiff.values())} '
+          f'{xdiff} timeout={nto} skip={nskip}')
+    sys.exit(1 if ndiff else 0)
 
 main()

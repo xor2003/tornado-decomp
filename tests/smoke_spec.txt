@@ -1,0 +1,21 @@
+# Fast regression smoke spec — original-vs-translated differential calls.
+# Covers: math/trig pure funcs, global-state procs, pointer-return procs,
+# one env-class proc per bucket (class= marks expected divergence, reported
+# as XDIFF not DIFF).
+LIB8086/MATHFUNC.lst:Sqrt
+LIB8086/MATHFUNC.lst:Sqrt32
+LIB8086/RANDOM.lst:RandX
+LIB8086/RANDOM.lst:FastRandX
+LIB8086/RANDOM.lst:ReSeed:skip=di:class=rtc
+LIB8086/TRIG.lst:Tangent
+LIB8086/TRIG.lst:FastArcTan
+LIB8086/TRIG.lst:ArcTan
+LIB8086/TRIG.lst:FastArcTan2
+LIB8086/TRIG.lst:ArcTan2
+LIB8086/TRIG.lst:ArcTan360
+LIB8086/POLYFILL.lst:Octant1
+LIB8086/POLYFILL.lst:Octant4
+LIB8086/POLYFILL.lst:Octant8
+LIB8086/VGA_DRVR.lst:ReadDACBlock:class=hwio
+LIB8086/OVERFLOW.lst:PrintWord:class=dosio
+LIB8086/CGA_DRVR.lst:CGA_CalcAddr:class=variant

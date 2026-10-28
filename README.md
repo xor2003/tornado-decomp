@@ -76,6 +76,27 @@ Four layers, each aimed at a different regression class:
    per-frame render hashes (`M2C_TICKHASH`/`M2C_FRAMEHASH`) and diffs
    them against `tests/golden/`. `--record` regenerates. Needs
    `TORNADO_GAMEDIR` to point at the FLIGHT data directory.
+5. **`tools/diff_procs.py`** — original-vs-translated differential unit
+   tests: every spec'd proc is located inside the shipped `FLIGHT.EXE`
+   (byte signature from its `.lst`, relocatable operands wildcarded),
+   called there under `kvikdos` (`--call-near`/`--call-far`), and the same
+   call made against the translated proc through `test_probe_all`
+   (generated registry over all weak wrappers). 5 input vectors cover
+   the normal path plus edge cases (`0x0000/0xffff/0x0001/0x8000/0x55aa/
+   0x7f7f`); `--auto` additionally seeds every data global the proc
+   references — and the global union for nested calls — with per-vector
+   edge values (`*ptr` cells get `@<peer>` pokes resolved in each side's
+   own layout, code-pointer cells keep their linked values).
+   Registers+flags are compared with IF/PF/AF masked (harness/lazy-flag
+   semantics) and linked-layout pointer registers normalized. Procs
+   whose divergence is environmental get `class=` in the spec
+   (`hwio`, `dosio`, `ivt`, `rtc`, `array`, `codeptr`, `variant`) and
+   report `XDIFF`, not `DIFF`; `diff>0` exits nonzero.
+   `tests/smoke_spec.txt` is the fast regression gate run by
+   `tests/run_tests.sh` (skip with `SKIP_DIFF=1`); `tests/diffspec.txt`
+   covers 281 procs — run `python3 tools/diff_procs.py tests/diffspec.txt
+   --auto -j8` for the full sweep (raw results cached in
+   `tests/diffspec.txt.raw`; `--replay` reclassifies without re-calling).
 
 `tools/test_prettify.py` — unit tests for the restyle pass (run with
 `python3 tools/test_prettify.py`).
