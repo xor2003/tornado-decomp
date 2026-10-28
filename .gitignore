@@ -4,3 +4,5 @@ tornado_lifted
 test_procs
 *.o
 __pycache__/
+test_smoke
+tests/smoke_current.txt

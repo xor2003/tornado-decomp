@@ -133,12 +133,31 @@ def main():
                     continue
                 nxt = lns[j]
                 break
-            # B: a removed ret whose next code is a new label -> fallthrough
+            # B: a removed ret whose next code is a new label, or the
+            # dispatch epilogue (assert(0)/__dispatch_call) -> fallthrough
             if RET_RE.search(dead):
-                if nxt is not None and LABEL_DEF.match(nxt):
-                    # legitimate only if an actual RET survives before nxt
-                    window = '\n'.join(lns[max(0, i - 40):i])
-                    if not re.search(r'\bRETN\(|\bRETF\(', window):
+                boundary = False
+                if nxt is not None:
+                    ns = nxt.strip()
+                    boundary = bool(
+                        LABEL_DEF.match(nxt) or ns.startswith('assert(0)') or
+                        ns.startswith('__dispatch_call') or
+                        ns.startswith('__disp'))
+                if boundary:
+                    # legitimate only if unconditional control flow
+                    # immediately precedes the removal (dedup keeps the
+                    # first copy, so the survivor is adjacent)
+                    prev_code = []
+                    for j in range(i - 1, max(0, i - 8), -1):
+                        if COMMENT.match(lns[j]):
+                            continue
+                        prev_code.append(lns[j])
+                        if len(prev_code) == 2:
+                            break
+                    window = '\n'.join(prev_code)
+                    if not re.search(r'\bRETN\(|\bRETF\(|\bgoto\b|\breturn\b|'
+                                     r'J\(return|while \(1\)|for \(;;\)',
+                                     window):
                         failures.append(
                             f"B {f}:{i+1} removed '{dead}' before label -> "
                             f"fallthrough: {nxt.strip()}")

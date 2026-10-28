@@ -278,7 +278,8 @@ edummylabel6:
 	POP(bx);
 	/* pop	ax */
 	POP(ax);
-/* m2c-phantom removed: 	J(RETF(0));	// 456 ret */
+	/* ret */
+	RETF(0);
 cleartoend:
 	// 466 
 	/* push	bx ;* kill: flags */

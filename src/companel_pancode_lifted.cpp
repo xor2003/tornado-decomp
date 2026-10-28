@@ -145,8 +145,9 @@ null:
 	/* clc		;cf = 0 = no error */
 	CLC;
 edummylabel11:
-	// 4391 
-/* m2c-phantom removed: 	J(RETF(0));	// 412 ret */
+	// 4391
+	/* ret */
+	RETF(0);
 
             assert(0);
             __dispatch_call_ext:

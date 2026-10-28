@@ -26,3 +26,31 @@ g++ -O2 obj_test/test_procs.o obj_test/asm.o \
 
 # 3. Structural audit: dropped REPT bodies, lost rets, dedup over-removal.
 python3 tools/test_codegen.py "$ASM_DIR" src
+
+# 4. ABI smoke test: call every weak proc wrapper with sentinel state.
+python3 tools/gen_smoke.py obj obj_test/test_smoke_gen.cpp
+g++ -O2 -w -Isrc -c obj_test/test_smoke_gen.cpp -o obj_test/test_smoke_gen.o
+# shellcheck disable=SC2086
+g++ -O2 obj_test/test_smoke_gen.o obj_test/asm.o \
+    $(find -L obj -name '*.o' ! -name 'asm.o' | sort | tr '\n' ' ') \
+    -o test_smoke -lncurses -lSDL2 -lpthread
+./test_smoke tests/smoke_current.txt
+
+if [ -f tests/smoke_expected.txt ]; then
+    # New non-PASS results vs the committed baseline are regressions.
+    NEW=$(comm -23 <(sort tests/smoke_current.txt | grep -v '^#') \
+                   <(sort tests/smoke_expected.txt | grep -v '^#'))
+    GONE=$(comm -13 <(sort tests/smoke_current.txt | grep -v '^#') \
+                    <(sort tests/smoke_expected.txt | grep -v '^#'))
+    if [ -n "$NEW" ]; then
+        echo "SMOKE REGRESSIONS (new non-pass results):"
+        echo "$NEW"
+        exit 1
+    fi
+    if [ -n "$GONE" ]; then
+        echo "smoke: results improved (update smoke_expected.txt):"
+        echo "$GONE"
+    fi
+else
+    echo "no tests/smoke_expected.txt - first run saved; commit it as baseline"
+fi
