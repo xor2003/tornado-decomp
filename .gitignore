@@ -1,4 +1,6 @@
 obj/
+obj_test/
 tornado_lifted
+test_procs
 *.o
 __pycache__/

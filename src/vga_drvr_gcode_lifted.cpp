@@ -3310,11 +3310,11 @@ edummylabel16:
 	/* jmp	ContBSprite */
 	goto contbsprite;
 writesprite:
-	// 2547 
+	// 2547
 	/* push	dx ;* kill: flags */
 	PUSH(dx);
 edummylabel17:
-	// 4589 
+	// 4589
 	/* push	si */
 	PUSH(si);
 	/* push	di */
@@ -3324,7 +3324,7 @@ edummylabel17:
 	/* xor	dh,dh */
 	XOR(dh, dh);
 wspriteloop:
-	// 4591 
+	// 4591
 	/* WSpriteLoop:	jmp	cx		;jump wrt width */
 	goto wspritebytes;
 	// 0 ;* this macro generates 9 bytes of code each iteration
@@ -3356,7 +3356,7 @@ dummylabel4:
 	/* jmp	WSpriteLoop */
 	goto wspriteloop;
 wspritedone:
-	// 4597 
+	// 4597
 	/* WSpriteDone:	pop	di */
 	POP(di);
 	/* pop	si */
