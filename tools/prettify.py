@@ -63,6 +63,8 @@ def parse_structs(headers_text):
 
     def sizeof(t, depth=0):
         t = t.strip()
+        if t.startswith('struct '):
+            t = t[7:]
         if t in BASE_SIZES:
             return BASE_SIZES[t]
         if t in sizes:
@@ -145,6 +147,8 @@ def collect(srcdir):
 
 
 def tsize(t, struct_sizes):
+    if t.startswith('struct '):
+        t = t[7:]
     return BASE_SIZES.get(t, struct_sizes.get(t))
 
 
@@ -157,7 +161,9 @@ DUMMY_RE = re.compile(r'^(dummy|__m2c_|edummy|m2c_)')
 def pick_name(cands, struct_sizes):
     """Pick the layout candidate for an offset: struct-typed bindings beat
     scalars (they reveal record structure); real names beat dummies."""
-    structs = [c for c in cands if c[1] in struct_sizes]
+    structs = [c for c in cands
+               if (c[1][7:] if c[1].startswith('struct ') else c[1])
+               in struct_sizes]
     reals = [c for c in cands if not DUMMY_RE.match(c[0])]
     for pool in (structs, reals, cands):
         if pool:
@@ -670,6 +676,14 @@ def rewrite_defines(txt, protected):
     return '\n'.join(out)
 
 
+# Hand-written runtime headers (not generated from .lst) — leave their
+# #defines alone; enum/constexpr rewrites there collide with stock macros.
+RUNTIME_HEADERS = {
+    'asm.h', 'asm_16.h', 'asm_32.h', 'asm_regs_m2c.h', 'data_layouts.h',
+    'error.h', 'mcb.h', 'memmgr.h', 'shadowstack.h', 'vgapal.h',
+}
+
+
 # ---------------------------------------------------------------------------
 def main():
     srcdir = sys.argv[1] if len(sys.argv) > 1 else 'src'
@@ -693,7 +707,8 @@ def main():
 
     files = sorted(glob.glob(os.path.join(srcdir, '*_lifted.cpp')) +
                    glob.glob(os.path.join(srcdir, '*.h')))
-    files = [f for f in files if not f.endswith('data_layouts.h')]
+    files = [f for f in files
+             if os.path.basename(f) not in RUNTIME_HEADERS]
     protected = collect_preproc_names(files)
     n_raddr = n_bind = n_def = n_copy = 0
     for path in files:

@@ -451,7 +451,6 @@ struct Seg_data {
     dw apilotskill[4];   // data+0x85f7..0x85ff
     db exploremode[24];   // data+0x85ff..0x8617
     struct clock clock24;   // data+0x8617
-    db _pad_8618[3];
     dw extstores[11];   // data+0x861b..0x8631
     package packages[3];   // data+0x8631..0x8649
     dw startwaypoint;   // data+0x8649
@@ -1629,12 +1628,7 @@ struct Seg_data {
     struct Row_data_d3a5 { word f0; dw f1; };
     Row_data_d3a5 minspeed[32];   // data+0xd3a5  (32 rows)
     dw dummy21cefb4a_data_1e6_2297;   // data+0xd425
-    struct landing landing1;   // data+0xd427
-    db _pad_d428[1];
-    struct landing landing2;   // data+0xd429
-    db _pad_d42a[1];
-    struct landing landing3;   // data+0xd42b
-    db _pad_d42c[1];
+    struct landing landing1[3];   // data+0xd427..0xd42d
     combat combat1[6];   // data+0xd42d..0xd45d
     waypoint taxiwp;   // data+0xd45d
     dw ac_vias[3];   // data+0xd46d..0xd473

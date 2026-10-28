@@ -245,6 +245,21 @@ class TestEmitDataLayouts(unittest.TestCase):
         txt, emitted = _emit(anchors, binds)
         self.assertEqual(emitted, {})
 
+    def test_struct_keyword_type_size(self):
+        # `struct clock` bindings: the `struct` prefix must not hide the type
+        # from tsize() — sizeof=1 under-size shifts every later member.
+        anchors = {'data': 0x100}
+        binds = [('data', 0x0, 'clk', 'struct clock', 1),
+                 ('data', 0x4, 'after', 'dw', 1)]
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, 'data_layouts.h')
+            emitted = P.emit_data_layouts(
+                p, anchors, binds, {'clock': 4})
+            txt = open(p).read()
+        # no padding may be emitted between clk and after
+        self.assertNotIn('_pad', txt)
+        self.assertEqual(emitted[('data', 0x4)], ('after', 'dw', 1))
+
     def test_struct_row_member_count_array_binding(self):
         # bindings of T(&x)[N] inside a run element must keep array-ness info
         # so rewrite_bindings emits the cast form, not a direct element ref
@@ -699,6 +714,8 @@ class TestMainIntegration(unittest.TestCase):
                 'void f() { {db tmp999=0;MYCOPY(score)} }\n')
             open(os.path.join(td, 'defs.h'), 'w').write(
                 '#define A 1\n#define B 2\n')
+            open(os.path.join(td, 'memmgr.h'), 'w').write(
+                '#define SUCCESS 0\n')
             argv = sys.argv
             try:
                 sys.argv = ['prettify.py', td]
@@ -713,6 +730,9 @@ class TestMainIntegration(unittest.TestCase):
                           open(os.path.join(td, 'game_lifted.cpp')).read())
             self.assertIn('enum {',
                           open(os.path.join(td, 'defs.h')).read())
+            # runtime headers are never rewritten
+            self.assertIn('#define SUCCESS 0',
+                          open(os.path.join(td, 'memmgr.h')).read())
 
 
 if __name__ == '__main__':
