@@ -111,25 +111,25 @@
          namespace m2c {
           void Initializer_mapview()
           {
-              {dw tmp999=map_zoom1;MYCOPY(mapzoom)}
-    {dw tmp999=45;MYCOPY(extravalue)}
-    {viewport tmp999={0,0,320,300,5,5};MYCOPY(vp)}
-    {viewport tmp999={0,0,320,200,5,5};MYCOPY(vp_full)}
-    {db tmp999=3;MYCOPY(dummycc3da1c9_data_18_852)}
-    {db tmp999=5;MYCOPY(dummycc3da1c9_data_19_853)}
-    {db tmp999[10]={p_ext,22,0,0,0,0,0,0,col_compass,0};MYCOPY(dummycc3da1c9_data_1a_854)}
-    {db tmp999[2]={p_ext,18};MYCOPY(dummycc3da1c9_data_24_855)}
-    {dw tmp999[2]={148,114};MYCOPY(dummycc3da1c9_data_26_856)}
-    {db tmp999[2]={p_ext,65};MYCOPY(dummycc3da1c9_data_2a_857)}
-    {dw tmp999=offset(data,rangevalsptr);MYCOPY(dummycc3da1c9_data_2c_858)}
-    {char tmp999[2]={'N','M'};MYCOPY(dummycc3da1c9_data_2e_859)}
-    {dw tmp999=offset(data,rangevalsdol);MYCOPY(rangevalsptr)}
-    {char tmp999[5]="10.0";MYCOPY(rangevalsdol)}
-    {char tmp999[5]=" 5.0";MYCOPY(dummycc3da1c9_data_38_865)}
-    {char tmp999[5]=" 2.5";MYCOPY(dummycc3da1c9_data_3d_866)}
-    {char tmp999[5]=" 1.2";MYCOPY(dummycc3da1c9_data_42_867)}
-    {char tmp999[5]=" 0.6";MYCOPY(dummycc3da1c9_data_47_868)}
-    {char tmp999[5]=" 0.3";MYCOPY(dummycc3da1c9_data_4c_869)}
+              mapzoom = map_zoom1;
+    extravalue = 45;
+    vp = viewport{0,0,320,300,5,5};
+    vp_full = viewport{0,0,320,200,5,5};
+    dummycc3da1c9_data_18_852 = 3;
+    dummycc3da1c9_data_19_853 = 5;
+    {db tmp999[10]={p_ext,22,0,0,0,0,0,0,col_compass,0};memcpy(&dummycc3da1c9_data_1a_854,&tmp999,sizeof tmp999);}
+    {db tmp999[2]={p_ext,18};memcpy(&dummycc3da1c9_data_24_855,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={148,114};memcpy(&dummycc3da1c9_data_26_856,&tmp999,sizeof tmp999);}
+    {db tmp999[2]={p_ext,65};memcpy(&dummycc3da1c9_data_2a_857,&tmp999,sizeof tmp999);}
+    dummycc3da1c9_data_2c_858 = offset(data,rangevalsptr);
+    {char tmp999[2]={'N','M'};memcpy(&dummycc3da1c9_data_2e_859,&tmp999,sizeof tmp999);}
+    rangevalsptr = offset(data,rangevalsdol);
+    {char tmp999[5]="10.0";memcpy(&rangevalsdol,&tmp999,sizeof tmp999);}
+    {char tmp999[5]=" 5.0";memcpy(&dummycc3da1c9_data_38_865,&tmp999,sizeof tmp999);}
+    {char tmp999[5]=" 2.5";memcpy(&dummycc3da1c9_data_3d_866,&tmp999,sizeof tmp999);}
+    {char tmp999[5]=" 1.2";memcpy(&dummycc3da1c9_data_42_867,&tmp999,sizeof tmp999);}
+    {char tmp999[5]=" 0.6";memcpy(&dummycc3da1c9_data_47_868,&tmp999,sizeof tmp999);}
+    {char tmp999[5]=" 0.3";memcpy(&dummycc3da1c9_data_4c_869,&tmp999,sizeof tmp999);}
 
           }
          }

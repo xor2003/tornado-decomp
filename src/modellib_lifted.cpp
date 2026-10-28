@@ -98,10 +98,10 @@
          namespace m2c {
           void Initializer_modellib()
           {
-              {dw tmp999=m2c::kglobal_initkbd1;MYCOPY(initctrlswitch)}
-    {dw tmp999=m2c::kglobal_initkbd2;MYCOPY(dummy70e08c8c_data_2_1705)}
-    {dw tmp999=m2c::kglobal_initjoy1;MYCOPY(dummy70e08c8c_data_4_1706)}
-    {dw tmp999=m2c::kglobal_initjoy2;MYCOPY(dummy70e08c8c_data_6_1707)}
+              initctrlswitch = m2c::kglobal_initkbd1;
+    dummy70e08c8c_data_2_1705 = m2c::kglobal_initkbd2;
+    dummy70e08c8c_data_4_1706 = m2c::kglobal_initjoy1;
+    dummy70e08c8c_data_6_1707 = m2c::kglobal_initjoy2;
 
           }
          }

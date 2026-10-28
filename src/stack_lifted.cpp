@@ -48,7 +48,7 @@
          namespace m2c {
           void Initializer_stack()
           {
-              {dw tmp999[256]={0};MYCOPY(progstack)}
+              {dw tmp999[256]={0};memcpy(&progstack,&tmp999,sizeof tmp999);}
 
           }
          }

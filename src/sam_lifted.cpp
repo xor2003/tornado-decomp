@@ -113,9 +113,9 @@
          namespace m2c {
           void Initializer_sam()
           {
-              {dw tmp999=15*100;MYCOPY(samtimer)}
-    {viewpoint tmp999={0,0,0,0,8,0,0,0};MYCOPY(sam_view)}
-    {viewpoint tmp999={0,0,0,0,0,0,0,0};MYCOPY(aim_view)}
+              samtimer = 15*100;
+    sam_view = viewpoint{0,0,0,0,8,0,0,0};
+    aim_view = viewpoint{0,0,0,0,0,0,0,0};
 
           }
          }

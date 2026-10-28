@@ -98,11 +98,11 @@
          namespace m2c {
           void Initializer_mobdraw()
           {
-              {dw tmp999=0;MYCOPY(temp1)}
-    {dw tmp999=0;MYCOPY(temp2)}
-    {dw tmp999=49152;MYCOPY(dummy339baa22_data_4_645)}
-    {dw tmp999=0;MYCOPY(sectoradjust)}
-    {dw tmp999=16384;MYCOPY(dummy339baa22_data_8_647)}
+              temp1 = 0;
+    temp2 = 0;
+    dummy339baa22_data_4_645 = 49152;
+    sectoradjust = 0;
+    dummy339baa22_data_8_647 = 16384;
 
           }
          }

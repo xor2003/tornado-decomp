@@ -106,18 +106,18 @@
          namespace m2c {
           void Initializer_music()
           {
-              {db tmp999=0;MYCOPY(installed)}
-    {db tmp999=0;MYCOPY(normalised)}
-    {char tmp999[11]="THEMEB.BIN";MYCOPY(speakerbin)}
-    {char tmp999[11]="THEMEA.BIN";MYCOPY(adlibbin)}
-    {char tmp999[11]="THEMER.BIN";MYCOPY(rolandbin)}
-    {dw tmp999=0;MYCOPY(musicdriveroff)}
-    {dw tmp999=0;MYCOPY(musicdriverseg)}
-    {dw tmp999=m2c::kglobal_installnull;MYCOPY(_installmusic)}
-    {dw tmp999=m2c::kglobal_installspkr;MYCOPY(dummy24ce8f3e_data_29_1398)}
-    {dw tmp999=m2c::kglobal_installblst;MYCOPY(dummy24ce8f3e_data_2b_1399)}
-    {dw tmp999=m2c::kglobal_installadlb;MYCOPY(dummy24ce8f3e_data_2d_1400)}
-    {dw tmp999=m2c::kglobal_installrlnd;MYCOPY(dummy24ce8f3e_data_2f_1401)}
+              installed = 0;
+    normalised = 0;
+    {char tmp999[11]="THEMEB.BIN";memcpy(&speakerbin,&tmp999,sizeof tmp999);}
+    {char tmp999[11]="THEMEA.BIN";memcpy(&adlibbin,&tmp999,sizeof tmp999);}
+    {char tmp999[11]="THEMER.BIN";memcpy(&rolandbin,&tmp999,sizeof tmp999);}
+    musicdriveroff = 0;
+    musicdriverseg = 0;
+    _installmusic = m2c::kglobal_installnull;
+    dummy24ce8f3e_data_29_1398 = m2c::kglobal_installspkr;
+    dummy24ce8f3e_data_2b_1399 = m2c::kglobal_installblst;
+    dummy24ce8f3e_data_2d_1400 = m2c::kglobal_installadlb;
+    dummy24ce8f3e_data_2f_1401 = m2c::kglobal_installrlnd;
 
           }
          }

@@ -205,17 +205,17 @@
          namespace m2c {
           void Initializer_secscan()
           {
-              {dw tmp999=m2c::kglobal_calccentre1;MYCOPY(calcsctrcentre)}
-    {dw tmp999=m2c::kglobal_calccentre2;MYCOPY(dummy70d71820_data_2_655)}
-    {dw tmp999=m2c::kglobal_calccentre8;MYCOPY(dummy70d71820_data_4_656)}
-    {dw tmp999=m2c::kglobal_calccentre16;MYCOPY(dummy70d71820_data_6_657)}
-    {dw tmp999=m2c::kglobal_testsector1;MYCOPY(sectorreject)}
-    {dw tmp999=m2c::kglobal_testsector2;MYCOPY(dummy70d71820_data_a_659)}
-    {dw tmp999=m2c::kglobal_testsector8;MYCOPY(dummy70d71820_data_c_660)}
-    {dw tmp999=m2c::kglobal_testsector16;MYCOPY(dummy70d71820_data_e_661)}
-    {dw tmp999=0;MYCOPY(flatscanmaxoff)}
-    {db tmp999=0;MYCOPY(hillsonlyflag)}
-    {db tmp999=0;MYCOPY(comprejecttest)}
+              calcsctrcentre = m2c::kglobal_calccentre1;
+    dummy70d71820_data_2_655 = m2c::kglobal_calccentre2;
+    dummy70d71820_data_4_656 = m2c::kglobal_calccentre8;
+    dummy70d71820_data_6_657 = m2c::kglobal_calccentre16;
+    sectorreject = m2c::kglobal_testsector1;
+    dummy70d71820_data_a_659 = m2c::kglobal_testsector2;
+    dummy70d71820_data_c_660 = m2c::kglobal_testsector8;
+    dummy70d71820_data_e_661 = m2c::kglobal_testsector16;
+    flatscanmaxoff = 0;
+    hillsonlyflag = 0;
+    comprejecttest = 0;
 
           }
          }

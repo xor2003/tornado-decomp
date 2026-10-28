@@ -48,8 +48,8 @@
          namespace m2c {
           void Initializer_ms_vga_1()
           {
-              {char tmp999[16]={'V','G','A',' ','M','S','p','r','i','t','e',' ','D','A','T','A'};MYCOPY(mspriteid)}
-    {dw tmp999=65535;MYCOPY(dummy433c2b03_msprdata_10_80)}
+              {char tmp999[16]={'V','G','A',' ','M','S','p','r','i','t','e',' ','D','A','T','A'};memcpy(&mspriteid,&tmp999,sizeof tmp999);}
+    dummy433c2b03_msprdata_10_80 = 65535;
 
           }
          }

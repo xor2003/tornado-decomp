@@ -141,32 +141,32 @@
          namespace m2c {
           void Initializer_comms()
           {
-              {db tmp999[2]={com1,0};MYCOPY(commsdevice)}
-    {dw tmp999=0;MYCOPY(dosvctrseg)}
-    {dw tmp999=0;MYCOPY(dosvctroff)}
-    {db tmp999[2]={0};MYCOPY(commsvector)}
-    {db tmp999=0;MYCOPY(txqtail)}
-    {dw tmp999=offset(data,txqhead);MYCOPY(txqwtptr)}
-    {dw tmp999=offset(data,txqhead);MYCOPY(txqrdptr)}
-    {db tmp999=0;MYCOPY(rxqtail)}
-    {dw tmp999=offset(data,rxqhead);MYCOPY(rxqwtptr)}
-    {dw tmp999=offset(data,rxqhead);MYCOPY(rxqrdptr)}
-    {dw tmp999=0;MYCOPY(commserror)}
-    {dw tmp999=baud9600;MYCOPY(baudrate)}
-    {dw tmp999=2304;MYCOPY(baudtable)}
-    {dw tmp999=384;MYCOPY(dummyfe3a59d1_data_18_319)}
-    {dw tmp999=192;MYCOPY(dummyfe3a59d1_data_1a_320)}
-    {dw tmp999=96;MYCOPY(dummyfe3a59d1_data_1c_321)}
-    {dw tmp999=48;MYCOPY(dummyfe3a59d1_data_1e_322)}
-    {dw tmp999=24;MYCOPY(dummyfe3a59d1_data_20_323)}
-    {dw tmp999=12;MYCOPY(dummyfe3a59d1_data_22_324)}
-    {dw tmp999=8;MYCOPY(dummyfe3a59d1_data_24_325)}
-    {dw tmp999=6;MYCOPY(dummyfe3a59d1_data_26_326)}
-    {dw tmp999=3;MYCOPY(dummyfe3a59d1_data_28_327)}
-    {dw tmp999=2;MYCOPY(dummyfe3a59d1_data_2a_328)}
-    {dw tmp999=1;MYCOPY(dummyfe3a59d1_data_2c_329)}
-    {db tmp999=0;MYCOPY(syncbyte)}
-    {db tmp999=0;MYCOPY(userabort)}
+              {db tmp999[2]={com1,0};memcpy(&commsdevice,&tmp999,sizeof tmp999);}
+    dosvctrseg = 0;
+    dosvctroff = 0;
+    {db tmp999[2]={0};memcpy(&commsvector,&tmp999,sizeof tmp999);}
+    txqtail = 0;
+    txqwtptr = offset(data,txqhead);
+    txqrdptr = offset(data,txqhead);
+    rxqtail = 0;
+    rxqwtptr = offset(data,rxqhead);
+    rxqrdptr = offset(data,rxqhead);
+    commserror = 0;
+    baudrate = baud9600;
+    baudtable = 2304;
+    dummyfe3a59d1_data_18_319 = 384;
+    dummyfe3a59d1_data_1a_320 = 192;
+    dummyfe3a59d1_data_1c_321 = 96;
+    dummyfe3a59d1_data_1e_322 = 48;
+    dummyfe3a59d1_data_20_323 = 24;
+    dummyfe3a59d1_data_22_324 = 12;
+    dummyfe3a59d1_data_24_325 = 8;
+    dummyfe3a59d1_data_26_326 = 6;
+    dummyfe3a59d1_data_28_327 = 3;
+    dummyfe3a59d1_data_2a_328 = 2;
+    dummyfe3a59d1_data_2c_329 = 1;
+    syncbyte = 0;
+    userabort = 0;
 
           }
          }

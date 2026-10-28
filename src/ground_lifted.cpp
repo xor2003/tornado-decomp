@@ -147,16 +147,16 @@
          namespace m2c {
           void Initializer_ground()
           {
-              {dw tmp999=m2c::kglobal_calcobjectpos1;MYCOPY(calcobjectpos)}
-    {dw tmp999=m2c::kglobal_calcobjectpos2;MYCOPY(dummydf58ca8e_data_2_699)}
-    {dw tmp999=m2c::kglobal_calcobjectpos4;MYCOPY(dummydf58ca8e_data_4_700)}
-    {dw tmp999=m2c::kglobal_calcobjectpos8;MYCOPY(dummydf58ca8e_data_6_701)}
-    {dw tmp999=m2c::kglobal_calcobjectpos16;MYCOPY(dummydf58ca8e_data_8_702)}
-    {db tmp999=38;MYCOPY(scanvertexloop)}
-    {db tmp999=38;MYCOPY(dummydf58ca8e_viscode_b_1288)}
-    {db tmp999=38;MYCOPY(dummydf58ca8e_viscode_c_1296)}
-    {db tmp999=38;MYCOPY(scanflatloop)}
-    {db tmp999=38;MYCOPY(dummydf58ca8e_viscode_e_1338)}
+              calcobjectpos = m2c::kglobal_calcobjectpos1;
+    dummydf58ca8e_data_2_699 = m2c::kglobal_calcobjectpos2;
+    dummydf58ca8e_data_4_700 = m2c::kglobal_calcobjectpos4;
+    dummydf58ca8e_data_6_701 = m2c::kglobal_calcobjectpos8;
+    dummydf58ca8e_data_8_702 = m2c::kglobal_calcobjectpos16;
+    scanvertexloop = 38;
+    dummydf58ca8e_viscode_b_1288 = 38;
+    dummydf58ca8e_viscode_c_1296 = 38;
+    scanflatloop = 38;
+    dummydf58ca8e_viscode_e_1338 = 38;
 
           }
          }

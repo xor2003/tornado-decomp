@@ -95,21 +95,21 @@
          namespace m2c {
           void Initializer_newmouse()
           {
-              {db tmp999[2]={0};MYCOPY(mouseflag)}
-    {dw tmp999=0;MYCOPY(mousexmin)}
-    {dw tmp999=639;MYCOPY(mousexmax)}
-    {dw tmp999=0;MYCOPY(mouseymin)}
-    {dw tmp999=399;MYCOPY(mouseymax)}
-    {dw tmp999=320;MYCOPY(mousex)}
-    {dw tmp999=200;MYCOPY(mousey)}
-    {dw tmp999=320;MYCOPY(_mousex)}
-    {dw tmp999=200;MYCOPY(_mousey)}
-    {db tmp999=0;MYCOPY(lhsbutton)}
-    {db tmp999=0;MYCOPY(rhsbutton)}
-    {db tmp999=0;MYCOPY(_lhsbutton)}
-    {db tmp999=0;MYCOPY(_rhsbutton)}
-    {dw tmp999=0;MYCOPY(xmickeys)}
-    {dw tmp999=0;MYCOPY(ymickeys)}
+              {db tmp999[2]={0};memcpy(&mouseflag,&tmp999,sizeof tmp999);}
+    mousexmin = 0;
+    mousexmax = 639;
+    mouseymin = 0;
+    mouseymax = 399;
+    mousex = 320;
+    mousey = 200;
+    _mousex = 320;
+    _mousey = 200;
+    lhsbutton = 0;
+    rhsbutton = 0;
+    _lhsbutton = 0;
+    _rhsbutton = 0;
+    xmickeys = 0;
+    ymickeys = 0;
 
           }
          }

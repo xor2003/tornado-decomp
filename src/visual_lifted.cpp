@@ -132,9 +132,9 @@
          namespace m2c {
           void Initializer_visual()
           {
-              {dw tmp999=m2c::kglobal_belowclouds;MYCOPY(sortclouds)}
-    {dw tmp999=m2c::kglobal_inclouds;MYCOPY(dummy67ecaf93_data_2_53)}
-    {dw tmp999=m2c::kglobal_aboveclouds;MYCOPY(dummy67ecaf93_data_4_54)}
+              sortclouds = m2c::kglobal_belowclouds;
+    dummy67ecaf93_data_2_53 = m2c::kglobal_inclouds;
+    dummy67ecaf93_data_4_54 = m2c::kglobal_aboveclouds;
 
           }
          }

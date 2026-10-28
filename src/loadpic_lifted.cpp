@@ -110,7 +110,7 @@
          namespace m2c {
           void Initializer_loadpic()
           {
-              {db tmp999=0;MYCOPY(fadeflag)}
+              fadeflag = 0;
 
           }
          }

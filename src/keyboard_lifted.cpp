@@ -92,9 +92,9 @@
          namespace m2c {
           void Initializer_keyboard()
           {
-              {db tmp999[128]={0};MYCOPY(key)}
-    {dw tmp999=0;MYCOPY(dosvctrseg)}
-    {dw tmp999=0;MYCOPY(dosvctroff)}
+              {db tmp999[128]={0};memcpy(&key,&tmp999,sizeof tmp999);}
+    dosvctrseg = 0;
+    dosvctroff = 0;
 
           }
          }

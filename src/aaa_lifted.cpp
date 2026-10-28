@@ -183,17 +183,17 @@
          namespace m2c {
           void Initializer_aaa()
           {
-              {db tmp999=0;MYCOPY(aaamode1)}
-    {db tmp999=0;MYCOPY(aaamode2)}
-    {dw tmp999=1*100;MYCOPY(aaatimer1)}
-    {dw tmp999=2*100;MYCOPY(aaatimer2)}
-    {dw tmp999=65535;MYCOPY(aaaptr1)}
-    {dw tmp999=65535;MYCOPY(aaaptr2)}
-    {dw tmp999=65535;MYCOPY(sourceptr)}
-    {dw tmp999=65535;MYCOPY(mobileptr)}
-    {viewpoint tmp999={0,0,0,0,8,0,0,0};MYCOPY(aaa_view1)}
-    {viewpoint tmp999={0,0,0,0,8,0,0,0};MYCOPY(aaa_view2)}
-    {viewpoint tmp999={0,0,0,0,0,0,0,0};MYCOPY(aim_view)}
+              aaamode1 = 0;
+    aaamode2 = 0;
+    aaatimer1 = 1*100;
+    aaatimer2 = 2*100;
+    aaaptr1 = 65535;
+    aaaptr2 = 65535;
+    sourceptr = 65535;
+    mobileptr = 65535;
+    aaa_view1 = viewpoint{0,0,0,0,8,0,0,0};
+    aaa_view2 = viewpoint{0,0,0,0,8,0,0,0};
+    aim_view = viewpoint{0,0,0,0,0,0,0,0};
 
           }
          }

@@ -70,10 +70,10 @@
          namespace m2c {
           void Initializer_warnings()
           {
-              {db tmp999=0;MYCOPY(attention)}
-    {dw tmp999=0;MYCOPY(prevredwarn2)}
-    {dw tmp999=0;MYCOPY(prevambwarn2)}
-    {dw tmp999=flash_delay;MYCOPY(attntimer)}
+              attention = 0;
+    prevredwarn2 = 0;
+    prevambwarn2 = 0;
+    attntimer = flash_delay;
 
           }
          }

@@ -72,12 +72,12 @@
          namespace m2c {
           void Initializer_overflow()
           {
-              {dw tmp999=0;MYCOPY(sstemp)}
-    {dw tmp999=0;MYCOPY(sptemp)}
-    {db tmp999[2]={0};MYCOPY(overflowflag)}
-    {dw tmp999=0;MYCOPY(dosvctrseg)}
-    {dw tmp999=0;MYCOPY(dosvctroff)}
-    {char tmp999[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};MYCOPY(hexchars)}
+              sstemp = 0;
+    sptemp = 0;
+    {db tmp999[2]={0};memcpy(&overflowflag,&tmp999,sizeof tmp999);}
+    dosvctrseg = 0;
+    dosvctroff = 0;
+    {char tmp999[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};memcpy(&hexchars,&tmp999,sizeof tmp999);}
 
           }
          }

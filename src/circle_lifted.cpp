@@ -455,27 +455,27 @@
          namespace m2c {
           void Initializer_circle()
           {
-              {dw tmp999=0;MYCOPY(circlexmin)}
-    {dw tmp999=319;MYCOPY(circlexmax)}
-    {dw tmp999=0;MYCOPY(circleymin)}
-    {dw tmp999=199;MYCOPY(circleymax)}
-    {db tmp999[2]={0};MYCOPY(circleflag)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(circlevectors)}
-    {dw tmp999=m2c::kglobal_clipleft;MYCOPY(dummy08c42053_data_c_86)}
-    {dw tmp999=m2c::kglobal_clipright;MYCOPY(dummy08c42053_data_e_87)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(dummy08c42053_data_10_88)}
-    {dw tmp999=m2c::kglobal_clipbelow;MYCOPY(dummy08c42053_data_12_89)}
-    {dw tmp999=m2c::kglobal_clipbelowleft;MYCOPY(dummy08c42053_data_14_90)}
-    {dw tmp999=m2c::kglobal_clipbelowright;MYCOPY(dummy08c42053_data_16_91)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(dummy08c42053_data_18_92)}
-    {dw tmp999=m2c::kglobal_clipabove;MYCOPY(dummy08c42053_data_1a_93)}
-    {dw tmp999=m2c::kglobal_clipaboveleft;MYCOPY(dummy08c42053_data_1c_94)}
-    {dw tmp999=m2c::kglobal_clipaboveright;MYCOPY(dummy08c42053_data_1e_95)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(dummy08c42053_data_20_96)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(dummy08c42053_data_22_97)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(dummy08c42053_data_24_98)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(dummy08c42053_data_26_99)}
-    {dw tmp999=m2c::kglobal_circleexit;MYCOPY(dummy08c42053_data_28_100)}
+              circlexmin = 0;
+    circlexmax = 319;
+    circleymin = 0;
+    circleymax = 199;
+    {db tmp999[2]={0};memcpy(&circleflag,&tmp999,sizeof tmp999);}
+    circlevectors = m2c::kglobal_circleexit;
+    dummy08c42053_data_c_86 = m2c::kglobal_clipleft;
+    dummy08c42053_data_e_87 = m2c::kglobal_clipright;
+    dummy08c42053_data_10_88 = m2c::kglobal_circleexit;
+    dummy08c42053_data_12_89 = m2c::kglobal_clipbelow;
+    dummy08c42053_data_14_90 = m2c::kglobal_clipbelowleft;
+    dummy08c42053_data_16_91 = m2c::kglobal_clipbelowright;
+    dummy08c42053_data_18_92 = m2c::kglobal_circleexit;
+    dummy08c42053_data_1a_93 = m2c::kglobal_clipabove;
+    dummy08c42053_data_1c_94 = m2c::kglobal_clipaboveleft;
+    dummy08c42053_data_1e_95 = m2c::kglobal_clipaboveright;
+    dummy08c42053_data_20_96 = m2c::kglobal_circleexit;
+    dummy08c42053_data_22_97 = m2c::kglobal_circleexit;
+    dummy08c42053_data_24_98 = m2c::kglobal_circleexit;
+    dummy08c42053_data_26_99 = m2c::kglobal_circleexit;
+    dummy08c42053_data_28_100 = m2c::kglobal_circleexit;
 
           }
          }

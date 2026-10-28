@@ -107,9 +107,9 @@
          namespace m2c {
           void Initializer_smokedrw()
           {
-              {dw tmp999=49152;MYCOPY(dummy45e8f1d9_data_0_643)}
-    {dw tmp999=0;MYCOPY(sectoradjust)}
-    {dw tmp999=16384;MYCOPY(dummy45e8f1d9_data_4_645)}
+              dummy45e8f1d9_data_0_643 = 49152;
+    sectoradjust = 0;
+    dummy45e8f1d9_data_4_645 = 16384;
 
           }
          }

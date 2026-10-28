@@ -452,18 +452,18 @@
          namespace m2c {
           void Initializer_vgapanel()
           {
-              {dw tmp999=m2c::kglobal_loadpilotpan;MYCOPY(loadpanel)}
-    {dw tmp999=m2c::kglobal_loadpsidepan;MYCOPY(dummya8598969_data_2_1617)}
-    {dw tmp999=m2c::kglobal_loadnavigpan;MYCOPY(dummya8598969_data_4_1618)}
-    {dw tmp999=m2c::kglobal_loadnsidepan;MYCOPY(dummya8598969_data_6_1619)}
-    {dw tmp999=m2c::kglobal_loadextrnpan;MYCOPY(dummya8598969_data_8_1620)}
-    {dw tmp999=m2c::kglobal_loadlookdownpan;MYCOPY(dummya8598969_data_a_1621)}
-    {dw tmp999=m2c::kglobal_loadframepan;MYCOPY(dummya8598969_data_c_1622)}
-    {dw tmp999=m2c::kglobal_loadmappan;MYCOPY(dummya8598969_data_e_1623)}
-    {dw tmp999=65535;MYCOPY(panelrgbptr)}
-    {dw tmp999=0;MYCOPY(failures)}
-    {dw tmp999=arm_blink_time;MYCOPY(armblinktimer)}
-    {db tmp999=0;MYCOPY(armblink)}
+              loadpanel = m2c::kglobal_loadpilotpan;
+    dummya8598969_data_2_1617 = m2c::kglobal_loadpsidepan;
+    dummya8598969_data_4_1618 = m2c::kglobal_loadnavigpan;
+    dummya8598969_data_6_1619 = m2c::kglobal_loadnsidepan;
+    dummya8598969_data_8_1620 = m2c::kglobal_loadextrnpan;
+    dummya8598969_data_a_1621 = m2c::kglobal_loadlookdownpan;
+    dummya8598969_data_c_1622 = m2c::kglobal_loadframepan;
+    dummya8598969_data_e_1623 = m2c::kglobal_loadmappan;
+    panelrgbptr = 65535;
+    failures = 0;
+    armblinktimer = arm_blink_time;
+    armblink = 0;
 
           }
          }

@@ -86,11 +86,11 @@
          namespace m2c {
           void Initializer_chsprite()
           {
-              {dw tmp999=0;MYCOPY(cellxmin)}
-    {dw tmp999=319;MYCOPY(cellxmax)}
-    {dw tmp999=0;MYCOPY(cellymin)}
-    {dw tmp999=199;MYCOPY(cellymax)}
-    {db tmp999[2]={0};MYCOPY(col)}
+              cellxmin = 0;
+    cellxmax = 319;
+    cellymin = 0;
+    cellymax = 199;
+    {db tmp999[2]={0};memcpy(&col,&tmp999,sizeof tmp999);}
 
           }
          }

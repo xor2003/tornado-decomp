@@ -89,10 +89,10 @@
          namespace m2c {
           void Initializer_random()
           {
-              {dw tmp999=12431;MYCOPY(seedlo)}
-    {dw tmp999=8765;MYCOPY(seedhi)}
-    {db tmp999[2]={0};MYCOPY(rndindex)}
-    {db tmp999[256]={0};MYCOPY(rndtable)}
+              seedlo = 12431;
+    seedhi = 8765;
+    {db tmp999[2]={0};memcpy(&rndindex,&tmp999,sizeof tmp999);}
+    {db tmp999[256]={0};memcpy(&rndtable,&tmp999,sizeof tmp999);}
 
           }
          }

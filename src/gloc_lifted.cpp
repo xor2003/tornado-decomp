@@ -100,12 +100,12 @@
          namespace m2c {
           void Initializer_gloc()
           {
-              {dw tmp999=0;MYCOPY(blktimer)}
-    {dw tmp999=0;MYCOPY(redtimer)}
-    {dw tmp999=0;MYCOPY(gloctimer)}
-    {dw tmp999=0;MYCOPY(oxytimer)}
-    {db tmp999[2]={0};MYCOPY(curtains)}
-    {dw tmp999=0;MYCOPY(curtainstimer)}
+              blktimer = 0;
+    redtimer = 0;
+    gloctimer = 0;
+    oxytimer = 0;
+    {db tmp999[2]={0};memcpy(&curtains,&tmp999,sizeof tmp999);}
+    curtainstimer = 0;
 
           }
          }

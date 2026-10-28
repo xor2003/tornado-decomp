@@ -799,10 +799,10 @@
          namespace m2c {
           void Initializer_control()
           {
-              {db tmp999=0;MYCOPY(dataexchange)}
-    {db tmp999=0;MYCOPY(fadeoutflag)}
-    {db tmp999=0;MYCOPY(maptestmode)}
-    {viewpoint tmp999={0,31,57344,57344,0,0,0,0};MYCOPY(test_view)}
+              dataexchange = 0;
+    fadeoutflag = 0;
+    maptestmode = 0;
+    test_view = viewpoint{0,31,57344,57344,0,0,0,0};
 
           }
          }

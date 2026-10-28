@@ -141,24 +141,24 @@
          namespace m2c {
           void Initializer_features()
           {
-              {db tmp999[2]={1,0};MYCOPY(gndtextenabled)}
-    {dw tmp999=m2c::kglobal_scanvertex1;MYCOPY(scanvertexlist)}
-    {dw tmp999=m2c::kglobal_scanvertex2;MYCOPY(dummy289c48d8_data_4_765)}
-    {dw tmp999=m2c::kglobal_scanvertex8;MYCOPY(dummy289c48d8_data_6_766)}
-    {dw tmp999=m2c::kglobal_scanvertex16;MYCOPY(dummy289c48d8_data_8_767)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_a_833)}
-    {db tmp999=38;MYCOPY(vertexloop1)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_c_933)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_d_941)}
-    {db tmp999=38;MYCOPY(vertexloop2)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_f_982)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_10_990)}
-    {db tmp999=38;MYCOPY(vertexloop8)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_12_1034)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_13_1042)}
-    {db tmp999=38;MYCOPY(vertexloop16)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_15_1092)}
-    {db tmp999=38;MYCOPY(dummy289c48d8_viscode_16_1100)}
+              {db tmp999[2]={1,0};memcpy(&gndtextenabled,&tmp999,sizeof tmp999);}
+    scanvertexlist = m2c::kglobal_scanvertex1;
+    dummy289c48d8_data_4_765 = m2c::kglobal_scanvertex2;
+    dummy289c48d8_data_6_766 = m2c::kglobal_scanvertex8;
+    dummy289c48d8_data_8_767 = m2c::kglobal_scanvertex16;
+    dummy289c48d8_viscode_a_833 = 38;
+    vertexloop1 = 38;
+    dummy289c48d8_viscode_c_933 = 38;
+    dummy289c48d8_viscode_d_941 = 38;
+    vertexloop2 = 38;
+    dummy289c48d8_viscode_f_982 = 38;
+    dummy289c48d8_viscode_10_990 = 38;
+    vertexloop8 = 38;
+    dummy289c48d8_viscode_12_1034 = 38;
+    dummy289c48d8_viscode_13_1042 = 38;
+    vertexloop16 = 38;
+    dummy289c48d8_viscode_15_1092 = 38;
+    dummy289c48d8_viscode_16_1100 = 38;
 
           }
          }

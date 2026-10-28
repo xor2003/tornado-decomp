@@ -693,36 +693,36 @@
          namespace m2c {
           void Initializer_vscreen()
           {
-              {viewport tmp999={0,0,0,0,0,0};MYCOPY(vp)}
-    {dw tmp999=0;MYCOPY(clipl)}
-    {dw tmp999=0;MYCOPY(clipr)}
-    {dw tmp999=0;MYCOPY(clipb)}
-    {dw tmp999=0;MYCOPY(clipa)}
-    {dw tmp999=0;MYCOPY(xadjust)}
-    {dw tmp999=0;MYCOPY(yadjust)}
-    {dw tmp999=0;MYCOPY(x_org)}
-    {dw tmp999=0;MYCOPY(y_org)}
-    {dw tmp999=0;MYCOPY(xcrtmax)}
-    {dw tmp999=0;MYCOPY(ycrtmax)}
-    {dw tmp999=0;MYCOPY(vsinr)}
-    {dw tmp999=0;MYCOPY(vcosr)}
-    {dw tmp999=0;MYCOPY(objectdrawmode)}
-    {dw tmp999=m2c::kglobal_drawpoly;MYCOPY(polyclipmode)}
-    {dw tmp999=m2c::kglobal_clippoly;MYCOPY(dummy36e2d4b2_data_26_435)}
-    {dw tmp999=m2c::kglobal_nullpoly;MYCOPY(dummy36e2d4b2_data_28_436)}
-    {dw tmp999=m2c::kglobal_drawpolyline;MYCOPY(plineclipmode)}
-    {dw tmp999=m2c::kglobal_clippolyline;MYCOPY(dummy36e2d4b2_data_2c_438)}
-    {dw tmp999=m2c::kglobal_nullpolyline;MYCOPY(dummy36e2d4b2_data_2e_439)}
-    {dw tmp999=0;MYCOPY(lastptr)}
-    {db tmp999[2]={0};MYCOPY(lookahead)}
-    {dw tmp999=m2c::kglobal_intoleftclip;MYCOPY(intopolyclip)}
-    {dw tmp999=m2c::kglobal_intorightclip;MYCOPY(dummy36e2d4b2_data_36_447)}
-    {dw tmp999=m2c::kglobal_intobelowclip;MYCOPY(dummy36e2d4b2_data_38_448)}
-    {dw tmp999=m2c::kglobal_intoaboveclip;MYCOPY(dummy36e2d4b2_data_3a_449)}
-    {dw tmp999=m2c::kglobal_sortpolycrt;MYCOPY(dummy36e2d4b2_data_3c_450)}
-    {dw tmp999=0;MYCOPY(tempptr1)}
-    {dw tmp999=0;MYCOPY(tempptr2)}
-    {dw tmp999=0;MYCOPY(tempptr3)}
+              vp = viewport{0,0,0,0,0,0};
+    clipl = 0;
+    clipr = 0;
+    clipb = 0;
+    clipa = 0;
+    xadjust = 0;
+    yadjust = 0;
+    x_org = 0;
+    y_org = 0;
+    xcrtmax = 0;
+    ycrtmax = 0;
+    vsinr = 0;
+    vcosr = 0;
+    objectdrawmode = 0;
+    polyclipmode = m2c::kglobal_drawpoly;
+    dummy36e2d4b2_data_26_435 = m2c::kglobal_clippoly;
+    dummy36e2d4b2_data_28_436 = m2c::kglobal_nullpoly;
+    plineclipmode = m2c::kglobal_drawpolyline;
+    dummy36e2d4b2_data_2c_438 = m2c::kglobal_clippolyline;
+    dummy36e2d4b2_data_2e_439 = m2c::kglobal_nullpolyline;
+    lastptr = 0;
+    {db tmp999[2]={0};memcpy(&lookahead,&tmp999,sizeof tmp999);}
+    intopolyclip = m2c::kglobal_intoleftclip;
+    dummy36e2d4b2_data_36_447 = m2c::kglobal_intorightclip;
+    dummy36e2d4b2_data_38_448 = m2c::kglobal_intobelowclip;
+    dummy36e2d4b2_data_3a_449 = m2c::kglobal_intoaboveclip;
+    dummy36e2d4b2_data_3c_450 = m2c::kglobal_sortpolycrt;
+    tempptr1 = 0;
+    tempptr2 = 0;
+    tempptr3 = 0;
 
           }
          }

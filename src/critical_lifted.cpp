@@ -61,10 +61,10 @@
          namespace m2c {
           void Initializer_critical()
           {
-              {db tmp999[2]={0};MYCOPY(criterrflag)}
-    {dw tmp999=0;MYCOPY(criterrcode)}
-    {dw tmp999=0;MYCOPY(dosvctrseg)}
-    {dw tmp999=0;MYCOPY(dosvctroff)}
+              {db tmp999[2]={0};memcpy(&criterrflag,&tmp999,sizeof tmp999);}
+    criterrcode = 0;
+    dosvctrseg = 0;
+    dosvctroff = 0;
 
           }
          }

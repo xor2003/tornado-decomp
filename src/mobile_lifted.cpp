@@ -193,23 +193,23 @@
          namespace m2c {
           void Initializer_mobile()
           {
-              {dw tmp999=0;MYCOPY(calcobjectpos)}
-    {dw tmp999=1;MYCOPY(dummy515b4f89_data_2_705)}
-    {dw tmp999=2;MYCOPY(dummy515b4f89_data_4_706)}
-    {dw tmp999=3;MYCOPY(dummy515b4f89_data_6_707)}
-    {dw tmp999=4;MYCOPY(dummy515b4f89_data_8_708)}
-    {dw tmp999=0;MYCOPY(rgridhdg)}
-    {dw tmp999=0;MYCOPY(rgridpitch)}
-    {dw tmp999=0;MYCOPY(rgridroll)}
-    {db tmp999=38;MYCOPY(scanvertexloop1)}
-    {db tmp999=38;MYCOPY(dummy515b4f89_viscode_11_1334)}
-    {db tmp999=38;MYCOPY(dummy515b4f89_viscode_12_1342)}
-    {db tmp999=38;MYCOPY(scanvertexloop2)}
-    {db tmp999=38;MYCOPY(dummy515b4f89_viscode_14_1385)}
-    {db tmp999=38;MYCOPY(dummy515b4f89_viscode_15_1393)}
-    {db tmp999=38;MYCOPY(scanvertexloop3)}
-    {db tmp999=38;MYCOPY(dummy515b4f89_viscode_17_1436)}
-    {db tmp999=38;MYCOPY(dummy515b4f89_viscode_18_1444)}
+              calcobjectpos = 0;
+    dummy515b4f89_data_2_705 = 1;
+    dummy515b4f89_data_4_706 = 2;
+    dummy515b4f89_data_6_707 = 3;
+    dummy515b4f89_data_8_708 = 4;
+    rgridhdg = 0;
+    rgridpitch = 0;
+    rgridroll = 0;
+    scanvertexloop1 = 38;
+    dummy515b4f89_viscode_11_1334 = 38;
+    dummy515b4f89_viscode_12_1342 = 38;
+    scanvertexloop2 = 38;
+    dummy515b4f89_viscode_14_1385 = 38;
+    dummy515b4f89_viscode_15_1393 = 38;
+    scanvertexloop3 = 38;
+    dummy515b4f89_viscode_17_1436 = 38;
+    dummy515b4f89_viscode_18_1444 = 38;
 
           }
          }

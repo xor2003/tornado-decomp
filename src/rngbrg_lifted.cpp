@@ -134,20 +134,20 @@
          namespace m2c {
           void Initializer_rngbrg()
           {
-              {dw tmp999[2]={0*128,0};MYCOPY(octtable)}
-    {dw tmp999[2]={128*128,65535};MYCOPY(dummycd474ec0_data_4_1813)}
-    {dw tmp999[2]={256*128,65535};MYCOPY(dummycd474ec0_data_8_1814)}
-    {dw tmp999[2]={128*128,0};MYCOPY(dummycd474ec0_data_c_1815)}
-    {dw tmp999[2]={0*128,65535};MYCOPY(dummycd474ec0_data_10_1816)}
-    {dw tmp999[2]={384*128,0};MYCOPY(dummycd474ec0_data_14_1817)}
-    {dw tmp999[2]={256*128,0};MYCOPY(dummycd474ec0_data_18_1818)}
-    {dw tmp999[2]={384*128,65535};MYCOPY(dummycd474ec0_data_1c_1819)}
-    {dd tmp999=0;MYCOPY(flatdx)}
-    {dd tmp999=0;MYCOPY(flatdy)}
-    {dd tmp999=0;MYCOPY(slantrng)}
-    {dd tmp999=0;MYCOPY(slantdx)}
-    {dd tmp999=0;MYCOPY(slantdy)}
-    {dd tmp999=0;MYCOPY(slantdz)}
+              {dw tmp999[2]={0*128,0};memcpy(&octtable,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={128*128,65535};memcpy(&dummycd474ec0_data_4_1813,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={256*128,65535};memcpy(&dummycd474ec0_data_8_1814,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={128*128,0};memcpy(&dummycd474ec0_data_c_1815,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={0*128,65535};memcpy(&dummycd474ec0_data_10_1816,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={384*128,0};memcpy(&dummycd474ec0_data_14_1817,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={256*128,0};memcpy(&dummycd474ec0_data_18_1818,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={384*128,65535};memcpy(&dummycd474ec0_data_1c_1819,&tmp999,sizeof tmp999);}
+    flatdx = 0;
+    flatdy = 0;
+    slantrng = 0;
+    slantdx = 0;
+    slantdy = 0;
+    slantdz = 0;
 
           }
          }

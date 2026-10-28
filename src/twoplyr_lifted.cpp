@@ -145,18 +145,18 @@
          namespace m2c {
           void Initializer_twoplyr()
           {
-              {mobile tmp999={25,6,0,0,65535};MYCOPY(opp_mobile)}
-    {viewpoint tmp999={100,100,0,0,5000,0,0,0};MYCOPY(opp_view)}
-    {drone_data tmp999={0,2,0};MYCOPY(opp_drone)}
-    {dw tmp999=0;MYCOPY(oppvtas)}
-    {db tmp999=0;MYCOPY(oppflags1)}
-    {db tmp999=0;MYCOPY(oppflags2)}
-    {db tmp999=0;MYCOPY(oppflags3)}
-    {comms tmp999={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};MYCOPY(tx)}
-    {comms tmp999={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};MYCOPY(rx)}
-    {db tmp999=0;MYCOPY(rxflag)}
-    {db tmp999=0;MYCOPY(txgameend)}
-    {db tmp999=0;MYCOPY(rxgameend)}
+              opp_mobile = mobile{25,6,0,0,65535};
+    opp_view = viewpoint{100,100,0,0,5000,0,0,0};
+    opp_drone = drone_data{0,2,0};
+    oppvtas = 0;
+    oppflags1 = 0;
+    oppflags2 = 0;
+    oppflags3 = 0;
+    tx = comms{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    rx = comms{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    rxflag = 0;
+    txgameend = 0;
+    rxgameend = 0;
 
           }
          }

@@ -108,22 +108,22 @@
          namespace m2c {
           void Initializer_trnsfrm()
           {
-              {dw tmp999=0;MYCOPY(v_sinh)}
-    {dw tmp999=0;MYCOPY(v_cosh)}
-    {dw tmp999=0;MYCOPY(v_sinp)}
-    {dw tmp999=0;MYCOPY(v_cosp)}
-    {dw tmp999=0;MYCOPY(v_sinr)}
-    {dw tmp999=0;MYCOPY(v_cosr)}
-    {dw tmp999=0;MYCOPY(a1)}
-    {dw tmp999=0;MYCOPY(a2)}
-    {dw tmp999=0;MYCOPY(a3)}
-    {dw tmp999=0;MYCOPY(a4)}
-    {dw tmp999=0;MYCOPY(a5)}
-    {dw tmp999=0;MYCOPY(a6)}
-    {dw tmp999=0;MYCOPY(a7)}
-    {dw tmp999=0;MYCOPY(a8)}
-    {dw tmp999=0;MYCOPY(a9)}
-    {dd tmp999=0;MYCOPY(tmprng)}
+              v_sinh = 0;
+    v_cosh = 0;
+    v_sinp = 0;
+    v_cosp = 0;
+    v_sinr = 0;
+    v_cosr = 0;
+    a1 = 0;
+    a2 = 0;
+    a3 = 0;
+    a4 = 0;
+    a5 = 0;
+    a6 = 0;
+    a7 = 0;
+    a8 = 0;
+    a9 = 0;
+    tmprng = 0;
 
           }
          }

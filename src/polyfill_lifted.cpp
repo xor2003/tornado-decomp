@@ -264,35 +264,35 @@
          namespace m2c {
           void Initializer_polyfill()
           {
-              {dw tmp999=0;MYCOPY(miny)}
-    {dw tmp999=0;MYCOPY(maxy)}
-    {dw tmp999=0;MYCOPY(lhsptr)}
-    {dw tmp999=0;MYCOPY(rhsptr)}
-    {dw tmp999[200]={0};MYCOPY(lhsx)}
-    {dw tmp999[200]={0};MYCOPY(rhsx)}
-    {dw tmp999=0;MYCOPY(oldx)}
-    {dw tmp999=0;MYCOPY(oldy)}
-    {dw tmp999=0;MYCOPY(newx)}
-    {dw tmp999=0;MYCOPY(newy)}
-    {dw tmp999=0;MYCOPY(fillvector)}
-    {dw tmp999=0;MYCOPY(octantbase)}
-    {dw tmp999=m2c::kglobal_octant2;MYCOPY(octant)}
-    {dw tmp999=m2c::kglobal_octant1;MYCOPY(dummy91ec39fc_data_336_60)}
-    {dw tmp999=m2c::kglobal_octant3;MYCOPY(dummy91ec39fc_data_338_61)}
-    {dw tmp999=m2c::kglobal_octant4;MYCOPY(dummy91ec39fc_data_33a_62)}
-    {dw tmp999=m2c::kglobal_octant7;MYCOPY(dummy91ec39fc_data_33c_63)}
-    {dw tmp999=m2c::kglobal_octant8;MYCOPY(dummy91ec39fc_data_33e_64)}
-    {dw tmp999=m2c::kglobal_octant6;MYCOPY(dummy91ec39fc_data_340_65)}
-    {dw tmp999=m2c::kglobal_octant5;MYCOPY(dummy91ec39fc_data_342_66)}
-    {dw tmp999=m2c::kglobal_rvrsoctant2;MYCOPY(rvrsoctant)}
-    {dw tmp999=m2c::kglobal_rvrsoctant1;MYCOPY(dummy91ec39fc_data_346_68)}
-    {dw tmp999=m2c::kglobal_rvrsoctant3;MYCOPY(dummy91ec39fc_data_348_69)}
-    {dw tmp999=m2c::kglobal_rvrsoctant4;MYCOPY(dummy91ec39fc_data_34a_70)}
-    {dw tmp999=m2c::kglobal_rvrsoctant7;MYCOPY(dummy91ec39fc_data_34c_71)}
-    {dw tmp999=m2c::kglobal_rvrsoctant8;MYCOPY(dummy91ec39fc_data_34e_72)}
-    {dw tmp999=m2c::kglobal_rvrsoctant6;MYCOPY(dummy91ec39fc_data_350_73)}
-    {dw tmp999=m2c::kglobal_rvrsoctant5;MYCOPY(dummy91ec39fc_data_352_74)}
-    {db tmp999[2]={0};MYCOPY(tempcol)}
+              miny = 0;
+    maxy = 0;
+    lhsptr = 0;
+    rhsptr = 0;
+    {dw tmp999[200]={0};memcpy(&lhsx,&tmp999,sizeof tmp999);}
+    {dw tmp999[200]={0};memcpy(&rhsx,&tmp999,sizeof tmp999);}
+    oldx = 0;
+    oldy = 0;
+    newx = 0;
+    newy = 0;
+    fillvector = 0;
+    octantbase = 0;
+    octant = m2c::kglobal_octant2;
+    dummy91ec39fc_data_336_60 = m2c::kglobal_octant1;
+    dummy91ec39fc_data_338_61 = m2c::kglobal_octant3;
+    dummy91ec39fc_data_33a_62 = m2c::kglobal_octant4;
+    dummy91ec39fc_data_33c_63 = m2c::kglobal_octant7;
+    dummy91ec39fc_data_33e_64 = m2c::kglobal_octant8;
+    dummy91ec39fc_data_340_65 = m2c::kglobal_octant6;
+    dummy91ec39fc_data_342_66 = m2c::kglobal_octant5;
+    rvrsoctant = m2c::kglobal_rvrsoctant2;
+    dummy91ec39fc_data_346_68 = m2c::kglobal_rvrsoctant1;
+    dummy91ec39fc_data_348_69 = m2c::kglobal_rvrsoctant3;
+    dummy91ec39fc_data_34a_70 = m2c::kglobal_rvrsoctant4;
+    dummy91ec39fc_data_34c_71 = m2c::kglobal_rvrsoctant7;
+    dummy91ec39fc_data_34e_72 = m2c::kglobal_rvrsoctant8;
+    dummy91ec39fc_data_350_73 = m2c::kglobal_rvrsoctant6;
+    dummy91ec39fc_data_352_74 = m2c::kglobal_rvrsoctant5;
+    {db tmp999[2]={0};memcpy(&tempcol,&tmp999,sizeof tmp999);}
 
           }
          }

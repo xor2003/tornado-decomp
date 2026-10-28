@@ -63,8 +63,8 @@
          namespace m2c {
           void Initializer_statdraw()
           {
-              {mobile tmp999={0,0,0,0,65535};MYCOPY(tmp_mob)}
-    {viewpoint tmp999={0,0,0,0,0,0,0,0};MYCOPY(tmp_view)}
+              tmp_mob = mobile{0,0,0,0,65535};
+    tmp_view = viewpoint{0,0,0,0,0,0,0,0};
 
           }
          }

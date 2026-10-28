@@ -96,23 +96,23 @@
          namespace m2c {
           void Initializer_timer()
           {
-              {dw tmp999=0;MYCOPY(ticker)}
-    {dw tmp999=0;MYCOPY(frames)}
-    {dw tmp999=0;MYCOPY(lastframe)}
-    {dw tmp999=0;MYCOPY(countdown)}
-    {dd tmp999=0;MYCOPY(elapsedtime)}
-    {dd tmp999=0;MYCOPY(frameelaptime)}
-    {dw tmp999=100;MYCOPY(count100)}
-    {db tmp999[2]={0};MYCOPY(intrcntr)}
-    {dw tmp999=0;MYCOPY(dostimer)}
-    {dw tmp999=0;MYCOPY(dosvctrseg)}
-    {dw tmp999=0;MYCOPY(dosvctroff)}
-    {db tmp999[2]={0};MYCOPY(uservctr20flag)}
-    {dd tmp999=0;MYCOPY(uservctr20)}
-    {db tmp999[2]={0};MYCOPY(uservctr100flag)}
-    {dd tmp999=0;MYCOPY(uservctr100)}
-    {dw tmp999=0;MYCOPY(dostimeroff)}
-    {dw tmp999=0;MYCOPY(dostimerseg)}
+              ticker = 0;
+    frames = 0;
+    lastframe = 0;
+    countdown = 0;
+    elapsedtime = 0;
+    frameelaptime = 0;
+    count100 = 100;
+    {db tmp999[2]={0};memcpy(&intrcntr,&tmp999,sizeof tmp999);}
+    dostimer = 0;
+    dosvctrseg = 0;
+    dosvctroff = 0;
+    {db tmp999[2]={0};memcpy(&uservctr20flag,&tmp999,sizeof tmp999);}
+    uservctr20 = 0;
+    {db tmp999[2]={0};memcpy(&uservctr100flag,&tmp999,sizeof tmp999);}
+    uservctr100 = 0;
+    dostimeroff = 0;
+    dostimerseg = 0;
 
           }
          }

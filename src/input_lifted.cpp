@@ -158,48 +158,48 @@
          namespace m2c {
           void Initializer_input()
           {
-              {db tmp999[2]={input_all,0};MYCOPY(inputmode)}
-    {dw tmp999=m2c::kglobal_setchar;MYCOPY(filter)}
-    {dw tmp999=m2c::kglobal_alphaonly;MYCOPY(dummyc380a36f_data_4_228)}
-    {dw tmp999=m2c::kglobal_numonly;MYCOPY(dummyc380a36f_data_6_229)}
-    {db tmp999[2]={127,0};MYCOPY(cursorchar)}
-    {dw tmp999=offset(data,keytable);MYCOPY(tableptr)}
-    {dw tmp999=offset(data,shifttable);MYCOPY(dummyc380a36f_data_c_232)}
-    {char tmp999[8]={0,27,'1','2','3','4','5','6'};MYCOPY(keytable)}
-    {char tmp999[8]={'7','8','9','0','-','=',8,0};MYCOPY(dummyc380a36f_data_16_234)}
-    {char tmp999[8]={'Q','W','E','R','T','Y','U','I'};MYCOPY(dummyc380a36f_data_1e_235)}
-    {char tmp999[8]={'O','P','[',']','\r',0,'A','S'};MYCOPY(dummyc380a36f_data_26_236)}
-    {char tmp999[8]={'D','F','G','H','J','K','L',';'};MYCOPY(dummyc380a36f_data_2e_237)}
-    {char tmp999[8]={'\'','\\',0,'`','Z','X','C','V'};MYCOPY(dummyc380a36f_data_36_238)}
-    {char tmp999[8]={'B','N','M',',','.','/',0,'*'};MYCOPY(dummyc380a36f_data_3e_239)}
-    {char tmp999[8]={0,' ',0,0,0,0,0,0};MYCOPY(dummyc380a36f_data_46_240)}
-    {db tmp999[8]={nul,nul,nul,nul,nul,nul,nul,nul};MYCOPY(dummyc380a36f_data_4e_241)}
-    {char tmp999[8]={0,0,'-',8,0,0,'+',0};MYCOPY(dummyc380a36f_data_56_242)}
-    {db tmp999[8]={nul,nul,nul,del,nul,nul,nul,nul};MYCOPY(dummyc380a36f_data_5e_243)}
-    {char tmp999[8]={0,27,'!','@','#','$','%','^'};MYCOPY(shifttable)}
-    {char tmp999[8]={'&','*','(',')','_','+',8,0};MYCOPY(dummyc380a36f_data_6e_245)}
-    {char tmp999[8]={'q','w','e','r','t','y','u','i'};MYCOPY(dummyc380a36f_data_76_246)}
-    {char tmp999[8]={'o','p','{','}','\r',0,'a','s'};MYCOPY(dummyc380a36f_data_7e_247)}
-    {char tmp999[8]={'d','f','g','h','j','k','l',':'};MYCOPY(dummyc380a36f_data_86_248)}
-    {char tmp999[8]={'\"','|',0,'~','z','x','c','v'};MYCOPY(dummyc380a36f_data_8e_249)}
-    {char tmp999[8]={'b','n','m','<','>','?',0,'*'};MYCOPY(dummyc380a36f_data_96_250)}
-    {char tmp999[8]={0,' ',0,0,0,0,0,0};MYCOPY(dummyc380a36f_data_9e_251)}
-    {db tmp999[8]={nul,nul,nul,nul,nul,nul,nul,nul};MYCOPY(dummyc380a36f_data_a6_252)}
-    {char tmp999[8]={0,0,'-',8,0,0,'+',0};MYCOPY(dummyc380a36f_data_ae_253)}
-    {db tmp999[8]={nul,nul,nul,del,nul,nul,nul,nul};MYCOPY(dummyc380a36f_data_b6_254)}
-    {menukey tmp999={1,0,0};MYCOPY(menukeylist)}
-    {menukey tmp999={57,0,0};MYCOPY(__m2c_structrow_c380a36f_269)}
-    {menukey tmp999={59,0,0};MYCOPY(__m2c_structrow_c380a36f_270)}
-    {menukey tmp999={60,0,0};MYCOPY(__m2c_structrow_c380a36f_271)}
-    {menukey tmp999={61,0,0};MYCOPY(__m2c_structrow_c380a36f_272)}
-    {menukey tmp999={62,0,0};MYCOPY(__m2c_structrow_c380a36f_273)}
-    {menukey tmp999={63,0,0};MYCOPY(__m2c_structrow_c380a36f_274)}
-    {menukey tmp999={64,0,0};MYCOPY(__m2c_structrow_c380a36f_275)}
-    {menukey tmp999={65,0,0};MYCOPY(__m2c_structrow_c380a36f_276)}
-    {menukey tmp999={66,0,0};MYCOPY(__m2c_structrow_c380a36f_277)}
-    {menukey tmp999={67,0,0};MYCOPY(__m2c_structrow_c380a36f_278)}
-    {menukey tmp999={68,0,0};MYCOPY(__m2c_structrow_c380a36f_279)}
-    {db tmp999=255;MYCOPY(dummyc380a36f_data_e2_280)}
+              {db tmp999[2]={input_all,0};memcpy(&inputmode,&tmp999,sizeof tmp999);}
+    filter = m2c::kglobal_setchar;
+    dummyc380a36f_data_4_228 = m2c::kglobal_alphaonly;
+    dummyc380a36f_data_6_229 = m2c::kglobal_numonly;
+    {db tmp999[2]={127,0};memcpy(&cursorchar,&tmp999,sizeof tmp999);}
+    tableptr = offset(data,keytable);
+    dummyc380a36f_data_c_232 = offset(data,shifttable);
+    {char tmp999[8]={0,27,'1','2','3','4','5','6'};memcpy(&keytable,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'7','8','9','0','-','=',8,0};memcpy(&dummyc380a36f_data_16_234,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'Q','W','E','R','T','Y','U','I'};memcpy(&dummyc380a36f_data_1e_235,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'O','P','[',']','\r',0,'A','S'};memcpy(&dummyc380a36f_data_26_236,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'D','F','G','H','J','K','L',';'};memcpy(&dummyc380a36f_data_2e_237,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'\'','\\',0,'`','Z','X','C','V'};memcpy(&dummyc380a36f_data_36_238,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'B','N','M',',','.','/',0,'*'};memcpy(&dummyc380a36f_data_3e_239,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={0,' ',0,0,0,0,0,0};memcpy(&dummyc380a36f_data_46_240,&tmp999,sizeof tmp999);}
+    {db tmp999[8]={nul,nul,nul,nul,nul,nul,nul,nul};memcpy(&dummyc380a36f_data_4e_241,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={0,0,'-',8,0,0,'+',0};memcpy(&dummyc380a36f_data_56_242,&tmp999,sizeof tmp999);}
+    {db tmp999[8]={nul,nul,nul,del,nul,nul,nul,nul};memcpy(&dummyc380a36f_data_5e_243,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={0,27,'!','@','#','$','%','^'};memcpy(&shifttable,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'&','*','(',')','_','+',8,0};memcpy(&dummyc380a36f_data_6e_245,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'q','w','e','r','t','y','u','i'};memcpy(&dummyc380a36f_data_76_246,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'o','p','{','}','\r',0,'a','s'};memcpy(&dummyc380a36f_data_7e_247,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'d','f','g','h','j','k','l',':'};memcpy(&dummyc380a36f_data_86_248,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'\"','|',0,'~','z','x','c','v'};memcpy(&dummyc380a36f_data_8e_249,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={'b','n','m','<','>','?',0,'*'};memcpy(&dummyc380a36f_data_96_250,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={0,' ',0,0,0,0,0,0};memcpy(&dummyc380a36f_data_9e_251,&tmp999,sizeof tmp999);}
+    {db tmp999[8]={nul,nul,nul,nul,nul,nul,nul,nul};memcpy(&dummyc380a36f_data_a6_252,&tmp999,sizeof tmp999);}
+    {char tmp999[8]={0,0,'-',8,0,0,'+',0};memcpy(&dummyc380a36f_data_ae_253,&tmp999,sizeof tmp999);}
+    {db tmp999[8]={nul,nul,nul,del,nul,nul,nul,nul};memcpy(&dummyc380a36f_data_b6_254,&tmp999,sizeof tmp999);}
+    menukeylist = menukey{1,0,0};
+    __m2c_structrow_c380a36f_269 = menukey{57,0,0};
+    __m2c_structrow_c380a36f_270 = menukey{59,0,0};
+    __m2c_structrow_c380a36f_271 = menukey{60,0,0};
+    __m2c_structrow_c380a36f_272 = menukey{61,0,0};
+    __m2c_structrow_c380a36f_273 = menukey{62,0,0};
+    __m2c_structrow_c380a36f_274 = menukey{63,0,0};
+    __m2c_structrow_c380a36f_275 = menukey{64,0,0};
+    __m2c_structrow_c380a36f_276 = menukey{65,0,0};
+    __m2c_structrow_c380a36f_277 = menukey{66,0,0};
+    __m2c_structrow_c380a36f_278 = menukey{67,0,0};
+    __m2c_structrow_c380a36f_279 = menukey{68,0,0};
+    dummyc380a36f_data_e2_280 = 255;
 
           }
          }

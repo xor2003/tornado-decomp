@@ -379,38 +379,38 @@
          namespace m2c {
           void Initializer_helicops()
           {
-              {dw tmp999=65535;MYCOPY(helicopterptr)}
-    {dw tmp999=65535;MYCOPY(perfdataptr)}
-    {mobile tmp999={0,0,0,0,65535};MYCOPY(hc_mobile)}
-    {viewpoint tmp999={0,0,0,0,0,0,0,0};MYCOPY(hc_view)}
-    {helicopter tmp999={drone_unknown,dead,0,0,0,0,255,0,65535,0,0,0,0,0,0,0,0,0,0,0,0};MYCOPY(hc_data)}
-    {dw tmp999=0;MYCOPY(hc_autohfine)}
-    {dw tmp999=0;MYCOPY(hc_autoalt)}
-    {dw tmp999=0;MYCOPY(hc_autovtas)}
-    {dd tmp999=0;MYCOPY(hc_wprng)}
-    {dw tmp999=0;MYCOPY(hc_wpbrg)}
-    {dw tmp999=0;MYCOPY(hc_wpbrgfine)}
-    {dw tmp999=0;MYCOPY(hc_thetaab)}
-    {dw tmp999=0;MYCOPY(hc_thetabc)}
-    {dw tmp999=0;MYCOPY(hc_thetaabc)}
-    {dw tmp999=0;MYCOPY(hc_rturn)}
-    {dw tmp999=m2c::kglobal_ctrlnull;MYCOPY(controlmode)}
-    {dw tmp999=m2c::kglobal_ctrltakeoff;MYCOPY(dummyd90eb516_data_5a_1878)}
-    {dw tmp999=m2c::kglobal_ctrltrack;MYCOPY(dummyd90eb516_data_5c_1879)}
-    {dw tmp999=m2c::kglobal_ctrlapproach;MYCOPY(dummyd90eb516_data_5e_1880)}
-    {dw tmp999=m2c::kglobal_ctrltouchdown;MYCOPY(dummyd90eb516_data_60_1881)}
-    {dw tmp999=offset(data,ah64apache);MYCOPY(perfdataptrs)}
-    {dw tmp999=offset(data,mi24hind);MYCOPY(dummyd90eb516_data_64_1887)}
-    {dw tmp999=offset(data,ch47chinook);MYCOPY(dummyd90eb516_data_66_1888)}
-    {dw tmp999=offset(data,mi26halo);MYCOPY(dummyd90eb516_data_68_1889)}
-    {perf_data tmp999={offset(data,takeoff1),offset(data,cruise1)};MYCOPY(ah64apache)}
-    {perf_data tmp999={offset(data,takeoff1),offset(data,cruise1)};MYCOPY(mi24hind)}
-    {perf_data tmp999={offset(data,takeoff2),offset(data,cruise2)};MYCOPY(ch47chinook)}
-    {perf_data tmp999={offset(data,takeoff2),offset(data,cruise2)};MYCOPY(mi26halo)}
-    {takeoff tmp999={333};MYCOPY(takeoff1)}
-    {takeoff tmp999={200};MYCOPY(takeoff2)}
-    {cruise tmp999={15000,2176,96,0};MYCOPY(cruise1)}
-    {cruise tmp999={15000,1836,64,1};MYCOPY(cruise2)}
+              helicopterptr = 65535;
+    perfdataptr = 65535;
+    hc_mobile = mobile{0,0,0,0,65535};
+    hc_view = viewpoint{0,0,0,0,0,0,0,0};
+    hc_data = helicopter{drone_unknown,dead,0,0,0,0,255,0,65535,0,0,0,0,0,0,0,0,0,0,0,0};
+    hc_autohfine = 0;
+    hc_autoalt = 0;
+    hc_autovtas = 0;
+    hc_wprng = 0;
+    hc_wpbrg = 0;
+    hc_wpbrgfine = 0;
+    hc_thetaab = 0;
+    hc_thetabc = 0;
+    hc_thetaabc = 0;
+    hc_rturn = 0;
+    controlmode = m2c::kglobal_ctrlnull;
+    dummyd90eb516_data_5a_1878 = m2c::kglobal_ctrltakeoff;
+    dummyd90eb516_data_5c_1879 = m2c::kglobal_ctrltrack;
+    dummyd90eb516_data_5e_1880 = m2c::kglobal_ctrlapproach;
+    dummyd90eb516_data_60_1881 = m2c::kglobal_ctrltouchdown;
+    perfdataptrs = offset(data,ah64apache);
+    dummyd90eb516_data_64_1887 = offset(data,mi24hind);
+    dummyd90eb516_data_66_1888 = offset(data,ch47chinook);
+    dummyd90eb516_data_68_1889 = offset(data,mi26halo);
+    ah64apache = perf_data{offset(data,takeoff1),offset(data,cruise1)};
+    mi24hind = perf_data{offset(data,takeoff1),offset(data,cruise1)};
+    ch47chinook = perf_data{offset(data,takeoff2),offset(data,cruise2)};
+    mi26halo = perf_data{offset(data,takeoff2),offset(data,cruise2)};
+    takeoff1 = takeoff{333};
+    takeoff2 = takeoff{200};
+    cruise1 = cruise{15000,2176,96,0};
+    cruise2 = cruise{15000,1836,64,1};
 
           }
          }

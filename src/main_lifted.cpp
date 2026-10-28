@@ -109,8 +109,8 @@
          namespace m2c {
           void Initializer_main()
           {
-              {db tmp999=0;MYCOPY(videomode)}
-    {db tmp999=0;MYCOPY(returncode)}
+              videomode = 0;
+    returncode = 0;
 
           }
          }

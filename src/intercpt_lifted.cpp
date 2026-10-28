@@ -72,9 +72,9 @@
          namespace m2c {
           void Initializer_intercpt()
           {
-              {dw tmp999=0;MYCOPY(unitvctrtgtx)}
-    {dw tmp999=0;MYCOPY(unitvctrtgty)}
-    {dw tmp999=0;MYCOPY(unitvctrtgtz)}
+              unitvctrtgtx = 0;
+    unitvctrtgty = 0;
+    unitvctrtgtz = 0;
 
           }
          }

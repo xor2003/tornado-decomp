@@ -87,24 +87,24 @@
          namespace m2c {
           void Initializer_messages()
           {
-              {dw tmp999[32]={offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol)};MYCOPY(msgqueue)}
-    {dw tmp999=0;MYCOPY(msgqueueindex)}
-    {dw tmp999=offset(data,nullmsgdol);MYCOPY(msgptr)}
-    {dw tmp999=0;MYCOPY(msgtimer)}
-    {db tmp999[2]={0};MYCOPY(msgdelay)}
-    {db tmp999[8]={255,0,255,0,119,0,col_lcd,0};MYCOPY(lcdattr)}
-    {db tmp999=3;MYCOPY(dummyacba704c_data_50_531)}
-    {db tmp999=5;MYCOPY(dummyacba704c_data_51_532)}
-    {db tmp999[2]={p_ext,18};MYCOPY(dummyacba704c_data_52_533)}
-    {dw tmp999[2]={pilotx,piloty};MYCOPY(dummyacba704c_data_54_534)}
-    {db tmp999[2]={p_ext,54};MYCOPY(dummyacba704c_data_58_535)}
-    {dw tmp999=offset(data,lcdattr);MYCOPY(dummyacba704c_data_5a_536)}
-    {db tmp999=3;MYCOPY(dummyacba704c_data_5d_539)}
-    {db tmp999=5;MYCOPY(dummyacba704c_data_5e_540)}
-    {db tmp999[2]={p_ext,18};MYCOPY(dummyacba704c_data_5f_541)}
-    {dw tmp999[2]={navigx,navigy};MYCOPY(dummyacba704c_data_61_542)}
-    {db tmp999[2]={p_ext,54};MYCOPY(dummyacba704c_data_65_543)}
-    {dw tmp999=offset(data,lcdattr);MYCOPY(dummyacba704c_data_67_544)}
+              {dw tmp999[32]={offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol),offset(data,nullmsgdol)};memcpy(&msgqueue,&tmp999,sizeof tmp999);}
+    msgqueueindex = 0;
+    msgptr = offset(data,nullmsgdol);
+    msgtimer = 0;
+    {db tmp999[2]={0};memcpy(&msgdelay,&tmp999,sizeof tmp999);}
+    {db tmp999[8]={255,0,255,0,119,0,col_lcd,0};memcpy(&lcdattr,&tmp999,sizeof tmp999);}
+    dummyacba704c_data_50_531 = 3;
+    dummyacba704c_data_51_532 = 5;
+    {db tmp999[2]={p_ext,18};memcpy(&dummyacba704c_data_52_533,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={pilotx,piloty};memcpy(&dummyacba704c_data_54_534,&tmp999,sizeof tmp999);}
+    {db tmp999[2]={p_ext,54};memcpy(&dummyacba704c_data_58_535,&tmp999,sizeof tmp999);}
+    dummyacba704c_data_5a_536 = offset(data,lcdattr);
+    dummyacba704c_data_5d_539 = 3;
+    dummyacba704c_data_5e_540 = 5;
+    {db tmp999[2]={p_ext,18};memcpy(&dummyacba704c_data_5f_541,&tmp999,sizeof tmp999);}
+    {dw tmp999[2]={navigx,navigy};memcpy(&dummyacba704c_data_61_542,&tmp999,sizeof tmp999);}
+    {db tmp999[2]={p_ext,54};memcpy(&dummyacba704c_data_65_543,&tmp999,sizeof tmp999);}
+    dummyacba704c_data_67_544 = offset(data,lcdattr);
 
           }
          }

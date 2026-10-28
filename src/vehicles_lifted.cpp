@@ -211,22 +211,22 @@
          namespace m2c {
           void Initializer_vehicles()
           {
-              {dw tmp999=0;MYCOPY(vehicletype)}
-    {dw tmp999=0;MYCOPY(numvehicles)}
-    {dw tmp999=0;MYCOPY(convoyptr)}
-    {dw tmp999=0;MYCOPY(routeptr)}
-    {dw tmp999=0;MYCOPY(dist)}
-    {dw tmp999=0;MYCOPY(distfine)}
-    {db tmp999=0;MYCOPY(leadvehicle)}
-    {db tmp999=0;MYCOPY(stopconvoy)}
-    {dw tmp999=1364;MYCOPY(sinslope)}
-    {dw tmp999=1024;MYCOPY(dummy8197178e_data_10_2055)}
-    {dw tmp999=32740;MYCOPY(cosslope)}
-    {dw tmp999=32752;MYCOPY(dummy8197178e_data_14_2059)}
-    {dw tmp999=m2c::kglobal_checkhdgn;MYCOPY(checkswitch)}
-    {dw tmp999=m2c::kglobal_checkhdge;MYCOPY(dummy8197178e_data_18_2069)}
-    {dw tmp999=m2c::kglobal_checkhdgs;MYCOPY(dummy8197178e_data_1a_2070)}
-    {dw tmp999=m2c::kglobal_checkhdgw;MYCOPY(dummy8197178e_data_1c_2071)}
+              vehicletype = 0;
+    numvehicles = 0;
+    convoyptr = 0;
+    routeptr = 0;
+    dist = 0;
+    distfine = 0;
+    leadvehicle = 0;
+    stopconvoy = 0;
+    sinslope = 1364;
+    dummy8197178e_data_10_2055 = 1024;
+    cosslope = 32740;
+    dummy8197178e_data_14_2059 = 32752;
+    checkswitch = m2c::kglobal_checkhdgn;
+    dummy8197178e_data_18_2069 = m2c::kglobal_checkhdge;
+    dummy8197178e_data_1a_2070 = m2c::kglobal_checkhdgs;
+    dummy8197178e_data_1c_2071 = m2c::kglobal_checkhdgw;
 
           }
          }

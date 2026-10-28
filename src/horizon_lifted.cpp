@@ -251,32 +251,32 @@
          namespace m2c {
           void Initializer_horizon()
           {
-              {db tmp999[2]={0};MYCOPY(overcast)}
-    {db tmp999[2]={0};MYCOPY(fog)}
-    {db tmp999[2]={0};MYCOPY(night)}
-    {db tmp999=col_gnd1;MYCOPY(gndcol)}
-    {db tmp999=col_sky12;MYCOPY(skycol)}
-    {db tmp999=0;MYCOPY(topcol)}
-    {db tmp999=0;MYCOPY(botcol)}
-    {db tmp999=0;MYCOPY(lhscol)}
-    {db tmp999=0;MYCOPY(rhscol)}
-    {dw tmp999=0;MYCOPY(hx1)}
-    {db tmp999[2]={0};MYCOPY(hy1)}
-    {dw tmp999=0;MYCOPY(hx2)}
-    {db tmp999[2]={0};MYCOPY(hy2)}
-    {dw tmp999=0;MYCOPY(newpitch)}
-    {dw tmp999=m2c::kglobal_octant2;MYCOPY(octant)}
-    {dw tmp999=m2c::kglobal_octant1;MYCOPY(dummy62bf9e66_data_18_1022)}
-    {dw tmp999=m2c::kglobal_octant7;MYCOPY(dummy62bf9e66_data_1a_1023)}
-    {dw tmp999=m2c::kglobal_octant8;MYCOPY(dummy62bf9e66_data_1c_1024)}
-    {db tmp999[2]={1,0};MYCOPY(gradenabled)}
-    {db tmp999[2]={0};MYCOPY(gradvisible)}
-    {db tmp999[5]={0,0,0,0,255};MYCOPY(gradpoly)}
-    {dw tmp999=m2c::near_offset_external(vga_gnd1);MYCOPY(gndrgbptr)}
-    {dw tmp999=m2c::near_offset_external(vga_sky1);MYCOPY(skyrgbptr)}
-    {dw tmp999=m2c::kglobal_belowclouds;MYCOPY(skyswitch)}
-    {dw tmp999=m2c::kglobal_inclouds;MYCOPY(dummy62bf9e66_data_2d_1040)}
-    {dw tmp999=m2c::kglobal_aboveclouds;MYCOPY(dummy62bf9e66_data_2f_1041)}
+              {db tmp999[2]={0};memcpy(&overcast,&tmp999,sizeof tmp999);}
+    {db tmp999[2]={0};memcpy(&fog,&tmp999,sizeof tmp999);}
+    {db tmp999[2]={0};memcpy(&night,&tmp999,sizeof tmp999);}
+    gndcol = col_gnd1;
+    skycol = col_sky12;
+    topcol = 0;
+    botcol = 0;
+    lhscol = 0;
+    rhscol = 0;
+    hx1 = 0;
+    {db tmp999[2]={0};memcpy(&hy1,&tmp999,sizeof tmp999);}
+    hx2 = 0;
+    {db tmp999[2]={0};memcpy(&hy2,&tmp999,sizeof tmp999);}
+    newpitch = 0;
+    octant = m2c::kglobal_octant2;
+    dummy62bf9e66_data_18_1022 = m2c::kglobal_octant1;
+    dummy62bf9e66_data_1a_1023 = m2c::kglobal_octant7;
+    dummy62bf9e66_data_1c_1024 = m2c::kglobal_octant8;
+    {db tmp999[2]={1,0};memcpy(&gradenabled,&tmp999,sizeof tmp999);}
+    {db tmp999[2]={0};memcpy(&gradvisible,&tmp999,sizeof tmp999);}
+    {db tmp999[5]={0,0,0,0,255};memcpy(&gradpoly,&tmp999,sizeof tmp999);}
+    gndrgbptr = m2c::near_offset_external(vga_gnd1);
+    skyrgbptr = m2c::near_offset_external(vga_sky1);
+    skyswitch = m2c::kglobal_belowclouds;
+    dummy62bf9e66_data_2d_1040 = m2c::kglobal_inclouds;
+    dummy62bf9e66_data_2f_1041 = m2c::kglobal_aboveclouds;
 
           }
          }

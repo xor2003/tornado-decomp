@@ -48,8 +48,8 @@
          namespace m2c {
           void Initializer_qs_vga_1()
           {
-              {char tmp999[16]={'V','G','A',' ','Q','S','p','r','i','t','e',' ','D','A','T','A'};MYCOPY(qspriteid)}
-    {dw tmp999=65535;MYCOPY(dummy3e6dc6b8_qsprdata_10_65)}
+              {char tmp999[16]={'V','G','A',' ','Q','S','p','r','i','t','e',' ','D','A','T','A'};memcpy(&qspriteid,&tmp999,sizeof tmp999);}
+    dummy3e6dc6b8_qsprdata_10_65 = 65535;
 
           }
          }

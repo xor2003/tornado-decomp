@@ -51,11 +51,11 @@
          namespace m2c {
           void Initializer_visdebug()
           {
-              {dw tmp999=0;MYCOPY(objbufspace)}
-    {dw tmp999=0;MYCOPY(surfacetype)}
-    {db tmp999=0;MYCOPY(gndobjecthit)}
-    {db tmp999=0;MYCOPY(statobjecthit)}
-    {db tmp999=0;MYCOPY(treeobjecthit)}
+              objbufspace = 0;
+    surfacetype = 0;
+    gndobjecthit = 0;
+    statobjecthit = 0;
+    treeobjecthit = 0;
 
           }
          }

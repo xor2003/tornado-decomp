@@ -48,16 +48,16 @@
          namespace m2c {
           void Initializer_celldata()
           {
-              {db tmp999=0;MYCOPY(crtring1)}
-    {db tmp999=24;MYCOPY(dummy6ad5fe5c_data_2_22)}
-    {db tmp999=36;MYCOPY(dummy6ad5fe5c_data_3_23)}
-    {db tmp999=36;MYCOPY(dummy6ad5fe5c_data_4_24)}
-    {db tmp999=24;MYCOPY(dummy6ad5fe5c_data_5_25)}
-    {db tmp999=16;MYCOPY(crtcursor1)}
-    {db tmp999=16;MYCOPY(dummy6ad5fe5c_data_9_29)}
-    {db tmp999=214;MYCOPY(dummy6ad5fe5c_data_b_31)}
-    {db tmp999=16;MYCOPY(dummy6ad5fe5c_data_d_33)}
-    {db tmp999=16;MYCOPY(dummy6ad5fe5c_data_e_34)}
+              crtring1 = 0;
+    dummy6ad5fe5c_data_2_22 = 24;
+    dummy6ad5fe5c_data_3_23 = 36;
+    dummy6ad5fe5c_data_4_24 = 36;
+    dummy6ad5fe5c_data_5_25 = 24;
+    crtcursor1 = 16;
+    dummy6ad5fe5c_data_9_29 = 16;
+    dummy6ad5fe5c_data_b_31 = 214;
+    dummy6ad5fe5c_data_d_33 = 16;
+    dummy6ad5fe5c_data_e_34 = 16;
 
           }
          }

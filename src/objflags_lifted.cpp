@@ -48,36 +48,36 @@
          namespace m2c {
           void Initializer_objflags()
           {
-              {db tmp999[32]={dam_invalid,dam_hard4+dam_debris1+dam_explo2,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard3+dam_debris3+dam_explo4,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard2+dam_debris1+dam_explo2,dam_hard3+dam_debris2+dam_explo3,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1};MYCOPY(dummybd8f85b4_data_0_1182)}
-    {db tmp999[32]={dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard2+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard3+dam_debris1+dam_explo2,dam_invalid,dam_invalid,dam_invalid,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard4+dam_debris2+dam_explo4,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3,dam_hard3+dam_debris2+dam_explo3,dam_hard3+dam_debris2+dam_explo3,dam_hard2+dam_debris3+dam_explo3,dam_hard2+dam_debris3+dam_explo3,dam_hard2+dam_debris2+dam_explo3,dam_hard3+dam_debris3+dam_explo4,dam_hard3+dam_debris3+dam_explo4,dam_hard3+dam_debris3+dam_explo4};MYCOPY(dummybd8f85b4_data_20_1214)}
-    {db tmp999[32]={dam_hard3+dam_debris1+dam_explo2,dam_hard1+dam_debris2+dam_explo4,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris5+dam_explo1,dam_hard3+dam_debris4+dam_explo1,dam_hard3+dam_debris5+dam_explo1,dam_hard3+dam_debris4+dam_explo1,dam_hard3+dam_debris7+dam_explo1,dam_hard3+dam_debris6+dam_explo1,dam_hard3+dam_debris7+dam_explo1,dam_hard3+dam_debris6+dam_explo1,dam_hard2+dam_debris3+dam_explo4,dam_hard3+dam_debris2+dam_explo4,dam_hard2+dam_debris2+dam_explo3,dam_hard2+dam_debris2+dam_explo3,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris1+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard1+dam_debris2+dam_explo3,dam_hard3+dam_debris2+dam_explo4,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3};MYCOPY(dummybd8f85b4_data_40_1246)}
-    {db tmp999[32]={dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_invalid,dam_invalid,dam_invalid,dam_invalid,dam_invalid,dam_invalid,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard2+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1};MYCOPY(dummybd8f85b4_data_60_1278)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_80_1317)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_81_1318)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_82_1319)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_83_1320)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_84_1321)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_85_1322)}
-    {db tmp999=dam_hard2+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_86_1323)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_87_1324)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_88_1325)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_89_1326)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_8a_1327)}
-    {db tmp999=dam_hard1+dam_debris2+dam_explo1;MYCOPY(dummybd8f85b4_data_8b_1328)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_8c_1329)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_8d_1330)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_8e_1331)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_8f_1332)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_90_1333)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_91_1334)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_92_1335)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_93_1336)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_94_1337)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_95_1338)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_96_1339)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_97_1340)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_98_1341)}
-    {db tmp999=dam_invalid;MYCOPY(dummybd8f85b4_data_99_1342)}
+              {db tmp999[32]={dam_invalid,dam_hard4+dam_debris1+dam_explo2,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard3+dam_debris3+dam_explo4,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard2+dam_debris1+dam_explo2,dam_hard3+dam_debris2+dam_explo3,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1};memcpy(&dummybd8f85b4_data_0_1182,&tmp999,sizeof tmp999);}
+    {db tmp999[32]={dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard2+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo4,dam_hard2+dam_debris3+dam_explo4,dam_hard3+dam_debris1+dam_explo2,dam_invalid,dam_invalid,dam_invalid,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard2+dam_debris1+dam_explo1,dam_hard4+dam_debris2+dam_explo4,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3,dam_hard3+dam_debris2+dam_explo3,dam_hard3+dam_debris2+dam_explo3,dam_hard2+dam_debris3+dam_explo3,dam_hard2+dam_debris3+dam_explo3,dam_hard2+dam_debris2+dam_explo3,dam_hard3+dam_debris3+dam_explo4,dam_hard3+dam_debris3+dam_explo4,dam_hard3+dam_debris3+dam_explo4};memcpy(&dummybd8f85b4_data_20_1214,&tmp999,sizeof tmp999);}
+    {db tmp999[32]={dam_hard3+dam_debris1+dam_explo2,dam_hard1+dam_debris2+dam_explo4,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris5+dam_explo1,dam_hard3+dam_debris4+dam_explo1,dam_hard3+dam_debris5+dam_explo1,dam_hard3+dam_debris4+dam_explo1,dam_hard3+dam_debris7+dam_explo1,dam_hard3+dam_debris6+dam_explo1,dam_hard3+dam_debris7+dam_explo1,dam_hard3+dam_debris6+dam_explo1,dam_hard2+dam_debris3+dam_explo4,dam_hard3+dam_debris2+dam_explo4,dam_hard2+dam_debris2+dam_explo3,dam_hard2+dam_debris2+dam_explo3,dam_hard2+dam_debris3+dam_explo4,dam_hard2+dam_debris1+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard3+dam_debris8+dam_explo1,dam_hard1+dam_debris2+dam_explo3,dam_hard3+dam_debris2+dam_explo4,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3,dam_hard1+dam_debris2+dam_explo3};memcpy(&dummybd8f85b4_data_40_1246,&tmp999,sizeof tmp999);}
+    {db tmp999[32]={dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_hard3+dam_debris1+dam_explo1,dam_invalid,dam_invalid,dam_invalid,dam_invalid,dam_invalid,dam_invalid,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard2+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1,dam_hard1+dam_debris2+dam_explo1};memcpy(&dummybd8f85b4_data_60_1278,&tmp999,sizeof tmp999);}
+    dummybd8f85b4_data_80_1317 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_81_1318 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_82_1319 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_83_1320 = dam_invalid;
+    dummybd8f85b4_data_84_1321 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_85_1322 = dam_invalid;
+    dummybd8f85b4_data_86_1323 = dam_hard2+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_87_1324 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_88_1325 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_89_1326 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_8a_1327 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_8b_1328 = dam_hard1+dam_debris2+dam_explo1;
+    dummybd8f85b4_data_8c_1329 = dam_invalid;
+    dummybd8f85b4_data_8d_1330 = dam_invalid;
+    dummybd8f85b4_data_8e_1331 = dam_invalid;
+    dummybd8f85b4_data_8f_1332 = dam_invalid;
+    dummybd8f85b4_data_90_1333 = dam_invalid;
+    dummybd8f85b4_data_91_1334 = dam_invalid;
+    dummybd8f85b4_data_92_1335 = dam_invalid;
+    dummybd8f85b4_data_93_1336 = dam_invalid;
+    dummybd8f85b4_data_94_1337 = dam_invalid;
+    dummybd8f85b4_data_95_1338 = dam_invalid;
+    dummybd8f85b4_data_96_1339 = dam_invalid;
+    dummybd8f85b4_data_97_1340 = dam_invalid;
+    dummybd8f85b4_data_98_1341 = dam_invalid;
+    dummybd8f85b4_data_99_1342 = dam_invalid;
 
           }
          }

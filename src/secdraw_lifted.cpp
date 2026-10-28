@@ -90,14 +90,14 @@
          namespace m2c {
           void Initializer_secdraw()
           {
-              {db tmp999=38;MYCOPY(dummy1772b8b0_viscode_0_754)}
-    {db tmp999=38;MYCOPY(dummy1772b8b0_viscode_1_762)}
-    {db tmp999=38;MYCOPY(dummy1772b8b0_viscode_2_767)}
-    {db tmp999=38;MYCOPY(dummy1772b8b0_viscode_3_774)}
-    {db tmp999=38;MYCOPY(contgndloop1)}
-    {db tmp999=38;MYCOPY(dummy1772b8b0_viscode_5_859)}
-    {db tmp999=38;MYCOPY(dummy1772b8b0_viscode_6_864)}
-    {db tmp999=38;MYCOPY(dummy1772b8b0_viscode_7_871)}
+              dummy1772b8b0_viscode_0_754 = 38;
+    dummy1772b8b0_viscode_1_762 = 38;
+    dummy1772b8b0_viscode_2_767 = 38;
+    dummy1772b8b0_viscode_3_774 = 38;
+    contgndloop1 = 38;
+    dummy1772b8b0_viscode_5_859 = 38;
+    dummy1772b8b0_viscode_6_864 = 38;
+    dummy1772b8b0_viscode_7_871 = 38;
 
           }
          }

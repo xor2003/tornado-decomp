@@ -81,10 +81,10 @@
          namespace m2c {
           void Initializer_cmndline()
           {
-              {dw tmp999=0;MYCOPY(psp)}
-    {db tmp999[130]={0};MYCOPY(dummy63bae953_data_2_27)}
-    {dw tmp999=0;MYCOPY(argc)}
-    {dw tmp999[32]={0};MYCOPY(argv)}
+              psp = 0;
+    {db tmp999[130]={0};memcpy(&dummy63bae953_data_2_27,&tmp999,sizeof tmp999);}
+    argc = 0;
+    {dw tmp999[32]={0};memcpy(&argv,&tmp999,sizeof tmp999);}
 
           }
          }

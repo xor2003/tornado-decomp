@@ -198,27 +198,27 @@
          namespace m2c {
           void Initializer_damage()
           {
-              {dw tmp999=20*100;MYCOPY(damagetimer)}
-    {dw tmp999=m2c::kglobal_damgear;MYCOPY(damageswitch)}
-    {dw tmp999=m2c::kglobal_damwheelbrakes;MYCOPY(dummy9d08965c_data_4_1255)}
-    {dw tmp999=m2c::kglobal_damairbrakes;MYCOPY(dummy9d08965c_data_6_1256)}
-    {dw tmp999=m2c::kglobal_damengine1;MYCOPY(dummy9d08965c_data_8_1257)}
-    {dw tmp999=m2c::kglobal_damengine2;MYCOPY(dummy9d08965c_data_a_1258)}
-    {dw tmp999=m2c::kglobal_damwingsweep;MYCOPY(dummy9d08965c_data_c_1259)}
-    {dw tmp999=m2c::kglobal_damflaps;MYCOPY(dummy9d08965c_data_e_1260)}
-    {dw tmp999=m2c::kglobal_damthrustrvrs;MYCOPY(dummy9d08965c_data_10_1261)}
-    {dw tmp999=m2c::kglobal_damspils;MYCOPY(dummy9d08965c_data_12_1262)}
-    {dw tmp999=m2c::kglobal_damhud;MYCOPY(dummy9d08965c_data_14_1263)}
-    {dw tmp999=m2c::kglobal_dampilotmfd;MYCOPY(dummy9d08965c_data_16_1264)}
-    {dw tmp999=m2c::kglobal_damnavigmfd;MYCOPY(dummy9d08965c_data_18_1265)}
-    {dw tmp999=m2c::kglobal_damtab1;MYCOPY(dummy9d08965c_data_1a_1266)}
-    {dw tmp999=m2c::kglobal_damtab2;MYCOPY(dummy9d08965c_data_1c_1267)}
-    {dw tmp999=m2c::kglobal_damoxygen;MYCOPY(dummy9d08965c_data_1e_1268)}
-    {dw tmp999=m2c::kglobal_damradar;MYCOPY(dummy9d08965c_data_20_1269)}
-    {dw tmp999=m2c::kglobal_damecm;MYCOPY(dummy9d08965c_data_22_1270)}
-    {dw tmp999=m2c::kglobal_damrwr;MYCOPY(dummy9d08965c_data_24_1271)}
-    {dw tmp999=m2c::kglobal_damadc;MYCOPY(dummy9d08965c_data_26_1272)}
-    {dw tmp999=m2c::kglobal_damenginefire;MYCOPY(dummy9d08965c_data_28_1273)}
+              damagetimer = 20*100;
+    damageswitch = m2c::kglobal_damgear;
+    dummy9d08965c_data_4_1255 = m2c::kglobal_damwheelbrakes;
+    dummy9d08965c_data_6_1256 = m2c::kglobal_damairbrakes;
+    dummy9d08965c_data_8_1257 = m2c::kglobal_damengine1;
+    dummy9d08965c_data_a_1258 = m2c::kglobal_damengine2;
+    dummy9d08965c_data_c_1259 = m2c::kglobal_damwingsweep;
+    dummy9d08965c_data_e_1260 = m2c::kglobal_damflaps;
+    dummy9d08965c_data_10_1261 = m2c::kglobal_damthrustrvrs;
+    dummy9d08965c_data_12_1262 = m2c::kglobal_damspils;
+    dummy9d08965c_data_14_1263 = m2c::kglobal_damhud;
+    dummy9d08965c_data_16_1264 = m2c::kglobal_dampilotmfd;
+    dummy9d08965c_data_18_1265 = m2c::kglobal_damnavigmfd;
+    dummy9d08965c_data_1a_1266 = m2c::kglobal_damtab1;
+    dummy9d08965c_data_1c_1267 = m2c::kglobal_damtab2;
+    dummy9d08965c_data_1e_1268 = m2c::kglobal_damoxygen;
+    dummy9d08965c_data_20_1269 = m2c::kglobal_damradar;
+    dummy9d08965c_data_22_1270 = m2c::kglobal_damecm;
+    dummy9d08965c_data_24_1271 = m2c::kglobal_damrwr;
+    dummy9d08965c_data_26_1272 = m2c::kglobal_damadc;
+    dummy9d08965c_data_28_1273 = m2c::kglobal_damenginefire;
 
           }
          }

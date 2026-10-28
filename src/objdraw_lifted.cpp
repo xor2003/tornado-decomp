@@ -221,13 +221,13 @@
          namespace m2c {
           void Initializer_objdraw()
           {
-              {dw tmp999=m2c::kglobal_drawgndobject;MYCOPY(objecttype)}
-    {dw tmp999=m2c::kglobal_drawmobobject1;MYCOPY(dummycee05432_data_2_466)}
-    {dw tmp999=m2c::kglobal_drawmobobject2;MYCOPY(dummycee05432_data_4_467)}
-    {dw tmp999=m2c::kglobal_drawmobobject3;MYCOPY(dummycee05432_data_6_468)}
-    {dw tmp999=m2c::kglobal_drawmobobject2;MYCOPY(dummycee05432_data_8_469)}
-    {dw tmp999=m2c::kglobal_drawhillface;MYCOPY(dummycee05432_data_a_470)}
-    {dw tmp999=m2c::kglobal_drawsmokeobject;MYCOPY(dummycee05432_data_c_471)}
+              objecttype = m2c::kglobal_drawgndobject;
+    dummycee05432_data_2_466 = m2c::kglobal_drawmobobject1;
+    dummycee05432_data_4_467 = m2c::kglobal_drawmobobject2;
+    dummycee05432_data_6_468 = m2c::kglobal_drawmobobject3;
+    dummycee05432_data_8_469 = m2c::kglobal_drawmobobject2;
+    dummycee05432_data_a_470 = m2c::kglobal_drawhillface;
+    dummycee05432_data_c_471 = m2c::kglobal_drawsmokeobject;
 
           }
          }

@@ -606,6 +606,26 @@ DEFINE_NUM_RE = re.compile(
     r'^\s*#define\s+([A-Za-z_]\w*)\s+\(?\s*(-?0[xX][0-9a-fA-F]+|-?\d+)\s*\)?\s*(//.*)?$')
 
 
+# {db tmp999=0;MYCOPY(videomode)} -> videomode = 0;
+# {tab tmp999={a,b,c};MYCOPY(tab1)}     -> tab1 = tab{a,b,c};
+MYCOPY_SCALAR_RE = re.compile(
+    r'\{\s*((?:struct\s+)?\w+)\s+tmp999\s*=\s*([^{};]+?|\{(?:[^{}]|\{[^{}]*\})*\})\s*;\s*MYCOPY\((\w+)\)\s*\}')
+# {db tmp999[10]={..};MYCOPY(str)} -> {db tmp999[10]={..};memcpy(str,tmp999,sizeof tmp999);}
+MYCOPY_ARRAY_RE = re.compile(
+    r'\{((?:struct\s+)?\w+\s+tmp999\[\d+\]\s*=\s*(?:\{(?:[^{}]|\{[^{}]*\})*\}|"[^"]*"));MYCOPY\((\w+)\)\s*\}')
+
+
+def rewrite_mycopy(txt):
+    def scal(m):
+        t, v, x = m.group(1), m.group(2), m.group(3)
+        if t.startswith('struct '):
+            return '{%s tmp999=%s;memcpy(&%s,&tmp999,sizeof tmp999);}' % (t, v, x)
+        return '%s = %s%s;' % (x, t if v.startswith('{') else '', v)
+    txt = MYCOPY_SCALAR_RE.sub(scal, txt)
+    return MYCOPY_ARRAY_RE.sub(
+        lambda m: '{%s;memcpy(&%s,&tmp999,sizeof tmp999);}' % (m.group(1), m.group(2)), txt)
+
+
 def collect_preproc_names(files):
     names = set()
     pat = re.compile(r'^\s*#\s*(?:if|ifdef|ifndef|elif)\b(.*)$', re.M)
@@ -674,9 +694,13 @@ def main():
                    glob.glob(os.path.join(srcdir, '*.h')))
     files = [f for f in files if not f.endswith('data_layouts.h')]
     protected = collect_preproc_names(files)
-    n_raddr = n_bind = n_def = 0
+    n_raddr = n_bind = n_def = n_copy = 0
     for path in files:
         txt = open(path, encoding='utf-8', errors='replace').read()
+        new = rewrite_mycopy(txt)
+        if new != txt:
+            n_copy += 1
+        txt = new
         new = rewrite_raddr(txt, field2struct, fieldtypes)
         if new != txt:
             n_raddr += 1
@@ -692,8 +716,8 @@ def main():
                 n_def += 1
             txt = new
         open(path, 'w').write(txt)
-    print('  raddr->member: %d files; bindings: %d; defines: %d' %
-          (n_raddr, n_bind, n_def))
+    print('  raddr->member: %d files; bindings: %d; defines: %d; mycopy: %d' %
+          (n_raddr, n_bind, n_def, n_copy))
 
 
 if __name__ == '__main__':

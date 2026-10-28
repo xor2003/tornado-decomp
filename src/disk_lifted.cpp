@@ -133,7 +133,7 @@
          namespace m2c {
           void Initializer_disk()
           {
-              {dw tmp999=0;MYCOPY(handle)}
+              handle = 0;
 
           }
          }

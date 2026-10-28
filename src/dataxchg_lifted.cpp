@@ -95,17 +95,17 @@
          namespace m2c {
           void Initializer_dataxchg()
           {
-              {dw tmp999=0;MYCOPY(gnddatasize)}
-    {dw tmp999=0;MYCOPY(mobdatasize)}
-    {char tmp999[24]="..\\DATAXCHG\\GAMEPLAY.IN";MYCOPY(gameplayin)}
-    {char tmp999[21]="..\\DATAXCHG\\LAYER.IN";MYCOPY(layersin)}
-    {char tmp999[24]="..\\DATAXCHG\\OBSECDEF.IN";MYCOPY(gndobjectsin)}
-    {char tmp999[23]="..\\DATAXCHG\\MSECDEF.IN";MYCOPY(mobobjectsin)}
-    {char tmp999[24]="..\\DATAXCHG\\MISCDATA.IN";MYCOPY(miscdatain)}
-    {char tmp999[25]="..\\DATAXCHG\\GAMEPLAY.OUT";MYCOPY(gameplayout)}
-    {char tmp999[23]="..\\DATAXCHG\\IMPACT.OUT";MYCOPY(impactout)}
-    {char tmp999[25]="..\\DATAXCHG\\OBSECDEF.OUT";MYCOPY(gndobjectsout)}
-    {char tmp999[24]="..\\DATAXCHG\\MSECDEF.OUT";MYCOPY(mobobjectsout)}
+              gnddatasize = 0;
+    mobdatasize = 0;
+    {char tmp999[24]="..\\DATAXCHG\\GAMEPLAY.IN";memcpy(&gameplayin,&tmp999,sizeof tmp999);}
+    {char tmp999[21]="..\\DATAXCHG\\LAYER.IN";memcpy(&layersin,&tmp999,sizeof tmp999);}
+    {char tmp999[24]="..\\DATAXCHG\\OBSECDEF.IN";memcpy(&gndobjectsin,&tmp999,sizeof tmp999);}
+    {char tmp999[23]="..\\DATAXCHG\\MSECDEF.IN";memcpy(&mobobjectsin,&tmp999,sizeof tmp999);}
+    {char tmp999[24]="..\\DATAXCHG\\MISCDATA.IN";memcpy(&miscdatain,&tmp999,sizeof tmp999);}
+    {char tmp999[25]="..\\DATAXCHG\\GAMEPLAY.OUT";memcpy(&gameplayout,&tmp999,sizeof tmp999);}
+    {char tmp999[23]="..\\DATAXCHG\\IMPACT.OUT";memcpy(&impactout,&tmp999,sizeof tmp999);}
+    {char tmp999[25]="..\\DATAXCHG\\OBSECDEF.OUT";memcpy(&gndobjectsout,&tmp999,sizeof tmp999);}
+    {char tmp999[24]="..\\DATAXCHG\\MSECDEF.OUT";memcpy(&mobobjectsout,&tmp999,sizeof tmp999);}
 
           }
          }
