@@ -7,6 +7,7 @@
 
  static bool _group1(m2c::_offsets _i, struct m2c::_STATE* _state){
     X86_REGREF
+    unsigned _wsn;
     __disp = _i;
 
     if (__disp == 0) goto _begin;
@@ -2449,7 +2450,126 @@ edummylabel12:
 	goto vga_prtc2com;
 	// 0 ;* inline print
 vga_prtc2norm:
-	// 4545 
+	/* mov	al,00fh		;set all pixels to background colour */
+	al = 0x0f;
+	/* out	dx,al */
+	OUT(dx, al);
+	/* mov	al,ch		;fetch background colour */
+	al = ch;
+	/* stosb			;set background pixels */
+	{ STOSB; }
+	/* dec	di		;restore screen address */
+	DEC(di);
+	/* lodsb			;al = char pattern data */
+	{ LODSB; }
+	/* and	al,00fh		;clear unwanted bits */
+	AND(al, 0x00f);
+	/* xlat			;reverse bits */
+	XLAT;
+	/* out	dx,al		;set foreground pixels to update */
+	OUT(dx, al);
+	/* mov	al,cl		;fetch foreground colour */
+	al = cl;
+	/* stosb			;set foreground pixels */
+	{ STOSB; }
+	/* add	di,bp		;next line */
+	ADD(di, bp);
+	/* mov	al,00fh		;set all pixels to background colour */
+	al = 0x0f;
+	/* out	dx,al */
+	OUT(dx, al);
+	/* mov	al,ch		;fetch background colour */
+	al = ch;
+	/* stosb			;set background pixels */
+	{ STOSB; }
+	/* dec	di		;restore screen address */
+	DEC(di);
+	/* lodsb			;al = char pattern data */
+	{ LODSB; }
+	/* and	al,00fh		;clear unwanted bits */
+	AND(al, 0x00f);
+	/* xlat			;reverse bits */
+	XLAT;
+	/* out	dx,al		;set foreground pixels to update */
+	OUT(dx, al);
+	/* mov	al,cl		;fetch foreground colour */
+	al = cl;
+	/* stosb			;set foreground pixels */
+	{ STOSB; }
+	/* add	di,bp		;next line */
+	ADD(di, bp);
+	/* mov	al,00fh		;set all pixels to background colour */
+	al = 0x0f;
+	/* out	dx,al */
+	OUT(dx, al);
+	/* mov	al,ch		;fetch background colour */
+	al = ch;
+	/* stosb			;set background pixels */
+	{ STOSB; }
+	/* dec	di		;restore screen address */
+	DEC(di);
+	/* lodsb			;al = char pattern data */
+	{ LODSB; }
+	/* and	al,00fh		;clear unwanted bits */
+	AND(al, 0x00f);
+	/* xlat			;reverse bits */
+	XLAT;
+	/* out	dx,al		;set foreground pixels to update */
+	OUT(dx, al);
+	/* mov	al,cl		;fetch foreground colour */
+	al = cl;
+	/* stosb			;set foreground pixels */
+	{ STOSB; }
+	/* add	di,bp		;next line */
+	ADD(di, bp);
+	/* mov	al,00fh		;set all pixels to background colour */
+	al = 0x0f;
+	/* out	dx,al */
+	OUT(dx, al);
+	/* mov	al,ch		;fetch background colour */
+	al = ch;
+	/* stosb			;set background pixels */
+	{ STOSB; }
+	/* dec	di		;restore screen address */
+	DEC(di);
+	/* lodsb			;al = char pattern data */
+	{ LODSB; }
+	/* and	al,00fh		;clear unwanted bits */
+	AND(al, 0x00f);
+	/* xlat			;reverse bits */
+	XLAT;
+	/* out	dx,al		;set foreground pixels to update */
+	OUT(dx, al);
+	/* mov	al,cl		;fetch foreground colour */
+	al = cl;
+	/* stosb			;set foreground pixels */
+	{ STOSB; }
+	/* add	di,bp		;next line */
+	ADD(di, bp);
+	/* mov	al,00fh		;set all pixels to background colour */
+	al = 0x0f;
+	/* out	dx,al */
+	OUT(dx, al);
+	/* mov	al,ch		;fetch background colour */
+	al = ch;
+	/* stosb			;set background pixels */
+	{ STOSB; }
+	/* dec	di		;restore screen address */
+	DEC(di);
+	/* lodsb			;al = char pattern data */
+	{ LODSB; }
+	/* and	al,00fh		;clear unwanted bits */
+	AND(al, 0x00f);
+	/* xlat			;reverse bits */
+	XLAT;
+	/* out	dx,al		;set foreground pixels to update */
+	OUT(dx, al);
+	/* mov	al,cl		;fetch foreground colour */
+	al = cl;
+	/* stosb			;set foreground pixels */
+	{ STOSB; }
+	/* add	di,bp		;next line */
+	ADD(di, bp);
 vga_prtc2com:
 	// 4547 
 	/* VGA_PrtC2Com:	add	PrtCl,4		;next column */
@@ -3205,95 +3325,27 @@ edummylabel17:
 	XOR(dh, dh);
 wspriteloop:
 	// 4591 
-__disp=cx;
 	/* WSpriteLoop:	jmp	cx		;jump wrt width */
-	J(return __dispatch_call_ext(__disp, _state));
+	goto wspritebytes;
 	// 0 ;* this macro generates 9 bytes of code each iteration
 wspritebytes:
 	// 4593 
+	/* computed jump target: cx = WSpriteBytes + (80 - width) * 9 enters the
+	 * unrolled blit `width` iterations before its end -- lowered to a loop. */
+	_wsn = 80 - ((cx - m2c::kwspritebytes) / 9);
+	while (_wsn--) {
+		/* lodsb			;fetch mask / pattern data */
+		{ LODSB; }
+		/* cmp	al,ah		;mask or pattern data? */
+		CMP(al, ah);
+		/* je	@F			;mask -> */
+		if (al == ah) {goto dummylabel4;}
+		/* mov	es:[di],al	;write pattern */
+		m2c::setdata(&(*(raddr(es,di))), m2c::getdata(al));
 dummylabel4:
-	// 4595 
-/* m2c-phantom removed: 	R(MOV(*(raddr(es,di)), al));	// 2565 mov	es:[di],al	;write pattern */
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2566 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2567 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2568 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2569 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2570 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2571 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2572 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2573 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2574 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2575 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2576 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2577 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2578 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2579 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2580 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2581 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2582 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2583 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2584 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2585 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2586 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2587 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2588 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2589 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2590 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2591 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2592 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2593 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2594 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2595 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2596 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2597 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2598 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2599 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2600 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2601 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2602 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2603 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2604 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2605 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2606 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2607 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2608 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2609 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2610 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2611 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2612 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2613 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2614 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2615 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2616 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2617 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2618 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2619 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2620 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2621 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2622 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2623 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2624 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2625 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2626 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2627 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2628 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2629 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2630 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2631 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2632 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2633 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2634 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2635 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2636 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2637 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2638 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2639 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2640 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2641 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2642 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2643 mov	es:[di],al	;write pattern
-	// m2c-dedup: removed duplicate expansion row: R(MOV(*(raddr(es,di)), al));	// 2644 mov	es:[di],al	;write pattern
-	/* add	si,bx		;next mask / pattern data */
+		/* inc	di		;next screen address */
+		INC(di);
+	}
 	ADD(si, bx);
 	/* add	di,bp		;next screen line */
 	ADD(di, bp);

@@ -4876,7 +4876,8 @@ updateviewexit:
 	// 0 ;call AdjustTrack ;hack ;UpdateViewExit - is this really necessary?
 skiphilltest:
 	// 4837 
-/* m2c-phantom removed: 	J(RETN(0));	// 5572 SkipHillTest:	ret */
+	/* SkipHillTest:	ret */
+	RETN(0);
 adjustzoom:
 	// 5582 
 	// 0 ;--------------

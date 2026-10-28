@@ -185,6 +185,7 @@ def emit_data_layouts(path, anchors, bindings, struct_sizes):
         '   structs instead of raw `&seg+0xNNNN` arithmetic. */',
         '#pragma once',
         '#include "asm.h"',
+        '#include "_data_types.h"',
         '',
     ]
     for seg in sorted(anchors):

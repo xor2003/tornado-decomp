@@ -4,6 +4,7 @@
    structs instead of raw `&seg+0xNNNN` arithmetic. */
 #pragma once
 #include "asm.h"
+#include "_data_types.h"
 
 extern db& code;
 extern db& craterdata;

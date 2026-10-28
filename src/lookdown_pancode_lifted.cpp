@@ -696,7 +696,8 @@ dummylabel4:
 	CALLF(resumesound, 0);
 skipsound:
 	// 4385 
-/* m2c-phantom removed: 	J(RETN(0));	// 2463 SkipSound:	ret */
+	/* SkipSound:	ret */
+	RETN(0);
 uservisoptions:
 	// 2473 
 	// 0 ;------------

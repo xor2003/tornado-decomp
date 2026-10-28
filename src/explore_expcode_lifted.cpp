@@ -137,7 +137,8 @@ contmap:
 	goto maploop;
 exitmapview:
 	// 4385 
-/* m2c-phantom removed: 	J(RETF(0));	// 2713 ExitMapView:	ret */
+	/* ExitMapView:	ret */
+	RETF(0);
 initmapview:
 	// 2723 
 	/* mov	EXP_VIEW.VP_HDG,0 ;* kill: assume all */
