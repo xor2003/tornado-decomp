@@ -49,6 +49,37 @@ cp /path/to/src_tornado/*_lifted.cpp /path/to/src_tornado/*.h src/
 python3 tools/prettify.py src   # regenerates src/data_layouts.h + rewrites
 ```
 
+## Testing
+
+```sh
+bash tests/run_tests.sh      # full suite; SKIP_GOLDEN=1 to skip the e2e run
+```
+
+Four layers, each aimed at a different regression class:
+
+1. **`tests/test_procs.cpp`** — semantic unit tests: fabricate an
+   `m2c::_STATE` + sentinel return frame, call lifted procs through their
+   weak wrappers, assert registers/memory. Expected values are derived
+   from the original `.ASM` sources (182 assertions; e.g. `randx` is
+   checked against a reference LFSR, trig tables are planted at their
+   stack-image offsets).
+2. **`tools/test_codegen.py`** — static audit of every lifted module:
+   `.ASM` `label: REPT` bodies must survive translation, and removed
+   `ret`s must leave a surviving sibling — the loss classes fixed in
+   `d8ff754`/`f195b12`.
+3. **`tools/gen_smoke.py`** — ABI smoke over all 1659 weak proc wrappers:
+   each called in a forked child with sentinel state (1s watchdog,
+   pipe sentinel so `exit()` can't fake a return), results diffed
+   against `tests/smoke_expected.txt`.
+4. **`tools/test_golden.sh`** — deterministic end-to-end: fixed-step
+   timer + committed keyscript, records per-tick state hashes and
+   per-frame render hashes (`M2C_TICKHASH`/`M2C_FRAMEHASH`) and diffs
+   them against `tests/golden/`. `--record` regenerates. Needs
+   `TORNADO_GAMEDIR` to point at the FLIGHT data directory.
+
+`tools/test_prettify.py` — unit tests for the restyle pass (run with
+`python3 tools/test_prettify.py`).
+
 ## Provenance
 
 Original sources: IDA `.lst` listings of `FLIGHT.EXE`, `LIB8086` library,
