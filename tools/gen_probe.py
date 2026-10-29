@@ -55,31 +55,73 @@ def dispatch_entries(srcdir, declared):
     diff_procs' `<proc>__<stem>` alias convention.
     """
     import glob
-    persrc = {}          # kname -> {lststem: rep}
+    # pass 1: per-file weak defs + dispatch cases. The rep MUST be a weak
+    # symbol defined in exactly one TU — the linker merges same-name weaks,
+    # so `clippoly` (weak in both com_clip and vscreen) binds to a single
+    # copy and every dispatch through it enters that module's _group1,
+    # misrouting the other module's static procs to arbitrary labels.
+    files = []
+    weakfiles = {}       # weak name -> set of files defining it
     for f in sorted(glob.glob(os.path.join(srcdir, "*_lifted.cpp"))):
         txt = open(f, errors="replace").read()
         knames = set(re.findall(r"case\s+m2c::k(\w+)\s*:", txt))
         weaks = set(re.findall(
             r"__attribute__\(\(weak\)\)\s*bool\s+(\w+)\s*\(", txt))
         weaks &= declared
-        if not weaks:
-            continue
         stem = os.path.basename(f)[:-len("_lifted.cpp")]
         for sfx in SEG_SUFFIXES:
             if stem.endswith("_" + sfx):
                 stem = stem[:-(len(sfx) + 1)]
                 break
-        rep = sorted(weaks)[0]
+        files.append((stem, weaks, knames))
+        for w in weaks:
+            weakfiles.setdefault(w, set()).add(f)
+    persrc = {}          # kname -> {lststem: rep}
+    for stem, weaks, knames in files:
+        if not weaks:
+            continue
+        unique = sorted(w for w in weaks if len(weakfiles[w]) == 1)
+        if not unique:
+            print(f'gen_probe: {stem}: no TU-unique weak rep — its static '
+                  'procs stay unreachable', file=sys.stderr)
+            continue
+        rep = unique[0]
         for kn in knames:
             if kn not in weaks and not kn.startswith("_"):
                 persrc.setdefault(kn, {})[stem] = rep
+    # k<name> constants collide across modules: m2c::kcliplineend is
+    # 0x106c in com_clip.h but 0x107d in vscreen.h (each lifted TU sees
+    # its own via M2C_CODE_EQUATE_ first-include guards), and _equates.h
+    # has a third value that matches NO dispatcher. Emit the numeric
+    # constant from the module's own <stem>.h so the rep's _group1 —
+    # compiled with that header — sees the case it was built for.
+    def stem_kconsts(stem):
+        vals = {}
+        for cand in (os.path.join(srcdir, stem + '.h'),
+                     os.path.join(srcdir, stem + '_data.h')):
+            if not os.path.exists(cand):
+                continue
+            txt = open(cand, errors='replace').read()
+            for m in re.finditer(
+                    r'static const dd k(\w+)\s*=\s*\(?\s*0x([0-9a-fA-F]+)\s*\)?',
+                    txt):
+                vals.setdefault('k' + m.group(1), '0x' + m.group(2))
+        return vals
+    stemcache = {}
+
+    def kconst(stem, kn):
+        if stem not in stemcache:
+            stemcache[stem] = stem_kconsts(stem)
+        return stemcache[stem].get('k' + kn, 'm2c::k' + kn)
+
     entries = []
     for kn, stems in persrc.items():
         if len(stems) == 1:
-            entries.append((kn, next(iter(stems.values())), kn))
+            stem, rep = next(iter(stems.items()))
+            entries.append((kn, rep, kconst(stem, kn)))
         else:
             for stem, rep in stems.items():
-                entries.append((f"{kn}__{stem}", rep, kn))
+                entries.append((f"{kn}__{stem}", rep, kconst(stem, kn)))
     return entries
 
 
@@ -142,10 +184,10 @@ def main():
         src.append(f'    {{"{n}", {n}, (m2c::_offsets)0}},\n')
     srcdir = os.path.join(os.path.dirname(os.path.abspath(out)),
                           "..", "src")
-    for n, rep, kn in sorted(dispatch_entries(srcdir, set(names))):
+    for n, rep, koff in sorted(dispatch_entries(srcdir, set(names))):
         if n not in names:
             src.append(
-                f'    {{"{n}", {rep}, (m2c::_offsets)m2c::k{kn}}},\n')
+                f'    {{"{n}", {rep}, (m2c::_offsets){koff}}},\n')
     src.append("};\n\n")
     # Every data global is `extern T& name` — a BSS pointer slot that the
     # _data_refs TU fills at ITS static-init time. Capturing &name (the

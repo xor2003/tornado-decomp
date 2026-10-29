@@ -658,22 +658,33 @@ def main():
         so = symoff.get((lst, proc), {})
         opokes, ppokes, missing = [], [], []
         for sn, ov, pv, sz in pokes:
+            # poke=sym+hexoff:val — seed an array element past the base
+            # (e.g. xe+4 = Xe[2]) so fixed indices can be controlled
+            base, off = sn, 0
+            if '+' in sn:
+                b, _, o = sn.partition('+')
+                try:
+                    base, off = b, int(o, 16)
+                except ValueError:
+                    pass
             hit = next((v for n, v in so.items()
-                        if n.lower() == sn.lower()), None)
+                        if n.lower() == base.lower()),
+                       None) or gsyms_l.get(base.lower())
             if hit is None:
                 missing.append(f'{sn}(orig)')
                 continue
             s, disp, _im, _mb, _ir, _oz = hit
             if isinstance(ov, str):      # @target: orig value = its shipped disp
                 th = next((v for n, v in so.items()
-                           if n.lower() == ov[1:].lower()), None)
+                           if n.lower() == ov[1:].lower()),
+                          None) or gsyms_l.get(ov[1:].lower())
                 if th is None:
                     missing.append(f'{ov}(orig)')
                     continue
                 ov = th[1]
             opokes.append((DS_SEG if s == 'ds' else int(SS.split(':')[0], 16),
-                           disp, ov, sz))
-            if port_syms is not None and sn.lower() not in port_syms:
+                           disp + off, ov, sz))
+            if port_syms is not None and base.lower() not in port_syms:
                 missing.append(f'{sn}(port)')
                 continue
             ppokes.append((sn.lower(), pv, sz))
@@ -681,7 +692,8 @@ def main():
         pvseeds = []
         for sn, vals in pvlist:
             hit = next((v for n, v in so.items()
-                        if n.lower() == sn.lower()), None)
+                        if n.lower() == sn.lower()),
+                       None) or gsyms_l.get(sn.lower())
             if hit is None:
                 missing.append(f'{sn}(orig)')
                 continue
