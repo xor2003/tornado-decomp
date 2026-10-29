@@ -147,9 +147,17 @@ def parse_lst_pattern(path, proc, maxlen=64):
                 if msym.group(1).lower() not in REG_NAMES and \
                         msym.group(1).lower() not in MNEMONICS:
                     name = msym.group(1)
+                    # extern (E) operands carry the pure addend — the
+                    # folded const of `Sym[expr]`/`Sym+const` refs, e.g.
+                    # XSY[$MID+$8192] encodes 00C0 = $MID+$8192
+                    cadd = 0
+                    if 'E' in toks and len(marked) >= 2 and \
+                            bs[marked[0]] is not None and \
+                            bs[marked[0] + 1] is not None:
+                        cadd = bs[marked[0]] | (bs[marked[0] + 1] << 8)
                     if name not in syms:
                         syms[name] = (poff + marked[0], seg, is_imm,
-                                      fname, idxr, osize)
+                                      fname, idxr, osize, cadd)
                     # member reads (VP.FIELD): record the qualified name
                     # too — a record's later fields need their own pokes
                     # (VP.V_SCALE_DN was masked by earlier VP.V_SCALE_UP)
@@ -157,7 +165,7 @@ def parse_lst_pattern(path, proc, maxlen=64):
                         qn = name + '.' + fname
                         if qn not in syms:
                             syms[qn] = (poff + marked[0], seg, is_imm,
-                                        fname, idxr, osize)
+                                        fname, idxr, osize, cadd)
                     break
             for mi in marked:
                 bs[mi] = None
@@ -558,9 +566,9 @@ def main():
                 '/home/xor/inertia_player/examples/Tornado', lst)
             pat, kind, syms = parse_lst_pattern(lp, proc)
             if kind_ov: kind = kind_ov
-            for n, (o, s, im, mb, ir, oz) in list(syms.items()):
+            for n, (o, s, im, mb, ir, oz, ca) in list(syms.items()):
                 if not im and n.lower().lstrip('_') in known_labels:
-                    syms[n] = (o, s, True, mb, ir, oz)
+                    syms[n] = (o, s, True, mb, ir, oz, ca)
         hits = locate(exe, pat) if pat else []
         if len(hits) > 1 and pat_ov is None:
             # longer signature: relative-branch tails differentiate
@@ -604,8 +612,8 @@ def main():
             # shipped displacements for the proc's data symbols
             symoff[(lst, proc)] = {
                 n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'),
-                    im, mb, ir, oz)
-                for n, (o, s, im, mb, ir, oz) in syms.items()}
+                    im, mb, ir, oz, ca)
+                for n, (o, s, im, mb, ir, oz, ca) in syms.items()}
         else:
             addrs[(lst, proc)] = None
             print(f'{lst}:{proc}: locate failed ({len(hits)} hits)',
@@ -637,8 +645,8 @@ def main():
     # nested calls (e.g. CircleFill -> [FillVector] -> _PolyFill reads)
     gsyms = {}
     for so in symoff.values():
-        for n, (s, disp, im, mb, ir, oz) in so.items():
-            gsyms.setdefault(n, (s, disp, im, mb, ir, oz))
+        for n, (s, disp, im, mb, ir, oz, ca) in so.items():
+            gsyms.setdefault(n, (s, disp, im, mb, ir, oz, ca))
     gsyms_sorted = sorted(gsyms)
     gsyms_l = {n.lower(): v for n, v in gsyms.items()}
     # per-listing sym unions: globals read by procs in the same source
@@ -819,8 +827,8 @@ def main():
                     ov[j] = pv[j] = vi * 2
             if a.auto:
                 for i, n in enumerate(names):
-                    s_kind, disp, is_imm, fname, idxr, osz = (so.get(n)
-                                                                or gsyms[n])
+                    s_kind, disp, is_imm, fname, idxr, osz, cadd = \
+                        (so.get(n) or gsyms[n])
                     if s_kind != 'ds' or is_imm:
                         continue        # ss-syms + immediate bases left alone
                     ln = n.lower()
@@ -885,11 +893,20 @@ def main():
                             rtype = itype.get(base, base)
                             foff = fields.get(rtype + '.' + fname)
                         pdelta = foff if foff is not None else 0
-                        if not 0 <= pdelta <= 0x400:
+                        if foff is None:
+                            # sym+const extern refs (XSY[$MID+$8192]):
+                            # the listing operand is the pure addend —
+                            # poke the same element port-side
+                            pdelta = cadd
+                            if pdelta >= 0x8000:
+                                pdelta -= 0x10000
+                        if not -0x400 <= pdelta <= 0x400:
                             pdelta = 0
                         lnbase = ln.split('.')[0]
-                        pp.append((lnbase + '+%x' % pdelta if pdelta
-                                   else lnbase, v, esz))
+                        pp.append((lnbase + '+%x' % abs(pdelta)
+                                   if pdelta > 0 else
+                                   lnbase + '+-%x' % abs(pdelta)
+                                   if pdelta else lnbase, v, esz))
                         # idx= proc: the reg indexes this sym as an array —
                         # range-seed elements 1..15 so arr[i] reads the same
                         # seeded value on both sides (same relative offset
