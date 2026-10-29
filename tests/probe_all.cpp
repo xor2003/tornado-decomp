@@ -143101,14 +143101,20 @@ int main(int argc, char** argv) {
         /* poke=<sym>:<hexval> — write a global by name (elem-sized store) */
         char* eq;
         if ((std::strncmp(argv[i], "poke=", 5) != 0 &&
-             std::strncmp(argv[i], "pokeb=", 6) != 0) ||
+             std::strncmp(argv[i], "pokeb=", 6) != 0 &&
+             std::strncmp(argv[i], "pokew=", 6) != 0 &&
+             std::strncmp(argv[i], "poked=", 6) != 0) ||
             !(eq = std::strchr(argv[i] + 5, ':'))) continue;
         *eq = 0;
         /* pokeb=<sym>:<val> forces a byte write regardless of the sym's
-           declared elem size (byte struc members) */
+           declared elem size (byte struc members); pokew=/poked= force
+           word/dword — needed when the operand reads wider than the
+           sym's declared element (e.g. WORD PTR on a db array) */
         int esz_ovr = 0;
         const char* sn = argv[i] + 5;
         if (!std::strncmp(argv[i], "pokeb=", 6)) { esz_ovr = 1; sn++; }
+        else if (!std::strncmp(argv[i], "pokew=", 6)) { esz_ovr = 2; sn++; }
+        else if (!std::strncmp(argv[i], "poked=", 6)) { esz_ovr = 4; sn++; }
         /* poke=<sym>+<delta>:<val> writes <delta> bytes past the sym —
            seeds array elements adjacent to a named cell */
         const char* adj = std::strchr(sn, '+');

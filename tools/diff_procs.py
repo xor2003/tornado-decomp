@@ -396,7 +396,10 @@ def run_port(probe, proc, vec, pokes=(), dumps=()):
     if pokes or dumps:
         args += ['7', '7']          # ds es defaults (seg_para(data))
         for sn, v, esz in pokes:
-            pref = 'pokeb' if esz == 1 else 'poke'
+            # explicit-width prefixes: the harness knows the operand size,
+            # the probe's sym-declared esz would under-write db arrays
+            # read through WORD PTR operands
+            pref = {1: 'pokeb', 2: 'pokew', 4: 'poked'}.get(esz, 'poke')
             args.append(f'{pref}={sn}:{v}' if isinstance(v, str)
                         else f'{pref}={sn}:{v:x}')
         for sn, ln in dumps:
@@ -1064,7 +1067,9 @@ def main():
                         break           # NUM_POKES headroom
             if os.environ.get('DIFF_DEBUG_PROC') == proc:
                 print(f'DBG {proc} v{vi}: ov={ov} pv={pv} pinmap={pinmap} '
-                      f'atpokes={[p for p in pp if str(p[1]).startswith("@")]}',
+                      f'atpokes={[p for p in pp if str(p[1]).startswith("@")]}'
+                      f'\nDBG-OP {[o for o in op if o[0]==0x110 and 0x1388<=o[1]<0x14a0]}'
+                      f'\nDBG-PP {[p for p in pp if p[0].split("+")[0] in ("xcrt","ycrt","outcode","xft","yft")]}',
                       file=sys.stderr)
             tasks.append((proc, vi, tuple(ov), tuple(pv), addr, skip,
                           tuple(op), tuple(pp), lst, cls,
