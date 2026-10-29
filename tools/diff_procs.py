@@ -1236,7 +1236,12 @@ def main():
             fl_o = int(ro[8], 16) & ~0x214
             fl_p = int(rp[8], 16) & ~0x214
             ign = skip | norm
-            same = all(ro[i] == rp[i] for r, i in ridx.items() if r not in ign) \
+            # a proc that returns its own ds (ax==ds on BOTH sides) yields
+            # a segment value — the segment bases differ between linked
+            # builds, so it's a layout echo, not a data difference
+            dsret = ro[0] == ro[9] and rp[0] == rp[9]
+            same = all(ro[i] == rp[i] for r, i in ridx.items()
+                       if r not in ign and not (dsret and r == 'ax')) \
                 and fl_o == fl_p
             # post-call memory ranges (wr=/pin scratch): seeded bytes land
             # identically on both sides, so any byte delta is a write the
