@@ -304,7 +304,10 @@ def main():
                         # memory is compared sym-relatively (captures
                         # writes the result regs can't see).  Reg-pointer
                         # targets ([si] etc.) stay uncovered — no reserved
-                        # scratch range exists yet
+                        # scratch range exists yet.  Scan a comment-
+                        # stripped copy: `; add 4,`-style text otherwise
+                        # yields bogus dest names
+                        bodync = re.sub(r';[^\n]*', '', body)
                         wrd = []
                         for _wm in re.finditer(
                                 r'\b(?:mov|xchg|add|sub|adc|sbb|and|or|'
@@ -312,8 +315,10 @@ def main():
                                 r'(?:byte|word|dword|ptr|far|near|short'
                                 r'|\s)*(\w+)\s*'
                                 r'(?:\[\s*(?:si|di|bx|bp)[^\]]*\])?\s*,',
-                                body):
+                                bodync):
                             _dn = _wm.group(1)
+                            if not _dn[0].isalpha() and _dn[0] != '_':
+                                continue
                             if _dn in equs or _dn.upper() in (
                                     'AX','BX','CX','DX','SI','DI','BP',
                                     'SP','CS','DS','ES','SS','AL','AH',
