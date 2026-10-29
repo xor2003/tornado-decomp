@@ -189,6 +189,9 @@ def main():
                         r'\b(?:jmp|call)\s+' + _cm.group(1) + r'\b',
                         _bd, re.I):
                     thunks.add(_pm.group(1))
+    calls = {}   # proc -> set(call/jmp targets) for ctx propagation
+    clsmap = {}  # proc -> cls actually assigned
+    dispdep = set()  # procs whose ctx is dispatch-dependency (propagates)
     for root in ('LIB8086', 'TORNADO', 'VISUAL'):
         for lst in sorted(glob.glob(os.path.join(
                 srcroot, root, '*.[lL][sS][tT]'))):
@@ -257,6 +260,7 @@ def main():
                         # (face programs, anim scripts): a reg arg is a
                         # stream pointer into unseeded bytes — class=array
                         cls = OPTS.get(p)
+                        dep = False  # dispatch-dependent ctx (propagates)
                         # procs that dispatch through a runtime-selected
                         # code-pointer cell (`mov bp,_Cell` + `call|jmp bp`
                         # — SetViewMode fills _ScaleVPyramid/_CalcCRT/etc.)
@@ -269,6 +273,7 @@ def main():
                                     r'\b(?:jmp|call)\s+'
                                     + _cm.group(1) + r'\b', body, re.I):
                                 cls = ':class=ctx'
+                                dep = True
                         # callers of cell-thunks inherit ctx — the thunk
                         # never dispatches standalone (orig hangs chasing
                         # unselected cells, port aborts on dispatch miss)
@@ -277,6 +282,7 @@ def main():
                                 + '|'.join(re.escape(t) for t in thunks)
                                 + r')\b', body, re.I):
                             cls = ':class=ctx'
+                            dep = True
                         if not cls and re.search(
                                 r'\blods[bwd]?\b', body):
                             cls = ':class=array'
@@ -308,6 +314,12 @@ def main():
                         # stripped copy: `; add 4,`-style text otherwise
                         # yields bogus dest names
                         bodync = re.sub(r';[^\n]*', '', body)
+                        calls[p] = set(re.findall(
+                            r'\b(?:call|jmp)\s+(?:\w+\s+ptr\s+)?(\w+)\b',
+                            bodync, re.I))
+                        clsmap[p] = cls
+                        if dep:
+                            dispdep.add(p.lower())
                         wrd = []
                         for _wm in re.finditer(
                                 r'\b(?:mov|xchg|add|sub|adc|sbb|and|or|'
@@ -347,6 +359,23 @@ def main():
                                 f',{min(_l, 0x100):x}' if _l > 4 else '')
                         out.append(
                             f'{rel}:{p}{pinopt}{idxopt}{wropt}{cls or ""}')
+    # dispatch-dependency propagates transitively through call edges: a
+    # proc calling a dispatch-dependent callee can't produce comparable
+    # results standalone either (UpdateADI -> UserHorizon -> thunk).
+    # Other ctx reasons (runtime segments, OPTS) stay callee-local.
+    ctxset = set(dispdep)
+    while True:
+        grow = {p.lower() for p, cs in calls.items()
+                if p.lower() not in ctxset and
+                any(t.lower() in ctxset for t in cs)}
+        if not grow:
+            break
+        ctxset |= grow
+    if ctxset:
+        out = [l + ':class=ctx'
+               if l.split(':')[1].lower() in ctxset and ':class=' not in l
+               else l
+               for l in out]
     print('\n'.join(out))
 
 
