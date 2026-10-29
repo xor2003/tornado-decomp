@@ -150,6 +150,14 @@ def parse_lst_pattern(path, proc, maxlen=64):
                     if name not in syms:
                         syms[name] = (poff + marked[0], seg, is_imm,
                                       fname, idxr, osize)
+                    # member reads (VP.FIELD): record the qualified name
+                    # too — a record's later fields need their own pokes
+                    # (VP.V_SCALE_DN was masked by earlier VP.V_SCALE_UP)
+                    if member and fname:
+                        qn = name + '.' + fname
+                        if qn not in syms:
+                            syms[qn] = (poff + marked[0], seg, is_imm,
+                                        fname, idxr, osize)
                     break
             for mi in marked:
                 bs[mi] = None
@@ -818,7 +826,8 @@ def main():
                     ln = n.lower()
                     if any(sn == ln for sn, _v, _z in pp):
                         continue        # explicit spec poke wins
-                    if port_syms is not None and ln not in port_syms:
+                    if port_syms is not None and \
+                            ln.split('.')[0] not in port_syms:
                         continue        # not translated under this name
                     if CODEPTRRE.search(n) or ln in codecells:
                         continue        # code-ptr cell: keep linked value
@@ -872,13 +881,15 @@ def main():
                         # port poke by the field's struc-declared offset
                         foff = None
                         if fname:
-                            rtype = itype.get(n.upper(), n.upper())
+                            base = n.upper().split('.')[0]
+                            rtype = itype.get(base, base)
                             foff = fields.get(rtype + '.' + fname)
                         pdelta = foff if foff is not None else 0
                         if not 0 <= pdelta <= 0x400:
                             pdelta = 0
-                        pp.append((ln + '+%x' % pdelta if pdelta else ln,
-                                   v, esz))
+                        lnbase = ln.split('.')[0]
+                        pp.append((lnbase + '+%x' % pdelta if pdelta
+                                   else lnbase, v, esz))
                         # idx= proc: the reg indexes this sym as an array —
                         # range-seed elements 1..15 so arr[i] reads the same
                         # seeded value on both sides (same relative offset
@@ -890,7 +901,7 @@ def main():
                                     rv2 &= 0xff
                                 op.append((DS_SEG, disp + esz * k,
                                            rv2, esz))
-                                pp.append((ln + '+%x' % (pdelta + esz * k),
+                                pp.append((lnbase + '+%x' % (pdelta + esz * k),
                                            rv2, esz))
                         # NOTE: no range-seeding of plain scalars — disp+N
                         # hits a different logical cell in each layout, so
