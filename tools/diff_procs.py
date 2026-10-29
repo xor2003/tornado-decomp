@@ -285,16 +285,24 @@ def _lst_codecells(path):
     for _k, (_kind, plines) in _lst_procs(path).items():
         for bl in plines:
             mc = re.search(r'\b(?:call|jmp)\s+(\w+)\s*(?:;.*)?$', bl, re.I)
-            if not mc or not re.fullmatch(r'(ax|bx|cx|dx|si|di|bp)',
-                                          mc.group(1).lower()):
-                continue
-            r = mc.group(1).lower()
-            for bl2 in plines:
-                ml = re.search(r'\bmov\s+' + r +
-                               r'\s*,\s*([A-Za-z_][\w.]*)\s*(?:;.*)?$',
-                               bl2, re.I)
-                if ml:
-                    out.add(ml.group(1).lower().split('.')[0])
+            if mc and re.fullmatch(r'(ax|bx|cx|dx|si|di|bp)',
+                                   mc.group(1).lower()):
+                r = mc.group(1).lower()
+                for bl2 in plines:
+                    ml = re.search(r'\bmov\s+' + r +
+                                   r'\s*,\s*([A-Za-z_][\w.]*)\s*(?:;.*)?$',
+                                   bl2, re.I)
+                    if ml:
+                        out.add(ml.group(1).lower().split('.')[0])
+            # indexed dispatch on a table of code ptrs:
+            # `jmp CalcScale[si]` / `call Handlers[bx]` — the table's cells
+            # hold near-offsets; seeding them redirects the jump into
+            # seeded garbage (port: DISPMISS, orig: wrong target)
+            mt = re.search(
+                r'\b(?:call|jmp)\s+([A-Za-z_][\w.]*)\s*\[\s*'
+                r'(?:ax|bx|cx|dx|si|di|bp)\s*\]', bl, re.I)
+            if mt:
+                out.add(mt.group(1).lower().split('.')[0])
     return out
 
 def _lst_dataptrs(path):
@@ -1544,8 +1552,13 @@ def main():
         # NORESULT and silently wastes the run
         if not a.port_rerun:
             # try several tasks: a single proc may legitimately abort
-            # (Divide error) — env is broken only when NOTHING returns
-            tries = [t for t in tasks if t[4]][:5]
+            # (Divide error) — env is broken only when NOTHING returns.
+            # Sample evenly across the spec: the first N located tasks are
+            # all CGA_DRVR procs (alphabetical order) which legitimately
+            # hang standalone (need video hw) — a head-cluster false-abort
+            located = [t for t in tasks if t[4]]
+            step = max(1, len(located) // 15)
+            tries = located[::step][:15]
             ok = any(isinstance(
                 run_original(t[4], t[2], t[6], timeout=30)[0], tuple)
                 for t in tries)
