@@ -89,6 +89,14 @@ __m2c_macrolocal_1_skip:
 	if ((dw)(ax) <= (dw)(10000)) {goto zok;}
 calcposzscaled:
 	// 4375 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	/* add	ax,7500		;z ft / 4 + 7,500 */
 	ADD(ax, 7500);
 	/* jmp	ZOk */
@@ -117,6 +125,14 @@ sortnegzscaled:
 	if ((dw)(ax) <= (dw)(10000)) {goto negzok;}
 calcnegzscaled:
 	// 4379 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	/* add	ax,7500		;z ft / 4 + 7,500 */
 	ADD(ax, 7500);
 negzok:

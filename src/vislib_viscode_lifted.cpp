@@ -101,6 +101,14 @@ edummylabel1:
 	// 0 ;* @ 100,000ft z scaled = 100,000 / 4 + 7,500 = 32,500
 calczscaled:
 	// 4371 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	/* add	ax,7500		;zft / 4 + 7,500 */
 	ADD(ax, 7500);
 zok:
@@ -4885,6 +4893,30 @@ __disp=*(dw*)(((db*)&calcscale)+si);
 	// 0 ;* calc values for all scales up to * 16 overscaled
 calcscale16:
 	// 4567 
+	/* shl	ax,1		;x rel * 16 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 16 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 16 */
+	SHL(cx, 1);
+	/* shl	ax,1		;x rel * 16 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 16 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 16 */
+	SHL(cx, 1);
+	/* shl	ax,1		;x rel * 16 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 16 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 16 */
+	SHL(cx, 1);
+	/* shl	ax,1		;x rel * 16 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 16 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 16 */
+	SHL(cx, 1);
 	/* call	CalcEyePosition */
 	CALL(calceyeposition, 0);
 	/* jmp	StoreScale16 */
@@ -4892,6 +4924,24 @@ calcscale16:
 	// 0 ;* calc values for all scales up to * 8 overscaled
 calcscale8:
 	// 4569 
+	/* shl	ax,1		;x rel * 8 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 8 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 8 */
+	SHL(cx, 1);
+	/* shl	ax,1		;x rel * 8 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 8 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 8 */
+	SHL(cx, 1);
+	/* shl	ax,1		;x rel * 8 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 8 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 8 */
+	SHL(cx, 1);
 	/* call	CalcEyePosition */
 	CALL(calceyeposition, 0);
 	/* jmp	StoreScale8 */
@@ -4899,6 +4949,18 @@ calcscale8:
 	// 0 ;* calc values for all scales up to * 4 overscaled
 calcscale4:
 	// 4571 
+	/* shl	ax,1		;x rel * 4 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 4 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 4 */
+	SHL(cx, 1);
+	/* shl	ax,1		;x rel * 4 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 4 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 4 */
+	SHL(cx, 1);
 	/* call	CalcEyePosition */
 	CALL(calceyeposition, 0);
 	/* jmp	StoreScale4 */
@@ -4906,6 +4968,12 @@ calcscale4:
 	// 0 ;* calc values for all scales up to * 2 overscaled
 calcscale2:
 	// 4573 
+	/* shl	ax,1		;x rel * 2 */
+	SHL(ax, 1);
+	/* shl	bx,1		;y rel * 2 */
+	SHL(bx, 1);
+	/* shl	cx,1		;z rel * 2 */
+	SHL(cx, 1);
 	/* call	CalcEyePosition */
 	CALL(calceyeposition, 0);
 	/* jmp	StoreScale2 */

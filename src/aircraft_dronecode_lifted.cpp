@@ -2745,6 +2745,12 @@ dummylabel33:
 	// 0 ;* dist error = bound(vtas, 340 * 8, 1360 * 8) / 8
 prateok:
 	// 4583 
+	/* shr	si,1 */
+	SHR(si, 1);
+	/* shr	si,1 */
+	SHR(si, 1);
+	/* shr	si,1 */
+	SHR(si, 1);
 	/* adc	si,0 */
 	ADC(si, 0);
 	// 0 ;si = dist error

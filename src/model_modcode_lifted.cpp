@@ -8890,6 +8890,26 @@ dummylabel128:
 	XOR(al, al);
 contcalcalt:
 	// 4887 
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
 	/* add	ZFine,ax */
 	ADD(zfine, ax);
 	/* adc	ZftLo,dx */

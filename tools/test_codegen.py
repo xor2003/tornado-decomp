@@ -160,6 +160,33 @@ def main():
             if not ok:
                 failures.append(
                     f"A {f}:{n} {lbl}: REPT {cnt} body missing in lifted code")
+            continue
+        # named label: verify the REPT body op-run actually follows the
+        # label — an arbitrary next instruction is NOT proof the repeated
+        # body survived (label+REPT sites were silently dropped pre-f2fd81e)
+        ops = body_ops(body)
+        if ops:
+            want = ops * cnt
+            pat = re.compile(r'\b(' + '|'.join(set(ops)) + r')\s*\(', re.I)
+            ok = False
+            for _, b in live:
+                seq = []
+                for x in b:
+                    mm = pat.search(x)
+                    if mm:
+                        seq.append(mm.group(1).upper())
+                    elif is_code(x):
+                        seq.append('X')  # non-op real instruction breaks the run
+                    if len(seq) >= len(want):
+                        if seq[-len(want):] == want:
+                            ok = True
+                            break
+                        seq = seq[-len(want):]
+                if ok:
+                    break
+            if not ok:
+                failures.append(
+                    f"A {f}:{n} {lbl}: REPT {cnt} body ops missing in lifted code")
 
     # ---- B + C. removed-instruction audit --------------------------------
     for f, lns in sorted(lifted.items()):

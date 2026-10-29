@@ -1181,6 +1181,22 @@ dummylabel10:
 sortok2:
 	// 4427 
 	// 0 ;* slant range = max(Dx, Dy, Dz) + med(Dx, Dy, Dz) / 4 + min(Dx, Dy, Dz) / 4
+	/* shr	cx,1 */
+	SHR(cx, 1);
+	/* rcr	bx,1 */
+	RCR(bx, 1);
+	/* shr	di,1 */
+	SHR(di, 1);
+	/* rcr	si,1 */
+	RCR(si, 1);
+	/* shr	cx,1 */
+	SHR(cx, 1);
+	/* rcr	bx,1 */
+	RCR(bx, 1);
+	/* shr	di,1 */
+	SHR(di, 1);
+	/* rcr	si,1 */
+	RCR(si, 1);
 	/* add	ax,bx */
 	ADD(ax, bx);
 	/* adc	dx,cx */

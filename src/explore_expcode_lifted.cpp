@@ -1532,6 +1532,26 @@ dummylabel27:
 	XOR(al, al);
 contcalcalt:
 	// 4505 
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
 	/* add	ax,X_ZFine */
 	ADD(ax, x_zfine);
 	/* adc	dx,WORD PTR EXP_VIEW.VP_ZFT_LO */
