@@ -1489,17 +1489,15 @@ def main():
         # preflight: one real orig call before committing to the full
         # sweep — a broken emulator/VM environment fails every call with
         # NORESULT and silently wastes the run
-        probe_t = next((t for t in tasks if t[4]), None)
-        if probe_t is not None and not a.port_rerun:
-            ok = False
-            for _ in range(3):
-                ro, _b = run_original(probe_t[4], probe_t[2], probe_t[6],
-                                      timeout=30)
-                if isinstance(ro, tuple):
-                    ok = True
-                    break
-            if not ok:
-                sys.exit('FATAL: preflight orig call failed 3x '
+        if not a.port_rerun:
+            # try several tasks: a single proc may legitimately abort
+            # (Divide error) — env is broken only when NOTHING returns
+            tries = [t for t in tasks if t[4]][:5]
+            ok = any(isinstance(
+                run_original(t[4], t[2], t[6], timeout=30)[0], tuple)
+                for t in tries)
+            if tries and not ok:
+                sys.exit('FATAL: preflight orig calls all failed '
                          '(emulator environment unhealthy) — aborting sweep')
         with ThreadPoolExecutor(max_workers=a.jobs) as pool:
             results = list(pool.map(run_task, tasks))
@@ -1593,8 +1591,16 @@ def main():
                     nportok += 1
                 continue
             if portfail(ro):
-                print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
-                nto += 1
+                if portfail(rp):
+                    # both sides aborted on the same vector (e.g. DOS
+                    # "Divide error" in orig = SIGABRT in the port) —
+                    # equivalent behavior, not an environment failure
+                    xdiff['abortequiv'] = xdiff.get('abortequiv', 0) + 1
+                    print(f'{lst}:{proc} v{vi}: original={ro} port={rp} '
+                          f'XDIFF(abortequiv)')
+                else:
+                    print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
+                    nto += 1
                 continue
             if portfail(rp):
                 tag = rp if isinstance(rp, str) and (
