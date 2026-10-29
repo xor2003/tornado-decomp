@@ -598,7 +598,7 @@ def main():
     # struc layouts: instance -> type (symtab, e.g. VP -> VIEWPORT) and
     # TYPE.FIELD -> field offset.  Record-member pokes (`mov
     # cl,VP.V_SCALE_UP`) land at <record sym>+<field offset> on the port.
-    fields, itype = {}, {}
+    fields, itype, itynames = {}, {}, {}
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
@@ -608,6 +608,7 @@ def main():
             '/home/xor/inertia_player/examples/Tornado', lst0)
         for n0, (t0, _d0) in _lst_symtab(lp0).items():
             itype.setdefault(n0, t0)
+            itynames.setdefault(n0.lower(), n0)
         for k0, o0 in _lst_fields(lp0).items():
             fields.setdefault(k0, o0)
     for line in open(a.spec):
@@ -979,7 +980,15 @@ def main():
                         if pref:
                             cands = pref
                         else:
-                            cands = [t for _l, t in cidx if t != n]
+                            # no same-prefix target: a *ptr cell indexes a
+                            # record/array — prefer STRUC instances (AC_Data
+                            # etc.) so the walk lands on seeded record bytes
+                            # rather than whatever follows a scalar cell
+                            recs = [itynames[l] for l in itynames
+                                    if l != ln and
+                                    (port_syms is None or l in port_syms)
+                                    and itynames[l] in gsyms]
+                            cands = recs or [t for _l, t in cidx if t != n]
                         if not cands and                                 (port_syms is None or ln in port_syms):
                             cands = [n]
                         if not cands:
@@ -1051,10 +1060,72 @@ def main():
                     if len(op) > 1000:
                         break           # NUM_POKES headroom
             if os.environ.get('DIFF_DEBUG_PROC') == proc:
-                print(f'DBG {proc} v{vi}: op={op} pp={pp}', file=sys.stderr)
+                print(f'DBG {proc} v{vi}: ov={ov} pv={pv} pinmap={pinmap} '
+                      f'atpokes={[p for p in pp if str(p[1]).startswith("@")]}',
+                      file=sys.stderr)
             tasks.append((proc, vi, tuple(ov), tuple(pv), addr, skip,
                           tuple(op), tuple(pp), lst, cls,
                           tuple(wro), tuple(wrp), membox))
+
+    # candidate pointer-result deltas: a pointer-valued output can anchor
+    # at ANY seeded slot — the pin arena, an @peer target, an array — and
+    # each anchor's orig-vs-port address delta differs (each layout packs
+    # the same syms at different offsets).  A reg whose per-row deltas all
+    # belong to this set is returning a seeded pointer, not bad data.
+    # keyed per proc: same-named syms in different modules ship at
+    # different disps (lhsx exists in several) — global pooling picks the
+    # wrong module's address and misses the real anchor delta
+    pdelta, cand_of = {0}, {}
+    if os.path.exists(a.probe):
+        need = set()
+        for t in tasks:
+            for nm, val, _z in t[7]:
+                need.add(re.split(r'[+-]', nm)[0])
+                if isinstance(val, str) and val.startswith('@'):
+                    need.add(val[1:].split('+')[0])
+        need = sorted(need)
+        portoff = {}
+        for i in range(0, len(need), 400):
+            try:
+                p = subprocess.run(
+                    [a.probe, '--offs', ','.join(need[i:i + 400])],
+                    capture_output=True, text=True, timeout=60)
+            except Exception:
+                break
+            for ln in p.stdout.splitlines():
+                m = re.match(r'SYMOFF (\S+) ([0-9a-fA-F]+)$', ln)
+                if m:
+                    portoff[m.group(1)] = int(m.group(2), 16)
+        for t in tasks:
+            key = (t[8], t[0])
+            if key in cand_of:
+                continue
+            so = {n.lower(): v for n, v in symoff.get(key, {}).items()}
+            cand = {0}
+            for nm, val, _z in t[7]:
+                for n in (re.split(r'[+-]', nm)[0],
+                          val[1:].split('+')[0]
+                          if isinstance(val, str)
+                          and val.startswith('@') else None):
+                    if not n:
+                        continue
+                    hit = so.get(n) or gsyms_l.get(n)
+                    if hit is None and n.upper() in pubs:
+                        # port-only scratch syms (lhsx/rhsx/…) exist in no
+                        # listing — orig side resolves them via the map
+                        hit = ('ds', pubs[n.upper()], True)
+                    if hit is not None and n in portoff:
+                        cand.add(hit[1] - portoff[n])
+                    if os.environ.get('DIFF_DEBUG_PROC'):
+                        print(f'DBGC {key} {n} odisp={hit[1]:x} '
+                              f'poff={portoff.get(n)}' if hit and n in
+                              portoff else f'DBGC {key} {n} MISS',
+                              file=sys.stderr)
+            cand_of[key] = cand
+        pdelta = set().union(*cand_of.values()) if cand_of else {0}
+        if os.environ.get('DIFF_DEBUG_PROC'):
+            print(f'DBG pdelta={sorted(hex(d) for d in pdelta)} '
+                  f'nportoff={len(portoff)}/{len(need)}', file=sys.stderr)
 
     def run_task(t):
         proc, vi, ovec, pvec, addr, _, opokes, ppokes, lst, _c, \
@@ -1158,12 +1229,17 @@ def main():
         ok = [(ro, rp) for _v, ro, rp, _m, _n in rows
               if not portfail(ro) and ro != 'NOORIG'
               and not portfail(rp)]
+        pdelta = cand_of.get((lst, proc), {0})
         for r in PTRREGS:
             if r in skip or len(ok) < 2:
                 continue
             i = ridx[r]
             deltas = {int(ro[i],16) - int(rp[i],16) for ro, rp in ok}
             if len(deltas) == 1 and deltas != {0}:
+                norm.add(r)
+            elif deltas != {0} and deltas <= pdelta:
+                # every row's delta is a seeded-sym address delta —
+                # multi-anchor pointer outputs (pin arena + @peer cells)
                 norm.add(r)
         # ax/dx stay strict UNLESS their (constant) delta equals a
         # normalized pointer reg's delta — i.e. the proc genuinely returns
@@ -1183,7 +1259,7 @@ def main():
             if len(deltas) != 1 or deltas == {0}:
                 continue
             d = next(iter(deltas))
-            if d in segd or any(next(iter(
+            if d in pdelta or d in segd or any(next(iter(
                     {int(ro[ridx[pr]],16) - int(rp[ridx[pr]],16)
                      for ro, rp in ok})) == d for pr in norm):
                 norm.add(r)
@@ -1240,8 +1316,12 @@ def main():
             # a segment value — the segment bases differ between linked
             # builds, so it's a layout echo, not a data difference
             dsret = ro[0] == ro[9] and rp[0] == rp[9]
-            same = all(ro[i] == rp[i] for r, i in ridx.items()
-                       if r not in ign and not (dsret and r == 'ax')) \
+            same = all(
+                ro[i] == rp[i] or
+                (ro[i] != rp[i] and r in PTRREGS and
+                 int(ro[i], 16) - int(rp[i], 16) in pdelta)
+                for r, i in ridx.items()
+                if r not in ign and not (dsret and r == 'ax')) \
                 and fl_o == fl_p
             # post-call memory ranges (wr=/pin scratch): seeded bytes land
             # identically on both sides, so any byte delta is a write the
@@ -1268,7 +1348,9 @@ def main():
                              ro[i] != rp[i] for ro, rp in ok)}
                 if dregs and all(
                         len({int(ro[ridx[r]], 16) - int(rp[ridx[r]], 16)
-                             for ro, rp in ok}) == 1 for r in dregs):
+                             for ro, rp in ok}) == 1 or
+                        {int(ro[ridx[r]], 16) - int(rp[ridx[r]], 16)
+                         for ro, rp in ok} <= pdelta for r in dregs):
                     xdiff['ptrlayout'] = xdiff.get('ptrlayout', 0) + 1
                     print(f'{lst}:{proc} v{vi} XDIFF(ptrlayout)')
                     continue

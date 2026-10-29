@@ -237,6 +237,25 @@ static unsigned long regval(const char* s) {
 }
 
 int main(int argc, char** argv) {
+    /* --offs n1,n2,... — print each sym's image offset (SYMOFF n off)
+       so the harness can map pointer-valued results across layouts */
+    if (argc >= 3 && !std::strcmp(argv[1], "--offs")) {
+        for (int i = 2; i < argc; ++i)
+            for (char* w = argv[i]; ; ) {
+                char* c = std::strchr(w, ','); if (c) *c = 0;
+                bool f = false;
+                for (const SymEnt& e : SYMS)
+                    if (!std::strcmp(e.name, w)) {
+                        void* tp = *e.slot;
+                        if (tp) std::printf("SYMOFF %s %lx\\n", e.name,
+                            (unsigned long)((char*)tp - (char*)segbasep));
+                        f = true; break;
+                    }
+                if (!f) std::fprintf(stderr, "WARN unknown offs sym %s\\n", w);
+                if (!c) break; w = c + 1;
+            }
+        return 0;
+    }
     if (argc < 9) {
         std::fprintf(stderr, "usage: %s proc ax bx cx dx si di bp [ds es]\\n", argv[0]);
         return 2;
