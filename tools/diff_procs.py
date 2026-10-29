@@ -28,7 +28,7 @@ import argparse, bisect, functools, glob, hashlib, os, re, subprocess, \
 from concurrent.futures import ThreadPoolExecutor
 
 EXE      = '/home/xor/games/Tornado/TORNADO/FLIGHT/FLIGHT.EXE'
-KVIKDOS  = '/home/xor/kvikdos/kvikdos'
+KVIKDOS  = os.environ.get('KVIKDOS_BIN', '/home/xor/kvikdos/kvikdos')
 ROOT     = '/home/xor/games/Tornado/TORNADO/FLIGHT'
 LOAD_FLAT = 0x1100
 HDRPARAS = 480
@@ -194,15 +194,21 @@ def _lst_procs(path):
     """{procname_lower: (kind, [lines inside proc])} in one file pass.
     Listings are multi-MB; scanning once per proc was quadratic."""
     procs, cur, curkind = {}, None, 'far'
-    mre = re.compile(r'\b([A-Za-z_?][\w?@]*)\s+(PROC|ENDP)\b', re.I)
+    # name chars: \w + $?@ + leading digits (listings glue ' 0000Name PROC')
+    mre = re.compile(r'\b([A-Za-z_?0-9][\w?@$]*)\s+(PROC|ENDP)\b', re.I)
     for ln in open(path, errors='replace').read().splitlines():
         m = mre.search(ln)
         if m:
             kw = m.group(2).upper()
             if kw == 'PROC':
                 cur = m.group(1).lower()
+                # '0000Name PROC' — listing addr glued to label: store both
                 curkind = 'near' if 'NEAR' in ln.upper() else 'far'
                 procs.setdefault(cur, (curkind, []))
+                m2 = re.match(r'^(?:[0-9a-f]{2,8})?([a-z_?@$][\w?@$]*)$',
+                              cur)
+                if m2 and m2.group(1) != cur:
+                    procs.setdefault(m2.group(1), procs[cur])
                 continue
             if kw == 'ENDP':
                 cur = None
@@ -695,6 +701,15 @@ def main():
                 if not im and n.lower().lstrip('_') in known_labels:
                     syms[n] = (o, s, True, mb, ir, oz, ca)
         hits = locate(exe, pat) if pat else []
+        if not hits and pat and pat_ov is None:
+            # mid-pattern divergence (encoder/linker variant): fall back
+            # to progressively shorter prefixes — the call-target and
+            # link-map tiebreakers below still disambiguate multi-hits
+            for cut in (48, 40, 32, 24, 20, 16, 14, 12, 10, 8):
+                hits = locate(exe, pat[:cut])
+                if hits:
+                    pat = pat[:cut]
+                    break
         if len(hits) > 1 and pat_ov is None:
             # longer signature: relative-branch tails differentiate
             # shared prologues
@@ -981,8 +996,10 @@ def main():
         # port-only rows there's no original to misattribute — running
         # the bound variant still exercises translated code.
         stem_l = os.path.splitext(os.path.basename(lst))[0].lower()
-        pn_l = f'{proc.lower()}__{stem_l}'
-        owner_l = weak_owner.get(proc.lower())
+        pnorm_l = proc.lower().replace('@', 'arb').replace('?', 'que') \
+            .replace('$', 'dol')
+        pn_l = f'{pnorm_l}__{stem_l}'
+        owner_l = weak_owner.get(pnorm_l)
         if (port_procs is not None and pn_l not in port_procs
                 and owner_l is not None and owner_l != stem_l
                 and not port_only):
@@ -1034,6 +1051,21 @@ def main():
         # available scratch syms are used, one per pinned reg.
         pinmap = {}
         sol = {k.lower(): v for k, v in so.items()}
+        # data-sym spans for collision checks: a pinned scratch window
+        # (128B seeded) must not overwrite a table the proc reads —
+        # e.g. lhsx@1148 +128 covers HexChars@1160 -> orig xlat reads
+        # seed bytes while the port table survives at a different disp
+        other_syms = []
+        for _n, _e in list(so.items()) + list(gsyms.items()):
+            if len(_e) >= 2 and _e[0] == 'ds' and _e[1] is not None \
+                    and _n.lower() not in SCRATCH:
+                _esz = _e[5] if len(_e) > 5 and _e[5] else 2
+                other_syms.append((_e[1], _e[1] + max(_esz, 16)))
+
+        def scratch_collides(disp):
+            return any(disp < hi and disp + 128 > lo
+                       for lo, hi in other_syms)
+
         for reg in pin:
             if VECIDX.get(reg) is None:
                 continue
@@ -1050,7 +1082,9 @@ def main():
                     mf = pubs.get(s.upper())
                     if mf is not None:
                         e = ('ds', mf, True)
-                if e is None:
+                if e is None or e[0] != 'ds' or e[1] is None:
+                    continue
+                if scratch_collides(e[1]):
                     continue
                 pinmap[reg] = (s, e)
                 break
@@ -1419,12 +1453,15 @@ def main():
         proc, vi, ovec, pvec, addr, _, opokes, ppokes, lst, _c, \
             wro, wrp, membox = t
         # name collisions across modules: the translator renamed dup procs
-        # to <proc>__<srcstem>; prefer that alias when it exists
-        pn = f"{proc.lower()}__{os.path.splitext(os.path.basename(lst))[0].lower()}"
+        # to <proc>__<srcstem>; prefer that alias when it exists.
+        # Same rule as parser.py's avoid_cpp_keyword: @->arb, ?->que, $->dol
+        pnorm = proc.lower().replace('@', 'arb').replace('?', 'que') \
+            .replace('$', 'dol')
+        pn = f"{pnorm}__{os.path.splitext(os.path.basename(lst))[0].lower()}"
         if port_procs is not None and pn in port_procs:
             procname = pn
         else:
-            procname = proc.lower()
+            procname = pnorm
         romem = None
         if a.port_rerun:
             ro = saved_ro.get((lst, proc, vi), 'NORESULT')
