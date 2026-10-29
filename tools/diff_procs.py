@@ -908,7 +908,10 @@ def main():
             if port_syms is not None and ln not in port_syms:
                 wmiss.append(wn + '(port)')
                 continue
-            wlen2 = wlen or (hit[5] if len(hit) > 5 else 2) or 2
+            # default range = the sym's own extent — anything past it is a
+            # different logical cell in each layout (see Exit3DFlag+1)
+            wlen2 = wlen or port_esz.get(ln) or \
+                (hit[5] if len(hit) > 5 else 2) or 2
             wro.append((DS_SEG * 16 + hit[1] + woff, wlen2))
             wrp.append((ln + ('+%x' % woff if woff else ''), wlen2))
         if wmiss:
