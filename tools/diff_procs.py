@@ -251,6 +251,26 @@ def _lst_codecells(path):
                     out.add(ml.group(1).lower().split('.')[0])
     return out
 
+def _lst_dataptrs(path):
+    """indexed syms loaded into a reg that is then dereferenced as a
+    pointer base (`mov bx,MobileTable[bx]` + `mov ax,FIELD[bx]`) —
+    pointer-table cells; keep their linked values so both sides chase
+    the real struct, not a seeded scalar read as an offset."""
+    out = set()
+    for _k, (_kind, plines) in _lst_procs(path).items():
+        for i, bl in enumerate(plines):
+            mm = re.search(r'\bmov\s+(ax|bx|cx|dx|si|di|bp)\s*,\s*'
+                           r'([A-Za-z_][\w.]*)\s*\[', bl, re.I)
+            if not mm:
+                continue
+            r, s = mm.group(1).lower(), mm.group(2).lower().split('.')[0]
+            for bl2 in plines[i+1:]:
+                if re.search(r'\w+\s*\[\s*' + r + r'\b', bl2) or \
+                        re.search(r'\[\s*' + r + r'\s*[\+\]]', bl2):
+                    out.add(s)
+                    break
+    return out
+
 @functools.lru_cache(maxsize=None)
 def _pat_regex(pat):
     """pattern (None=wildcard) -> compiled bytes regex; runs of N wildcards
@@ -711,7 +731,7 @@ def main():
             # listing keep their linked offsets (`mov bp,_X` + `call bp`)
             lp_t = lst if os.path.isabs(lst) else os.path.join(
                 '/home/xor/inertia_player/examples/Tornado', lst)
-            codecells = _lst_codecells(lp_t)
+            codecells = _lst_codecells(lp_t) | _lst_dataptrs(lp_t)
             # ptr-redirection candidates indexed once per proc: sorted
             # (lower, orig) pairs so each *ptr sym's same-prefix target is
             # a bisect probe, not a full scan of the union
@@ -940,7 +960,14 @@ def main():
                 norm.add(r)
         # ax/dx stay strict UNLESS their (constant) delta equals a
         # normalized pointer reg's delta — i.e. the proc genuinely returns
-        # a data pointer in ax (Octant* leave the advanced ptr there)
+        # a data pointer in ax (Octant* leave the advanced ptr there) —
+        # or equals a seg-reg delta (`mov dx,DATA; mov ds,dx` leaks the
+        # segment para into dx on both sides, layout-dependent)
+        segd = set()
+        for si_ in (9, 10, 11):
+            dd = {int(ro[si_], 16) - int(rp[si_], 16) for ro, rp in ok}
+            if len(dd) == 1:
+                segd |= dd
         for r in ('ax', 'dx'):
             if r in skip or len(ok) < 2:
                 continue
@@ -949,8 +976,9 @@ def main():
             if len(deltas) != 1 or deltas == {0}:
                 continue
             d = next(iter(deltas))
-            if any(next(iter({int(ro[ridx[pr]],16) - int(rp[ridx[pr]],16)
-                              for ro, rp in ok})) == d for pr in norm):
+            if d in segd or any(next(iter(
+                    {int(ro[ridx[pr]],16) - int(rp[ridx[pr]],16)
+                     for ro, rp in ok})) == d for pr in norm):
                 norm.add(r)
         for vi, ro, rp in rows:
             if ro in ('TIMEOUT','NORESULT'):
