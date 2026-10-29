@@ -173,6 +173,18 @@ def main():
                         # (face programs, anim scripts): a reg arg is a
                         # stream pointer into unseeded bytes — class=array
                         cls = OPTS.get(p)
+                        # procs that dispatch through a runtime-selected
+                        # code-pointer cell (`mov bp,_Cell` + `call|jmp bp`
+                        # — SetViewMode fills _ScaleVPyramid/_CalcCRT/etc.)
+                        # can't run standalone on either side — class=ctx
+                        if not cls:
+                            _cm = re.search(
+                                r'\bmov\s+(ax|bx|cx|dx|si|di|bp)\s*,\s*'
+                                r'(_\w+)', body, re.I)
+                            if _cm and re.search(
+                                    r'\b(?:jmp|call)\s+'
+                                    + _cm.group(1) + r'\b', body, re.I):
+                                cls = ':class=ctx'
                         if not cls and re.search(
                                 r'\blods[bwd]?\b', body):
                             cls = ':class=array'
