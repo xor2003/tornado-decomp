@@ -136,6 +136,18 @@ def main():
     wrappers |= set(re.findall(r'\{"(\w+)",\s*\w+,\s*\(m2c::_offsets\)',
                                probe_txt))
     out, seen = [], set()
+    ext = {}   # sym -> byte extent from data decls (all listings pooled)
+    for root in ('LIB8086', 'TORNADO', 'VISUAL'):
+        for lst in sorted(glob.glob(os.path.join(
+                srcroot, root, '*.[lL][sS][tT]'))):
+            txt = open(lst, errors='replace').read()
+            for _em in re.finditer(
+                    r'^\s*(?:[0-9A-Fa-f]+\s+)?([A-Za-z_]\w*)\s+'
+                    r'(DB|DW|DD|DQ|DT)\s+([0-9A-Fa-f]+)[hH]?\s+DUP',
+                    txt, re.M):
+                _esz = {'DB':1,'DW':2,'DD':4,'DQ':8,'DT':10}[_em.group(2)]
+                ext.setdefault(_em.group(1).lower(),
+                               int(_em.group(3), 16) * _esz)
     for root in ('LIB8086', 'TORNADO', 'VISUAL'):
         for lst in sorted(glob.glob(os.path.join(
                 srcroot, root, '*.[lL][sS][tT]'))):
@@ -239,8 +251,48 @@ def main():
                                         r'\bmov\s+(?:ds|es)\s*,\s*'
                                         + _ms.group(1) + r'\b', body, re.I):
                                     cls = ':class=ctx'
+                        # named store destinations get wr= so post-call
+                        # memory is compared sym-relatively (captures
+                        # writes the result regs can't see).  Reg-pointer
+                        # targets ([si] etc.) stay uncovered — no reserved
+                        # scratch range exists yet
+                        wrd = []
+                        for _wm in re.finditer(
+                                r'\b(?:mov|xchg|add|sub|adc|sbb|and|or|'
+                                r'xor|inc|dec|neg|not|pop|imul)\s+'
+                                r'(?:byte|word|dword|ptr|far|near|short'
+                                r'|\s)*(\w+)\s*'
+                                r'(?:\[\s*(?:si|di|bx|bp)[^\]]*\])?\s*,',
+                                body):
+                            _dn = _wm.group(1)
+                            if _dn in equs or _dn.upper() in (
+                                    'AX','BX','CX','DX','SI','DI','BP',
+                                    'SP','CS','DS','ES','SS','AL','AH',
+                                    'BL','BH','CL','CH','DL','DH'):
+                                continue
+                            # pointer cells (*Ptr stash, _CodeCell) hold
+                            # layout-dependent bytes — byte compare would
+                            # false-positive on every vector
+                            if _dn.endswith('Ptr') or _dn.endswith('ptr')\
+                                    or _dn.startswith('_'):
+                                continue
+                            # `mov NAME,sp/ss/cs/bp/offset` stashes machine
+                            # pointers (ClipRecover=sp) — same problem
+                            if re.search(
+                                    r'\bmov\s+(?:\w+\s+ptr\s+)?'
+                                    + re.escape(_dn) +
+                                    r'\s*,\s*(?:sp|ss|cs|bp|offset)\b',
+                                    body):
+                                continue
+                            if _dn not in wrd:
+                                wrd.append(_dn)
+                        wropt = ''
+                        for _dn in wrd:
+                            _l = ext.get(_dn.lower(), 0)
+                            wropt += f':wr={_dn}' + (
+                                f',{min(_l, 0x100):x}' if _l > 4 else '')
                         out.append(
-                            f'{rel}:{p}{pinopt}{idxopt}{cls or ""}')
+                            f'{rel}:{p}{pinopt}{idxopt}{wropt}{cls or ""}')
     print('\n'.join(out))
 
 

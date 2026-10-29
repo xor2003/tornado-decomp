@@ -23,7 +23,8 @@ usage: tools/diff_procs.py <specfile> [--probe ./test_probe] [--exe FLIGHT.EXE]
     vec<N>=<a,c,d,b,s,i,p>   hex words overriding input vector N
     manual         proc needs setup this harness can't provide; count as skip
 """
-import argparse, bisect, functools, glob, os, re, subprocess, sys, tempfile
+import argparse, bisect, functools, glob, hashlib, os, re, subprocess, \
+    sys, tempfile, threading
 from concurrent.futures import ThreadPoolExecutor
 
 EXE      = '/home/xor/games/Tornado/TORNADO/FLIGHT/FLIGHT.EXE'
@@ -344,7 +345,7 @@ RESULT_RE = re.compile(r'ax=([0-9a-f]+) bx=([0-9a-f]+) cx=([0-9a-f]+) dx=([0-9a-
                        r'si=([0-9a-f]+) di=([0-9a-f]+) sp=([0-9a-f]+) bp=([0-9a-f]+) '
                        r'flags=([0-9a-f]+) ds=([0-9a-f]+) es=([0-9a-f]+) ss=([0-9a-f]+)')
 
-def run_original(addr, vec, pokes=(), timeout=25):
+def run_original(addr, vec, pokes=(), timeout=25, membox=None):
     seg, off, kind = addr
     cmd = [KVIKDOS, '--video=off', '--tty-in=-3', '--diag=off']
     if kind == 'near':
@@ -358,26 +359,48 @@ def run_original(addr, vec, pokes=(), timeout=25):
     cmd += ['--root=' + ROOT, '--drive=C', 'FLIGHT.EXE']
     for r, v in zip(REGS, vec):
         cmd.insert(-3, f'--call-set={r}:{v:#x}')
+    env = None
+    dumpf = None
+    if membox:
+        dumpf = os.path.join(tempfile.gettempdir(),
+                             f'diff_mem_{os.getpid()}_{threading.get_ident()}.bin')
+        env = dict(os.environ,
+                   KVIKDOS_MEM_DUMP=dumpf,
+                   KVIKDOS_MEM_DUMP_START='0x%lx' % membox[0],
+                   KVIKDOS_MEM_DUMP_SIZE='0x%lx' % membox[1])
     try:
         out = subprocess.run(cmd, capture_output=True, text=True, errors='replace',
-                    timeout=timeout)
+                    timeout=timeout, env=env)
     except subprocess.TimeoutExpired:
-        return 'TIMEOUT'
+        return 'TIMEOUT', None
+    box = None
+    if dumpf:
+        try:
+            box = open(dumpf, 'rb').read()
+            os.unlink(dumpf)
+        except OSError:
+            box = None
     m = RESULT_RE.search(out.stdout + out.stderr)
-    return m.groups() if m else 'NORESULT'
+    if not m and os.environ.get('DIFF_DEBUG_PROC'):
+        print(f'DBG-ORIGFAIL rc={out.returncode} box={None if box is None else len(box)} '
+              f'cmd={cmd}\n  out={out.stdout[-300:]} err={out.stderr[-300:]}',
+              file=sys.stderr)
+    return (m.groups() if m else 'NORESULT'), box
 
-def run_port(probe, proc, vec, pokes=()):
+def run_port(probe, proc, vec, pokes=(), dumps=()):
     # vec order ax,cx,dx,bx,si,di,bp -> probe order ax,bx,cx,dx,si,di,bp
     ax,cx,dx,bx,si,di,bp = vec
     rv = lambda v: v if isinstance(v, str) else f'{v:x}'
     args = [os.path.abspath(probe), proc,
             rv(ax), rv(bx), rv(cx), rv(dx), rv(si), rv(di), rv(bp)]
-    if pokes:
+    if pokes or dumps:
         args += ['7', '7']          # ds es defaults (seg_para(data))
         for sn, v, esz in pokes:
             pref = 'pokeb' if esz == 1 else 'poke'
             args.append(f'{pref}={sn}:{v}' if isinstance(v, str)
                         else f'{pref}={sn}:{v:x}')
+        for sn, ln in dumps:
+            args.append(f'dump={sn}:{ln:x}')
     # file-writing procs (SaveFile etc.) must not litter the repo —
     # run the probe inside a scratch dir
     scratch = os.path.join(tempfile.gettempdir(), 'diff_procs_scratch')
@@ -386,20 +409,27 @@ def run_port(probe, proc, vec, pokes=()):
         out = subprocess.run(args, capture_output=True, text=True,
                              errors='replace', timeout=10, cwd=scratch)
     except subprocess.TimeoutExpired:
-        return 'TIMEOUT'
+        return 'TIMEOUT', None
+    mem = None
+    if dumps:
+        mem = {}
+        for dm in re.finditer(r'^MEMDUMP (\S+) ([0-9a-fA-F]+|MISSING)$',
+                              out.stdout, re.M):
+            mem[dm.group(1)] = (None if dm.group(2) == 'MISSING'
+                                else bytes.fromhex(dm.group(2)))
     m = RESULT_RE.search(out.stdout)
     if m:
-        return m.groups()
+        return m.groups(), mem
     if os.environ.get('DIFF_DEBUG_PROC'):
         print(f'DBG-PORTFAIL {proc} rc={out.returncode} '
               f'argv={args[1:]}\n  out={out.stdout[-400:]} '
               f'err={out.stderr[-400:]}', file=sys.stderr)
     if 'DISPMISS' in out.stderr:
         dm = re.search(r'DISPMISS\] disp=([0-9a-fA-F]+)', out.stderr)
-        return 'DISPMISS:%s' % (dm.group(1) if dm else '?')
+        return 'DISPMISS:%s' % (dm.group(1) if dm else '?'), mem
     if 'unknown proc' in out.stderr:
-        return 'NORESULT'
-    return 'CRASH%d' % out.returncode if out.returncode else 'NORESULT'
+        return 'NORESULT', mem
+    return 'CRASH%d' % out.returncode if out.returncode else 'NORESULT', mem
 
 def portfail(r):
     """non-tuple port/orig call outcomes: not-comparable result classes"""
@@ -425,7 +455,7 @@ def parse_spec_line(line):
     pat_ov = kind_ov = None
     skip, vecs, manual, pokes = set(), {}, False, []
     pin, idx, cls = [], [], None
-    pvlist = []
+    pvlist, wrs = [], []
     for o in parts[2:]:
         if o.startswith('@@'):
             pat_ov = [None if t == '??' else int(t, 16) for t in o[2:].split()]
@@ -457,12 +487,20 @@ def parse_spec_line(line):
             body = o[3:]
             sn, sv = body.rsplit(':', 1) if ':' in body else (body, '0')
             pvlist.append((sn, [int(t, 16) for t in sv.split(',')]))
+        elif o.startswith('wr='):
+            # wr=Sym[+hexoff][,hexlen] — post-call memory range to compare
+            body = o[3:]
+            sn, _, sl = body.partition(',')
+            wlen = int(sl, 16) if sl else None
+            b, _, sof = sn.partition('+')
+            woff = int(sof, 16) if sof else 0
+            wrs.append((b, woff, wlen))
         elif o.startswith('class='):
             cls = o[6:]
         elif o in ('manual', 'postpone'):
             manual = True
     return (lst, proc, pat_ov, kind_ov, skip, vecs, manual, pokes, cls,
-            pin, idx, pvlist)
+            pin, idx, pvlist, wrs)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -682,7 +720,7 @@ def main():
         if not line or line.startswith('#'):
             continue
         lst, proc, _p, _k, skip, vecs, manual, pokes, cls, pin, idx, \
-            pvlist = parse_spec_line(line)
+            pvlist, wrs = parse_spec_line(line)
         addr = addrs.get((lst, proc))
         if addr == 'dup' or manual:
             nskip += 1
@@ -856,6 +894,32 @@ def main():
                     continue
                 pinmap[reg] = (s, e)
                 break
+        # wr= post-call memory ranges: resolve orig (seg,disp) flats and
+        # port dump args. Ranges are sym-relative so linked-layout offsets
+        # on each side land on the same logical bytes.
+        wro, wrp, wmiss = [], [], []
+        for wn, woff, wlen in wrs:
+            hit = sol.get(wn.lower()) or gsyms_l.get(wn.lower())
+            if hit is None or hit[0] != 'ds':
+                wmiss.append(wn)
+                continue
+            ln = wn.lower()
+            if port_syms is not None and ln not in port_syms:
+                wmiss.append(wn + '(port)')
+                continue
+            wlen2 = wlen or (hit[5] if len(hit) > 5 else 2) or 2
+            wro.append((DS_SEG * 16 + hit[1] + woff, wlen2))
+            wrp.append((ln + ('+%x' % woff if woff else ''), wlen2))
+        if wmiss:
+            print(f'{proc}: wr ranges dropped, syms unknown: {wmiss}',
+                  file=sys.stderr)
+        # single bounding box for the orig-side dump (capped)
+        membox = None
+        if wro and not port_only:
+            lo = min(f for f, _l in wro)
+            hi = max(f + l for f, l in wro)
+            if hi - lo <= 0x40000:
+                membox = (lo, hi - lo)
         # idx= constrains register args to small array indices — procs
         # that read `sym[reg]` (Xe[si], OutCode[si]) need an in-range
         # index, not a pointer, plus range-seeded array elements
@@ -989,10 +1053,12 @@ def main():
             if os.environ.get('DIFF_DEBUG_PROC') == proc:
                 print(f'DBG {proc} v{vi}: op={op} pp={pp}', file=sys.stderr)
             tasks.append((proc, vi, tuple(ov), tuple(pv), addr, skip,
-                          tuple(op), tuple(pp), lst, cls))
+                          tuple(op), tuple(pp), lst, cls,
+                          tuple(wro), tuple(wrp), membox))
 
     def run_task(t):
-        proc, vi, ovec, pvec, addr, _, opokes, ppokes, lst, _c = t
+        proc, vi, ovec, pvec, addr, _, opokes, ppokes, lst, _c, \
+            wro, wrp, membox = t
         # name collisions across modules: the translator renamed dup procs
         # to <proc>__<srcstem>; prefer that alias when it exists
         pn = f"{proc.lower()}__{os.path.splitext(os.path.basename(lst))[0].lower()}"
@@ -1000,12 +1066,21 @@ def main():
             procname = pn
         else:
             procname = proc.lower()
+        romem = None
         if a.port_rerun:
             ro = saved_ro.get((lst, proc, vi), 'NORESULT')
+        elif addr:
+            ro, box = run_original(addr, ovec, opokes, membox=membox)
+            if box is not None and membox:
+                romem = [box[f - membox[0]:f - membox[0] + l]
+                         for f, l in wro]
         else:
-            ro = run_original(addr, ovec, opokes) if addr else 'NOORIG'
-        return (lst, proc), vi, ro, \
-            run_port(a.probe, procname, pvec, ppokes)
+            ro = 'NOORIG'
+        rp, rpmem_d = run_port(a.probe, procname, pvec, ppokes,
+                               dumps=wrp)
+        rpmem = [rpmem_d.get(a) for a, _l in wrp] \
+            if rpmem_d is not None else None
+        return (lst, proc), vi, ro, rp, romem, rpmem
 
     saved_ro = {}
     if a.port_rerun:
@@ -1022,7 +1097,7 @@ def main():
             saved_ro[(pl, pp_, int(vi))] = ro
 
     npass = ndiff = nto = nportok = nporthang = nnoresult = 0
-    ndispmiss = ncrash = 0
+    ndispmiss = ncrash = nmemdiff = 0
     xdiff = {}
     if a.replay:
         results = []
@@ -1032,33 +1107,45 @@ def main():
                 lst, proc = key.rsplit(':', 1)
             else:
                 lst, proc = '', key
-            # rest = '<ro> <rp>' where each is a tuple repr or a status word;
-            # tuple reprs contain spaces, so split on the " (" boundary
+            # rest = '<ro> <rp> [rom=<h> rpm=<h>]' where each is a tuple
+            # repr or a status word; tuple reprs contain spaces, so split
+            # on the " (" boundary; trailing mem-hash fields are dropped
+            rest = re.sub(r'\s+rom=[0-9a-f]+', '', rest)
+            rest = re.sub(r'\s+rpm=[0-9a-f]+', '', rest)
             if rest.startswith('('):
                 i = rest.index(')') + 1          # first ')' ends the ro tuple
                 ro, rp = rest[:i], rest[i:].strip()
             else:
                 ro, _, rp = rest.partition(' ')
                 rp = rp.strip()
+            if ')' in rp:                        # trim mem-hash tail
+                rp = rp[:rp.index(')') + 1]
             if ro.startswith('('):
                 ro = eval(ro)
             if rp.startswith('('):
                 rp = eval(rp)
-            results.append(((lst, proc), int(vi), ro, rp))
+            results.append(((lst, proc), int(vi), ro, rp, None, None))
     else:
         raw = open(a.spec + '.raw', 'w')
         with ThreadPoolExecutor(max_workers=a.jobs) as pool:
             results = list(pool.map(run_task, tasks))
-        for (lst, proc), vi, ro, rp in results:
-            raw.write(f'{lst}:{proc} {vi} {ro} {rp}\n')
+        for (lst, proc), vi, ro, rp, rom, rpm in results:
+            # mem hashes keep replay cheap; detail prints in the live log
+            mh = ''
+            if rom is not None or rpm is not None:
+                h = lambda r: hashlib.sha1(
+                    b'|'.join(x or b'' for x in r)).hexdigest()[:8] \
+                    if r else 'none'
+                mh = f' rom={h(rom)} rpm={h(rpm)}'
+            raw.write(f'{lst}:{proc} {vi} {ro} {rp}{mh}\n')
         raw.close()
     ridx = {'ax':0,'bx':1,'cx':2,'dx':3,'si':4,'di':5,'bp':7}
     skip_of = {(t[8], t[0]): t[5] for t in tasks}
     class_of = {(t[8], t[0]): t[9] for t in tasks}
     in_tasks = {(t[8], t[0]) for t in tasks}
     byproc = {}
-    for key, vi, ro, rp in results:
-        byproc.setdefault(key, []).append((vi, ro, rp))
+    for key, vi, ro, rp, rom, rpm in results:
+        byproc.setdefault(key, []).append((vi, ro, rp, rom, rpm))
     for (lst, proc), rows in byproc.items():
         if (lst, proc) not in in_tasks:
             continue  # stale raw row: postponed/dup/unlocated in this spec
@@ -1068,7 +1155,7 @@ def main():
         # builds) — normalize bx/cx/si/di/bp; ax/dx stay strict (outputs).
         PTRREGS = ('bx','cx','si','di','bp')
         norm = set()
-        ok = [(ro, rp) for _v, ro, rp in rows
+        ok = [(ro, rp) for _v, ro, rp, _m, _n in rows
               if not portfail(ro) and ro != 'NOORIG'
               and not portfail(rp)]
         for r in PTRREGS:
@@ -1100,7 +1187,7 @@ def main():
                     {int(ro[ridx[pr]],16) - int(rp[ridx[pr]],16)
                      for ro, rp in ok})) == d for pr in norm):
                 norm.add(r)
-        for vi, ro, rp in rows:
+        for vi, ro, rp, rom, rpm in rows:
             if ro == 'NOORIG':
                 # port-only coverage (unlocated dead-source): TIMEOUT is
                 # a hang suspect; NORESULT/DISPMISS/CRASH = untranslated,
@@ -1151,6 +1238,20 @@ def main():
             ign = skip | norm
             same = all(ro[i] == rp[i] for r, i in ridx.items() if r not in ign) \
                 and fl_o == fl_p
+            # post-call memory ranges (wr=/pin scratch): seeded bytes land
+            # identically on both sides, so any byte delta is a write the
+            # reg tuple can't see — a divergence signal on its own
+            if rom is not None and rpm is not None:
+                for ri, (ob, pb) in enumerate(zip(rom, rpm)):
+                    if ob is None or pb is None or ob == pb:
+                        continue
+                    off = next(i for i, (a_, b_) in enumerate(zip(ob, pb))
+                               if a_ != b_)
+                    nmemdiff += 1
+                    print(f'{lst}:{proc} v{vi} MEMDIFF rng{ri} '
+                          f'+{off:x}: orig={ob[off]:02x} '
+                          f'port={pb[off]:02x} (len {len(ob):x})')
+                    break
             if same:
                 npass += 1
             elif not class_of.get((lst, proc)) and len(ok) >= 2:
@@ -1185,7 +1286,7 @@ def main():
     print(f'== pass={npass} diff={ndiff} xdiff={sum(xdiff.values())} '
           f'{xdiff} timeout={nto} skip={nskip} '
           f'portok={nportok} porthang={nporthang} noresult={nnoresult} '
-          f'dispmiss={ndispmiss} crash={ncrash}')
-    sys.exit(1 if ndiff else 0)
+          f'dispmiss={ndispmiss} crash={ncrash} memdiff={nmemdiff}')
+    sys.exit(1 if ndiff or nmemdiff else 0)
 
 main()

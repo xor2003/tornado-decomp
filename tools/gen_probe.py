@@ -311,9 +311,41 @@ int main(int argc, char** argv) {
         else *(unsigned*)p = (unsigned)v;
     }
 
+    /* dump=<name>[+<off>]:<hexlen> — post-call memory ranges to print */
+    char dumparg[16][160];
+    int ndump = 0;
+    for (int i = 11; i < argc && ndump < 16; ++i) {
+        if (!std::strncmp(argv[i], "dump=", 5))
+            std::snprintf(dumparg[ndump++], 160, "%s", argv[i] + 5);
+    }
+
     std::fprintf(stderr, "[probe] calling %s\\n", name);
     fn(disp, &st);
     std::fprintf(stderr, "[probe] returned\\n");
+
+    for (int d = 0; d < ndump; ++d) {
+        char* co = std::strchr(dumparg[d], ':');
+        if (!co) continue;
+        *co = 0;
+        long dlen = std::strtol(co + 1, 0, 16);
+        const char* sn = dumparg[d];
+        const char* adj = std::strchr(sn, '+');
+        long delta = adj ? std::strtol(adj + 1, 0, 16) : 0;
+        size_t nl = adj ? (size_t)(adj - sn) : std::strlen(sn);
+        const SymEnt* se = nullptr;
+        for (const SymEnt& s : SYMS)
+            if (!std::strncmp(s.name, sn, nl) && !s.name[nl])
+                { se = &s; break; }
+        if (!se || dlen <= 0) {
+            std::printf("MEMDUMP %s MISSING\\n", dumparg[d]);
+            continue;
+        }
+        const unsigned char* dp =
+            (const unsigned char*)*se->slot + delta;
+        std::printf("MEMDUMP %s ", dumparg[d]);
+        for (long b = 0; b < dlen; ++b) std::printf("%02x", dp[b]);
+        std::printf("\\n");
+    }
 
     const unsigned fl =
         2u | (st.CF ? 1 : 0) | (st.PF ? 4 : 0) | (st.AF ? 0x10 : 0) |
