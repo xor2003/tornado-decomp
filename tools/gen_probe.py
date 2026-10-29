@@ -119,6 +119,13 @@ def data_globals(path):
         t, n, cnt = m.groups()
         out[n] = ({'db': 1, 'dw': 2, 'dd': 4}[t],
                   f'extern {t} (&{n})[{cnt}];')
+    # record/struct externs (`extern viewport& vp;`): pokes reach members
+    # via sym+delta; default elem size word, byte members come as pokeb=
+    for m in re.finditer(
+            r'extern\s+(\w[\w:<>]*)\s*&\s*(\w+)\s*;', txt):
+        t, n = m.groups()
+        if t not in ('db', 'dw', 'dd'):
+            out.setdefault(n, (2, f'extern {t}& {n};'))
     return out
 
 
@@ -210,10 +217,15 @@ int main(int argc, char** argv) {
     for (int i = 11; i < argc; ++i) {
         /* poke=<sym>:<hexval> — write a global by name (elem-sized store) */
         char* eq;
-        if (std::strncmp(argv[i], "poke=", 5) != 0 ||
+        if ((std::strncmp(argv[i], "poke=", 5) != 0 &&
+             std::strncmp(argv[i], "pokeb=", 6) != 0) ||
             !(eq = std::strchr(argv[i] + 5, ':'))) continue;
         *eq = 0;
+        /* pokeb=<sym>:<val> forces a byte write regardless of the sym's
+           declared elem size (byte struc members) */
+        int esz_ovr = 0;
         const char* sn = argv[i] + 5;
+        if (!std::strncmp(argv[i], "pokeb=", 6)) { esz_ovr = 1; sn++; }
         /* poke=<sym>+<delta>:<val> writes <delta> bytes past the sym —
            seeds array elements adjacent to a named cell */
         const char* adj = std::strchr(sn, '+');
@@ -237,8 +249,9 @@ int main(int argc, char** argv) {
         } else {
             v = std::strtoul(eq + 1, 0, 16);
         }
-        if (se->esz == 1) *(unsigned char*)p = (unsigned char)v;
-        else if (se->esz == 2) *(unsigned short*)p = (unsigned short)v;
+        int wsz = esz_ovr ? esz_ovr : se->esz;
+        if (wsz == 1) *(unsigned char*)p = (unsigned char)v;
+        else if (wsz == 2) *(unsigned short*)p = (unsigned short)v;
         else *(unsigned*)p = (unsigned)v;
     }
 

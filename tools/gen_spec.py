@@ -169,8 +169,15 @@ def main():
                                re.search(r'\w+\s*\[\s*' + r + r'\s*[+\]]',
                                          body)]
                         idxopt = f':idx={",".join(idx)}' if idx else ''
+                        # lods-driven procs walk serialized data streams
+                        # (face programs, anim scripts): a reg arg is a
+                        # stream pointer into unseeded bytes — class=array
+                        cls = OPTS.get(p)
+                        if not cls and re.search(
+                                r'\blods[bwd]?\b', body):
+                            cls = ':class=array'
                         out.append(
-                            f'{rel}:{p}{pinopt}{idxopt}{OPTS.get(p, "")}')
+                            f'{rel}:{p}{pinopt}{idxopt}{cls or ""}')
     print('\n'.join(out))
 
 

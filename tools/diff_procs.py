@@ -128,6 +128,18 @@ def parse_lst_pattern(path, proc, maxlen=64):
             if mnem in ('jmp', 'call') and '[' in ops:
                 is_imm = True
             member = '.' in ops
+            # field name after the record dot (`VP.V_SCALE_UP` ->
+            # 'V_SCALE_UP') — member pokes resolve the field's offset
+            # inside its struc via the listing's declaration table
+            fname = ''
+            if member:
+                fm = re.search(r'\.\s*([A-Za-z_]\w*)', ops)
+                if fm:
+                    fname = fm.group(1).upper()
+            # operand width: an 8-bit reg or 'byte ptr' means a byte
+            # member — pokes must not clobber the neighbouring byte
+            osize = 1 if ('byte ptr' in ops.lower() or
+                          re.search(r'\b[abcd][hl]\b', ops)) else 2
             # base regs inside [...] index the sym as an array — needed so
             # `idx=` specs can range-seed exactly the indexed arrays
             idxr = frozenset(re.findall(r'\[\s*([sdb][ixp])\b', ops))
@@ -137,7 +149,7 @@ def parse_lst_pattern(path, proc, maxlen=64):
                     name = msym.group(1)
                     if name not in syms:
                         syms[name] = (poff + marked[0], seg, is_imm,
-                                      member, idxr)
+                                      fname, idxr, osize)
                     break
             for mi in marked:
                 bs[mi] = None
@@ -181,6 +193,63 @@ def _lst_procs(path):
         if cur is not None:
             procs[cur][1].append(ln)
     return procs
+
+@functools.lru_cache(maxsize=None)
+def _lst_symtab(path):
+    """listing symbol table: NAME -> (type, DATA-seg displacement).
+    Maps record instances (VP) to their struc type (VIEWPORT)."""
+    out = {}
+    mre = re.compile(r'^\s*(\w+)\s+(?:\.\s+)+(\w+)\s+'
+                     r'([0-9A-Fa-f]{4})\s+DATA\s*$')
+    for ln in open(path, errors='replace').read().splitlines():
+        m = mre.match(ln)
+        if m:
+            out.setdefault(m.group(1).upper(),
+                           (m.group(2).upper(), int(m.group(3), 16)))
+    return out
+
+@functools.lru_cache(maxsize=None)
+def _lst_fields(path):
+    """{STRUC.FIELD -> offset} parsed from STRUC..ENDS declaration blocks
+    (e.g. `VIEWPORT STRUCT` .. `V_SCALE_UP DB 0` -> 8)."""
+    out, rec = {}, None
+    fdecl = re.compile(r'^\s*([0-9A-Fa-f]{4})\s+.*?'
+                       r'\b(\w+)\s+(DB|DW|DD|DT|DQ)\b')
+    for ln in open(path, errors='replace').read().splitlines():
+        if rec is None:
+            m = re.search(r'\b(\w+)\s+STRUC[T]?\b', ln, re.I)
+            if m:
+                rec = m.group(1).upper()
+            continue
+        if re.search(r'\bENDS\b', ln, re.I):
+            rec = None
+            continue
+        m = fdecl.match(ln)
+        if m:
+            out.setdefault(rec + '.' + m.group(2).upper(),
+                           int(m.group(1), 16))
+    return out
+
+@functools.lru_cache(maxsize=None)
+def _lst_codecells(path):
+    """sym names loaded into a reg that a proc then `call`s/`jmp`s —
+    code-pointer dispatch cells (`mov bp,_ScaleVPyramid` + `call bp`).
+    Seeding them redirects the call into seeded garbage on both sides."""
+    out = set()
+    for _k, (_kind, plines) in _lst_procs(path).items():
+        for bl in plines:
+            mc = re.search(r'\b(?:call|jmp)\s+(\w+)\s*(?:;.*)?$', bl, re.I)
+            if not mc or not re.fullmatch(r'(ax|bx|cx|dx|si|di|bp)',
+                                          mc.group(1).lower()):
+                continue
+            r = mc.group(1).lower()
+            for bl2 in plines:
+                ml = re.search(r'\bmov\s+' + r +
+                               r'\s*,\s*([A-Za-z_][\w.]*)\s*(?:;.*)?$',
+                               bl2, re.I)
+                if ml:
+                    out.add(ml.group(1).lower().split('.')[0])
+    return out
 
 @functools.lru_cache(maxsize=None)
 def _pat_regex(pat):
@@ -269,9 +338,10 @@ def run_port(probe, proc, vec, pokes=()):
             rv(ax), rv(bx), rv(cx), rv(dx), rv(si), rv(di), rv(bp)]
     if pokes:
         args += ['7', '7']          # ds es defaults (seg_para(data))
-        for sn, v in pokes:
-            args.append(f'poke={sn}:{v}' if isinstance(v, str)
-                        else f'poke={sn}:{v:x}')
+        for sn, v, esz in pokes:
+            pref = 'pokeb' if esz == 1 else 'poke'
+            args.append(f'{pref}={sn}:{v}' if isinstance(v, str)
+                        else f'{pref}={sn}:{v:x}')
     # file-writing procs (SaveFile etc.) must not litter the repo —
     # run the probe inside a scratch dir
     scratch = os.path.join(tempfile.gettempdir(), 'diff_procs_scratch')
@@ -432,6 +502,21 @@ def main():
     if deltas:
         deltas.sort()
         loadbias = deltas[len(deltas) // 2]
+    # struc layouts: instance -> type (symtab, e.g. VP -> VIEWPORT) and
+    # TYPE.FIELD -> field offset.  Record-member pokes (`mov
+    # cl,VP.V_SCALE_UP`) land at <record sym>+<field offset> on the port.
+    fields, itype = {}, {}
+    for line in open(a.spec):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        lst0 = parse_spec_line(line)[0]
+        lp0 = lst0 if os.path.isabs(lst0) else os.path.join(
+            '/home/xor/inertia_player/examples/Tornado', lst0)
+        for n0, (t0, _d0) in _lst_symtab(lp0).items():
+            itype.setdefault(n0, t0)
+        for k0, o0 in _lst_fields(lp0).items():
+            fields.setdefault(k0, o0)
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
@@ -445,9 +530,9 @@ def main():
                 '/home/xor/inertia_player/examples/Tornado', lst)
             pat, kind, syms = parse_lst_pattern(lp, proc)
             if kind_ov: kind = kind_ov
-            for n, (o, s, im, mb, ir) in list(syms.items()):
+            for n, (o, s, im, mb, ir, oz) in list(syms.items()):
                 if not im and n.lower().lstrip('_') in known_labels:
-                    syms[n] = (o, s, True, mb, ir)
+                    syms[n] = (o, s, True, mb, ir, oz)
         hits = locate(exe, pat) if pat else []
         if len(hits) > 1 and pat_ov is None:
             # longer signature: relative-branch tails differentiate
@@ -491,8 +576,8 @@ def main():
             # shipped displacements for the proc's data symbols
             symoff[(lst, proc)] = {
                 n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'),
-                    im, mb, ir)
-                for n, (o, s, im, mb, ir) in syms.items()}
+                    im, mb, ir, oz)
+                for n, (o, s, im, mb, ir, oz) in syms.items()}
         else:
             addrs[(lst, proc)] = None
             print(f'{lst}:{proc}: locate failed ({len(hits)} hits)',
@@ -524,8 +609,8 @@ def main():
     # nested calls (e.g. CircleFill -> [FillVector] -> _PolyFill reads)
     gsyms = {}
     for so in symoff.values():
-        for n, (s, disp, im, mb, ir) in so.items():
-            gsyms.setdefault(n, (s, disp, im, mb, ir))
+        for n, (s, disp, im, mb, ir, oz) in so.items():
+            gsyms.setdefault(n, (s, disp, im, mb, ir, oz))
     gsyms_sorted = sorted(gsyms)
     gsyms_l = {n.lower(): v for n, v in gsyms.items()}
     # per-listing sym unions: globals read by procs in the same source
@@ -558,7 +643,7 @@ def main():
             if hit is None:
                 missing.append(f'{sn}(orig)')
                 continue
-            s, disp, _im, _mb, _ir = hit
+            s, disp, _im, _mb, _ir, _oz = hit
             if isinstance(ov, str):      # @target: orig value = its shipped disp
                 th = next((v for n, v in so.items()
                            if n.lower() == ov[1:].lower()), None)
@@ -571,7 +656,7 @@ def main():
             if port_syms is not None and sn.lower() not in port_syms:
                 missing.append(f'{sn}(port)')
                 continue
-            ppokes.append((sn.lower(), pv))
+            ppokes.append((sn.lower(), pv, sz))
         # per-vector pokes: resolve to (seg, disp, portname, vals)
         pvseeds = []
         for sn, vals in pvlist:
@@ -622,6 +707,11 @@ def main():
             sib_set = own_set | set(sib)
             names = own + sib + [g for g in gsyms_sorted
                                  if g not in sib_set]
+            # code-ptr cells loaded into call/jmp regs anywhere in this
+            # listing keep their linked offsets (`mov bp,_X` + `call bp`)
+            lp_t = lst if os.path.isabs(lst) else os.path.join(
+                '/home/xor/inertia_player/examples/Tornado', lst)
+            codecells = _lst_codecells(lp_t)
             # ptr-redirection candidates indexed once per proc: sorted
             # (lower, orig) pairs so each *ptr sym's same-prefix target is
             # a bisect probe, not a full scan of the union
@@ -674,7 +764,7 @@ def main():
             for pseg, pdisp, psn, pvals in pvseeds:
                 pv2 = pvals[vi % len(pvals)]
                 op.append((pseg, pdisp, pv2, 2))
-                pp.append((psn, pv2))
+                pp.append((psn, pv2, 2))
             for reg, (s, e) in pinmap.items():
                 ov[VECIDX[reg]] = e[1]
                 pv[VECIDX[reg]] = '@' + s
@@ -682,23 +772,23 @@ def main():
                 for k in range(64):
                     rv = EDGE[(vi + k) % len(EDGE)]
                     op.append((DS_SEG, e[1] + 2*k, rv, 2))
-                    pp.append((s + '+%x' % (2*k), rv))
+                    pp.append((s + '+%x' % (2*k), rv, 2))
             for reg in idx:
                 j = VECIDX.get(reg)
                 if j is not None and reg not in pinmap:
                     ov[j] = pv[j] = vi * 2
             if a.auto:
                 for i, n in enumerate(names):
-                    s_kind, disp, is_imm, member, idxr = (so.get(n)
-                                                            or gsyms[n])
+                    s_kind, disp, is_imm, fname, idxr, osz = (so.get(n)
+                                                                or gsyms[n])
                     if s_kind != 'ds' or is_imm:
                         continue        # ss-syms + immediate bases left alone
                     ln = n.lower()
-                    if any(sn == ln for sn, _v in pp):
+                    if any(sn == ln for sn, _v, _z in pp):
                         continue        # explicit spec poke wins
                     if port_syms is not None and ln not in port_syms:
                         continue        # not translated under this name
-                    if CODEPTRRE.search(n):
+                    if CODEPTRRE.search(n) or ln in codecells:
                         continue        # code-ptr cell: keep linked value
                     if PTRRE.search(n):
                         # pointer global: point it at a peer sym, resolved in
@@ -724,7 +814,7 @@ def main():
                         tgt = cands[i % len(cands)]
                         op.append((DS_SEG, disp,
                                    (so.get(tgt) or gsyms[tgt])[1], 2))
-                        pp.append((ln, '@' + tgt.lower()))
+                        pp.append((ln, '@' + tgt.lower(), 2))
                         # range-seed only a same-prefix target (RhsPtr->RhsX
                         # is its real array; +2k stays inside it on both
                         # layouts).  A random peer target isn't walked.
@@ -733,25 +823,30 @@ def main():
                             for k in range(1, 8):
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
                                 op.append((DS_SEG, tdisp + 2*k, rv, 2))
-                                pp.append((tgt.lower() + '+%x' % (2*k), rv))
+                                pp.append((tgt.lower() + '+%x' % (2*k),
+                                           rv, 2))
                     else:
-                        esz = port_esz.get(ln, 2)
+                        # operand size drives the write width — a byte
+                        # member (`mov cl,VP.F`) gets a byte poke, not the
+                        # port sym's declared word
+                        esz = osz
                         v = EDGE[(vi + i) % len(EDGE)]
                         if esz == 1:
                             v &= 0xff
                         op.append((DS_SEG, disp, v, esz))
                         # struc-member reads (`mov al,Struc.Field`)
                         # encode base+fieldoff in the shipped disp while
-                        # the port sym names the base — shift the port
-                        # poke to the same member offset
-                        pdelta = (disp - pubs.get(n.upper(), disp)
-                                  if member else 0)
-                        # sane member offsets only; a stale map entry
-                        # must not send the poke somewhere wild
-                        if not 0 < pdelta <= 0x400:
+                        # the port sym names the record base — shift the
+                        # port poke by the field's struc-declared offset
+                        foff = None
+                        if fname:
+                            rtype = itype.get(n.upper(), n.upper())
+                            foff = fields.get(rtype + '.' + fname)
+                        pdelta = foff if foff is not None else 0
+                        if not 0 <= pdelta <= 0x400:
                             pdelta = 0
                         pp.append((ln + '+%x' % pdelta if pdelta else ln,
-                                   v))
+                                   v, esz))
                         # idx= proc: the reg indexes this sym as an array —
                         # range-seed elements 1..15 so arr[i] reads the same
                         # seeded value on both sides (same relative offset
@@ -764,7 +859,7 @@ def main():
                                 op.append((DS_SEG, disp + esz * k,
                                            rv2, esz))
                                 pp.append((ln + '+%x' % (pdelta + esz * k),
-                                           rv2))
+                                           rv2, esz))
                         # NOTE: no range-seeding of plain scalars — disp+N
                         # hits a different logical cell in each layout, so
                         # wild-index reads (AttrTable[screenmode]) stay a
