@@ -750,6 +750,21 @@ def main():
                   f'using {hits[0]+img:#x}', file=sys.stderr)
             hits = hits[:1]
         lstsyms_all[(lst, proc)] = syms
+        if len(hits) == 1 and pat_ov is None:
+            h = hits[0]
+            # prefix-fallback hits can be wrong bodies: the listing is the
+            # same build's output, so a genuine body matches ~all
+            # non-wildcard bytes. Reject hits scoring <75% (observed:
+            # real bodies >=90%, prefix collisions <50%)
+            full_pat, _k3, _s3 = parse_lst_pattern(lp, proc, maxlen=256)
+            named = [(i, b) for i, b in enumerate(full_pat) if b is not None]
+            if named:
+                good = sum(1 for i, b in named if exe[img + h + i] == b)
+                if good / len(named) < 0.75:
+                    print(f'{lst}:{proc}: locate rejected '
+                          f'({good}/{len(named)} bytes match at '
+                          f'{h + img:#x})', file=sys.stderr)
+                    hits = []
         if len(hits) == 1:
             h = hits[0]
             flat = LOAD_FLAT + h
