@@ -388,11 +388,24 @@ def run_port(probe, proc, vec, pokes=()):
     except subprocess.TimeoutExpired:
         return 'TIMEOUT'
     m = RESULT_RE.search(out.stdout)
-    if not m and os.environ.get('DIFF_DEBUG_PROC'):
+    if m:
+        return m.groups()
+    if os.environ.get('DIFF_DEBUG_PROC'):
         print(f'DBG-PORTFAIL {proc} rc={out.returncode} '
               f'argv={args[1:]}\n  out={out.stdout[-400:]} '
               f'err={out.stderr[-400:]}', file=sys.stderr)
-    return m.groups() if m else 'NORESULT'
+    if 'DISPMISS' in out.stderr:
+        dm = re.search(r'DISPMISS\] disp=([0-9a-fA-F]+)', out.stderr)
+        return 'DISPMISS:%s' % (dm.group(1) if dm else '?')
+    if 'unknown proc' in out.stderr:
+        return 'NORESULT'
+    return 'CRASH%d' % out.returncode if out.returncode else 'NORESULT'
+
+def portfail(r):
+    """non-tuple port/orig call outcomes: not-comparable result classes"""
+    return (r in ('TIMEOUT', 'NORESULT') or
+            (isinstance(r, str) and (r.startswith('DISPMISS') or
+                                     r.startswith('CRASH'))))
 
 FIELD = ('ax','bx','cx','dx','si','di','sp','bp','flags','ds','es','ss')
 # reg -> index inside the vec tuple (ax,cx,dx,bx,si,di,bp)
@@ -458,6 +471,8 @@ def main():
     ap.add_argument('--exe', default=EXE)
     ap.add_argument('-j', '--jobs', type=int, default=4)
     ap.add_argument('--replay', help='reclassify a saved results file, no calls')
+    ap.add_argument('--port-rerun', metavar='RAW',
+                    help='reuse orig results from RAW; re-call port side only')
     ap.add_argument('--locate-only', action='store_true',
                     help='stop after the locate phase')
     ap.add_argument('--auto', action='store_true',
@@ -985,11 +1000,29 @@ def main():
             procname = pn
         else:
             procname = proc.lower()
-        ro = run_original(addr, ovec, opokes) if addr else 'NOORIG'
+        if a.port_rerun:
+            ro = saved_ro.get((lst, proc, vi), 'NORESULT')
+        else:
+            ro = run_original(addr, ovec, opokes) if addr else 'NOORIG'
         return (lst, proc), vi, ro, \
             run_port(a.probe, procname, pvec, ppokes)
 
+    saved_ro = {}
+    if a.port_rerun:
+        for ln in open(a.port_rerun):
+            key, vi, rest = ln.split(None, 2)
+            if '/' in key:
+                pl, pp_ = key.rsplit(':', 1)
+            else:
+                pl, pp_ = '', key
+            ro = rest.strip().split(' ', 1)[0]
+            if rest.strip().startswith('('):
+                i = rest.index(')') + 1
+                ro = eval(rest[:i])
+            saved_ro[(pl, pp_, int(vi))] = ro
+
     npass = ndiff = nto = nportok = nporthang = nnoresult = 0
+    ndispmiss = ncrash = 0
     xdiff = {}
     if a.replay:
         results = []
@@ -1036,8 +1069,8 @@ def main():
         PTRREGS = ('bx','cx','si','di','bp')
         norm = set()
         ok = [(ro, rp) for _v, ro, rp in rows
-              if ro not in ('TIMEOUT','NORESULT','NOORIG')
-              and rp not in ('TIMEOUT','NORESULT')]
+              if not portfail(ro) and ro != 'NOORIG'
+              and not portfail(rp)]
         for r in PTRREGS:
             if r in skip or len(ok) < 2:
                 continue
@@ -1070,9 +1103,10 @@ def main():
         for vi, ro, rp in rows:
             if ro == 'NOORIG':
                 # port-only coverage (unlocated dead-source): TIMEOUT is
-                # a hang suspect; NORESULT = untranslated/crashed — but a
-                # known env class (ivt/hwio/ctx/array) already explains it
-                if rp in ('TIMEOUT', 'NORESULT'):
+                # a hang suspect; NORESULT/DISPMISS/CRASH = untranslated,
+                # dispatch-miss or crashed — but a known env class
+                # (ivt/hwio/ctx/array) already explains it
+                if portfail(rp):
                     cl = class_of.get((lst, proc))
                     if cl:
                         xdiff[cl] = xdiff.get(cl, 0) + 1
@@ -1080,19 +1114,33 @@ def main():
                     elif rp == 'TIMEOUT':
                         nporthang += 1
                         print(f'{lst}:{proc} v{vi} PORTHANG')
+                    elif isinstance(rp, str) and rp.startswith('DISPMISS'):
+                        ndispmiss += 1
+                        print(f'{lst}:{proc} v{vi} {rp}')
+                    elif isinstance(rp, str) and rp.startswith('CRASH'):
+                        ncrash += 1
+                        print(f'{lst}:{proc} v{vi} {rp}')
                     else:
                         nnoresult += 1
                         print(f'{lst}:{proc} v{vi} NORESULT')
                 else:
                     nportok += 1
                 continue
-            if ro in ('TIMEOUT','NORESULT'):
+            if portfail(ro):
                 print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
                 nto += 1
                 continue
-            if rp in ('TIMEOUT','NORESULT'):
-                print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
-                nto += 1
+            if portfail(rp):
+                tag = rp if isinstance(rp, str) and (
+                    rp.startswith('DISPMISS') or
+                    rp.startswith('CRASH')) else 'NORESULT'
+                print(f'{lst}:{proc} v{vi}: original=ok port={rp}')
+                if tag.startswith('DISPMISS'):
+                    ndispmiss += 1
+                elif tag.startswith('CRASH'):
+                    ncrash += 1
+                else:
+                    nto += 1
                 continue
             # compare functional fields: ax..bp, flags; skip sp/ss/ds/es
             # (harness-specific segs). Flag masks: IF=0x200 (kvikdos sets it,
@@ -1136,7 +1184,8 @@ def main():
                 print(f'{lst}:{proc} v{vi} DIFF\n  orig: {ro}\n  port: {rp}')
     print(f'== pass={npass} diff={ndiff} xdiff={sum(xdiff.values())} '
           f'{xdiff} timeout={nto} skip={nskip} '
-          f'portok={nportok} porthang={nporthang} noresult={nnoresult}')
+          f'portok={nportok} porthang={nporthang} noresult={nnoresult} '
+          f'dispmiss={ndispmiss} crash={ncrash}')
     sys.exit(1 if ndiff else 0)
 
 main()
