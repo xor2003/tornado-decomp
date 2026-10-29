@@ -426,6 +426,8 @@ def run_original(addr, vec, pokes=(), timeout=25, membox=None):
                     timeout=timeout, env=env)
     except subprocess.TimeoutExpired:
         return 'TIMEOUT', None
+    except (OSError, MemoryError):
+        return 'NORESULT', None
     if os.environ.get('DIFF_DEBUG_ORIGARGV'):
         print('ORIGOUT ' + repr(out.stdout[-400:]) + ' ERR ' +
               repr(out.stderr[-200:]), file=sys.stderr)
@@ -469,6 +471,8 @@ def run_port(probe, proc, vec, pokes=(), dumps=()):
                              errors='replace', timeout=10, cwd=scratch)
     except subprocess.TimeoutExpired:
         return 'TIMEOUT', None
+    except (OSError, MemoryError):
+        return 'NORESULT', None
     mem = None
     if dumps:
         mem = {}
@@ -1482,6 +1486,21 @@ def main():
             results.append(((lst, proc), int(vi), ro, rp, None, None))
     else:
         raw = open(a.spec + '.raw', 'w')
+        # preflight: one real orig call before committing to the full
+        # sweep — a broken emulator/VM environment fails every call with
+        # NORESULT and silently wastes the run
+        probe_t = next((t for t in tasks if t[4]), None)
+        if probe_t is not None and not a.port_rerun:
+            ok = False
+            for _ in range(3):
+                ro, _b = run_original(probe_t[4], probe_t[2], probe_t[6],
+                                      timeout=30)
+                if isinstance(ro, tuple):
+                    ok = True
+                    break
+            if not ok:
+                sys.exit('FATAL: preflight orig call failed 3x '
+                         '(emulator environment unhealthy) — aborting sweep')
         with ThreadPoolExecutor(max_workers=a.jobs) as pool:
             results = list(pool.map(run_task, tasks))
         for (lst, proc), vi, ro, rp, rom, rpm in results:
