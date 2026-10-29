@@ -4,6 +4,11 @@
 # sides with 5 input vectors + seeded globals; register/flag results are
 # compared.  Nonzero exit = unclassified divergence (regression candidate).
 #
+# Spec opts: pin=r (struct-ptr arg -> seeded scratch array),
+#            idx=r (index arg -> small in-range values + range-seeded
+#            array), class=tag (expected environment divergence bucket),
+#            postpone/manual (skip), poke[ b]=sym:val, skip=regs.
+#
 #   tests/run_difftests.sh [specfile]     (default: tests/smoke_spec.txt)
 #
 # Full sweep:  python3 tools/diff_procs.py tests/diffspec.txt --auto -j8

@@ -115,13 +115,26 @@ OPTS = {
     'Null': ':class=variant', 'CtrlNull': ':class=variant',
     # table-indexed reads through unseeded runtime state
     'PolyLine': ':class=array', 'LoadPanel': ':class=array',
+    # ctx: LineClip* call LineClipCheck, whose error path does
+    # `mov sp,ClipRecover; jmp ClipEndFail` — a non-local exit relying on
+    # the parent ClipLineEnd having stashed sp.  Standalone calls leave
+    # ClipRecover=0: orig rets into the weeds (deterministic garbage-run),
+    # the emulated RETN underflows.  Tested correctly at ClipLineEnd.
+    'LineClipAbove': ':class=ctx', 'LineClipBelow': ':class=ctx',
+    'LineClipLeft': ':class=ctx', 'LineClipRight': ':class=ctx',
+    'LineClipBehind': ':class=ctx', 'LineClipCheck': ':class=ctx',
 }
 
 
 def main():
     probe_src, srcroot = sys.argv[1], sys.argv[2]
-    wrappers = set(re.findall(r'extern bool (\w+)\(',
-                              open(probe_src).read()))
+    probe_txt = open(probe_src).read()
+    wrappers = set(re.findall(r'extern bool (\w+)\(', probe_txt))
+    # static procs are reachable via a weak sibling + dispatch offset:
+    # they appear as {"name", sibling, k<name>} rows in PROCS, not as
+    # extern declarations
+    wrappers |= set(re.findall(r'\{"(\w+)",\s*\w+,\s*\(m2c::_offsets\)',
+                               probe_txt))
     out, seen = [], set()
     for root in ('LIB8086', 'TORNADO', 'VISUAL'):
         for lst in sorted(glob.glob(os.path.join(
@@ -149,7 +162,15 @@ def main():
                                if re.search(r'mov\s+\w*[Pp]tr\s*,\s*' + r
                                             + r'\b', body)]
                         pinopt = f':pin={",".join(pin)}' if pin else ''
-                        out.append(f'{rel}:{p}{pinopt}{OPTS.get(p, "")}')
+                        # sym[reg] indexed reads need in-range indices
+                        # plus range-seeded elements (idx= mode)
+                        idx = [r for r in ('si', 'di', 'bx')
+                               if r not in pin and
+                               re.search(r'\w+\s*\[\s*' + r + r'\s*[+\]]',
+                                         body)]
+                        idxopt = f':idx={",".join(idx)}' if idx else ''
+                        out.append(
+                            f'{rel}:{p}{pinopt}{idxopt}{OPTS.get(p, "")}')
     print('\n'.join(out))
 
 

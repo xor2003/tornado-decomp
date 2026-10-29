@@ -106,18 +106,38 @@ def parse_lst_pattern(path, proc, maxlen=64):
             # record the data symbol for later shipped-displacement reads:
             # first identifier in the operand text that isn't a register/keyword
             ops = asm.split(None, 1)[1] if len(asm.split(None, 1)) > 1 else ''
-            seg = 'ss' if any(b == 0x36 for b in bs[:2]) else 'ds'
+            # 'ss' only when 0x36 is a real segment-override PREFIX —
+            # modrm byte 0x36 (`mov si,[disp16]` / `mov [disp16],si`)
+            # is a DS access and must not be confused with it
+            seg = 'ds'
+            for b in bs[:3]:
+                if b == 0x36:
+                    seg = 'ss'
+                if b not in (0x26, 0x2e, 0x3e, 0x36, 0xf2, 0xf3,
+                             0x64, 0x65):
+                    break
             # immediate operands (OFFSET x, lea) carry an address value:
             # poking the operand redirects the base to unsynchronized
             # memory — only memory-operand cells are safe to seed
             is_imm = ('offset' in ops.lower() or
                       asm.split(None, 1)[0].strip().lower() == 'lea')
+            # `jmp/call Sym[reg]` is an indirect code-dispatch — the table
+            # cells hold code offsets, not data; seeding them redirects
+            # the jump to garbage on both sides.  Keep linked values.
+            mnem = asm.split(None, 1)[0].strip().lower()
+            if mnem in ('jmp', 'call') and '[' in ops:
+                is_imm = True
+            member = '.' in ops
+            # base regs inside [...] index the sym as an array — needed so
+            # `idx=` specs can range-seed exactly the indexed arrays
+            idxr = frozenset(re.findall(r'\[\s*([sdb][ixp])\b', ops))
             for msym in re.finditer(r'([A-Za-z_][\w]*)', ops):
                 if msym.group(1).lower() not in REG_NAMES and \
                         msym.group(1).lower() not in MNEMONICS:
                     name = msym.group(1)
                     if name not in syms:
-                        syms[name] = (poff + marked[0], seg, is_imm)
+                        syms[name] = (poff + marked[0], seg, is_imm,
+                                      member, idxr)
                     break
             for mi in marked:
                 bs[mi] = None
@@ -281,7 +301,8 @@ def parse_spec_line(line):
     lst, proc = parts[0], parts[1]
     pat_ov = kind_ov = None
     skip, vecs, manual, pokes = set(), {}, False, []
-    pin, cls = [], None
+    pin, idx, cls = [], [], None
+    pvlist = []
     for o in parts[2:]:
         if o.startswith('@@'):
             pat_ov = [None if t == '??' else int(t, 16) for t in o[2:].split()]
@@ -305,11 +326,20 @@ def parse_spec_line(line):
             kind_ov = o[5:]
         elif o.startswith('pin='):
             pin = o[4:].split(',')
+        elif o.startswith('idx='):
+            idx = o[4:].split(',')
+        elif o.startswith('pv='):
+            # pv=sym:v0,v1,... — per-vector poke values (bounded seeds
+            # like grid sizes that must stay inside a dispatch table)
+            body = o[3:]
+            sn, sv = body.rsplit(':', 1) if ':' in body else (body, '0')
+            pvlist.append((sn, [int(t, 16) for t in sv.split(',')]))
         elif o.startswith('class='):
             cls = o[6:]
         elif o in ('manual', 'postpone'):
             manual = True
-    return (lst, proc, pat_ov, kind_ov, skip, vecs, manual, pokes, cls, pin)
+    return (lst, proc, pat_ov, kind_ov, skip, vecs, manual, pokes, cls,
+            pin, idx, pvlist)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -337,7 +367,7 @@ def main():
             port_esz[nm] = int(es)
         port_syms = set(port_esz)
         port_procs = set(n for n, _f in re.findall(
-            r'^    \{"(\w+)",\s*(\w+)\},\s*$',
+            r'^    \{"(\w+)",\s*(\w+)(?:,\s*\(m2c::_offsets\)[^)]*)\},\s*$',
             open(pcpp).read(), re.M))
     # which module owns each weak wrapper: a same-name proc in another
     # module is `static` and unreachable — testing that spec entry would
@@ -415,9 +445,9 @@ def main():
                 '/home/xor/inertia_player/examples/Tornado', lst)
             pat, kind, syms = parse_lst_pattern(lp, proc)
             if kind_ov: kind = kind_ov
-            for n, (o, s, im) in list(syms.items()):
+            for n, (o, s, im, mb, ir) in list(syms.items()):
                 if not im and n.lower().lstrip('_') in known_labels:
-                    syms[n] = (o, s, True)
+                    syms[n] = (o, s, True, mb, ir)
         hits = locate(exe, pat) if pat else []
         if len(hits) > 1 and pat_ov is None:
             # longer signature: relative-branch tails differentiate
@@ -460,8 +490,9 @@ def main():
             addrs[(lst, proc)] = (seg, flat - seg * 16, kind)
             # shipped displacements for the proc's data symbols
             symoff[(lst, proc)] = {
-                n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'), im)
-                for n, (o, s, im) in syms.items()}
+                n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'),
+                    im, mb, ir)
+                for n, (o, s, im, mb, ir) in syms.items()}
         else:
             addrs[(lst, proc)] = None
             print(f'{lst}:{proc}: locate failed ({len(hits)} hits)',
@@ -493,17 +524,24 @@ def main():
     # nested calls (e.g. CircleFill -> [FillVector] -> _PolyFill reads)
     gsyms = {}
     for so in symoff.values():
-        for n, (s, disp, im) in so.items():
-            gsyms.setdefault(n, (s, disp, im))
+        for n, (s, disp, im, mb, ir) in so.items():
+            gsyms.setdefault(n, (s, disp, im, mb, ir))
     gsyms_sorted = sorted(gsyms)
     gsyms_l = {n.lower(): v for n, v in gsyms.items()}
+    # per-listing sym unions: globals read by procs in the same source
+    # module are far likelier to matter to a proc's callees than the
+    # global union's alphabetical tail, so they get seeded first
+    lstsyms = {}
+    for (l, _p), so in symoff.items():
+        lstsyms.setdefault(l, set()).update(so)
 
     tasks, nskip = [], 0
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
             continue
-        lst, proc, _p, _k, skip, vecs, manual, pokes, cls, pin = parse_spec_line(line)
+        lst, proc, _p, _k, skip, vecs, manual, pokes, cls, pin, idx, \
+            pvlist = parse_spec_line(line)
         addr = addrs.get((lst, proc))
         if not addr or addr == 'dup' or manual:
             nskip += 1
@@ -520,7 +558,7 @@ def main():
             if hit is None:
                 missing.append(f'{sn}(orig)')
                 continue
-            s, disp, _im = hit
+            s, disp, _im, _mb, _ir = hit
             if isinstance(ov, str):      # @target: orig value = its shipped disp
                 th = next((v for n, v in so.items()
                            if n.lower() == ov[1:].lower()), None)
@@ -534,6 +572,21 @@ def main():
                 missing.append(f'{sn}(port)')
                 continue
             ppokes.append((sn.lower(), pv))
+        # per-vector pokes: resolve to (seg, disp, portname, vals)
+        pvseeds = []
+        for sn, vals in pvlist:
+            hit = next((v for n, v in so.items()
+                        if n.lower() == sn.lower()), None)
+            if hit is None:
+                missing.append(f'{sn}(orig)')
+                continue
+            s, disp = hit[0], hit[1]
+            if port_syms is not None and sn.lower() not in port_syms:
+                missing.append(f'{sn}(port)')
+                continue
+            pvseeds.append((
+                DS_SEG if s == 'ds' else int(SS.split(':')[0], 16),
+                disp, sn.lower(), vals))
         if missing:
             print(f'{proc}: poke syms unresolved: {missing} - skipped',
                   file=sys.stderr)
@@ -565,7 +618,10 @@ def main():
             # vector over ~50k names was the old quadratic stall.
             own = sorted(set(so))
             own_set = set(so)
-            names = own + [g for g in gsyms_sorted if g not in own_set]
+            sib = sorted(lstsyms.get(lst, set()) - own_set)
+            sib_set = own_set | set(sib)
+            names = own + sib + [g for g in gsyms_sorted
+                                 if g not in sib_set]
             # ptr-redirection candidates indexed once per proc: sorted
             # (lower, orig) pairs so each *ptr sym's same-prefix target is
             # a bisect probe, not a full scan of the union
@@ -607,10 +663,18 @@ def main():
                     continue
                 pinmap[reg] = (s, e)
                 break
+        # idx= constrains register args to small array indices — procs
+        # that read `sym[reg]` (Xe[si], OutCode[si]) need an in-range
+        # index, not a pointer, plus range-seeded array elements
+        idxset = frozenset(idx)
         for vi in range(len(VECTORS)):
             op, pp = list(opokes), list(ppokes)
             ov = list(vecs.get(vi, VECTORS[vi]))
             pv = list(ov)
+            for pseg, pdisp, psn, pvals in pvseeds:
+                pv2 = pvals[vi % len(pvals)]
+                op.append((pseg, pdisp, pv2, 2))
+                pp.append((psn, pv2))
             for reg, (s, e) in pinmap.items():
                 ov[VECIDX[reg]] = e[1]
                 pv[VECIDX[reg]] = '@' + s
@@ -619,9 +683,14 @@ def main():
                     rv = EDGE[(vi + k) % len(EDGE)]
                     op.append((DS_SEG, e[1] + 2*k, rv, 2))
                     pp.append((s + '+%x' % (2*k), rv))
+            for reg in idx:
+                j = VECIDX.get(reg)
+                if j is not None and reg not in pinmap:
+                    ov[j] = pv[j] = vi * 2
             if a.auto:
                 for i, n in enumerate(names):
-                    s_kind, disp, is_imm = so.get(n) or gsyms[n]
+                    s_kind, disp, is_imm, member, idxr = (so.get(n)
+                                                            or gsyms[n])
                     if s_kind != 'ds' or is_imm:
                         continue        # ss-syms + immediate bases left alone
                     ln = n.lower()
@@ -671,7 +740,31 @@ def main():
                         if esz == 1:
                             v &= 0xff
                         op.append((DS_SEG, disp, v, esz))
-                        pp.append((ln, v))
+                        # struc-member reads (`mov al,Struc.Field`)
+                        # encode base+fieldoff in the shipped disp while
+                        # the port sym names the base — shift the port
+                        # poke to the same member offset
+                        pdelta = (disp - pubs.get(n.upper(), disp)
+                                  if member else 0)
+                        # sane member offsets only; a stale map entry
+                        # must not send the poke somewhere wild
+                        if not 0 < pdelta <= 0x400:
+                            pdelta = 0
+                        pp.append((ln + '+%x' % pdelta if pdelta else ln,
+                                   v))
+                        # idx= proc: the reg indexes this sym as an array —
+                        # range-seed elements 1..15 so arr[i] reads the same
+                        # seeded value on both sides (same relative offset
+                        # inside each layout's own copy of the array)
+                        if idxr & idxset:
+                            for k in range(1, 16):
+                                rv2 = EDGE[(vi + i + k) % len(EDGE)]
+                                if esz == 1:
+                                    rv2 &= 0xff
+                                op.append((DS_SEG, disp + esz * k,
+                                           rv2, esz))
+                                pp.append((ln + '+%x' % (pdelta + esz * k),
+                                           rv2))
                         # NOTE: no range-seeding of plain scalars — disp+N
                         # hits a different logical cell in each layout, so
                         # wild-index reads (AttrTable[screenmode]) stay a
