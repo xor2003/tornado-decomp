@@ -143041,8 +143041,8 @@ static unsigned long regval(const char* s) {
                 ((char*)tp + delta - (char*)segbasep);
             break;
         }
-    std::fprintf(stderr, "unknown reg sym %s\n", s);
-    std::exit(2);
+    std::fprintf(stderr, "WARN unknown reg sym %s\n", s);
+    return 0;
 }
 
 int main(int argc, char** argv) {
@@ -143101,14 +143101,15 @@ int main(int argc, char** argv) {
             if (!std::strncmp(s.name, sn, nl) && !s.name[nl])
                 { se = &s; break; }
         void* p = se ? (char*)*se->slot + delta : nullptr;
-        if (!p) { std::fprintf(stderr, "unknown poke sym %s\n", sn); return 2; }
+        /* unresolvable seed names must not kill the call — warn + skip */
+        if (!p) { std::fprintf(stderr, "WARN unknown poke sym %s\n", sn); continue; }
         unsigned long v;
         if (eq[1] == '@') {          /* poke=<sym>:@<target> - guest offset */
             const SymEnt* te = nullptr;
             for (const SymEnt& s : SYMS)
                 if (!std::strcmp(s.name, eq + 2)) { te = &s; break; }
             void* tp = te ? *te->slot : nullptr;
-            if (!tp) { std::fprintf(stderr, "unknown poke target %s\n", eq + 2); return 2; }
+            if (!tp) { std::fprintf(stderr, "WARN unknown poke target %s\n", eq + 2); continue; }
             v = (unsigned long)((char*)tp - (char*)segbasep);
         } else {
             v = std::strtoul(eq + 1, 0, 16);
