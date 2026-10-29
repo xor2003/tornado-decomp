@@ -1152,14 +1152,14 @@ evasiontactics:
 edummylabel47:
 	// 5135 
 	/* and	_AC_FLAGS[si],NOT (AFLG_REL_CHAFF+AFLG_REL_FLARE) */
-	AND(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, ~(0x4+0x8));
+	AND(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, ~(0x4+0x8));
 	// 0 ;----------------------
 	// 0 ;* test for weapon lock
 	// 0 ;----------------------
 	/* test	_AC_FLAGS[si],AFLG_IR_LOCK+AFLG_RAD_LOCK */
-	TEST(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x1+0x2);
+	TEST(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x1+0x2);
 	/* jz	SkipEvasion */
-	if (!(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x1+0x2)) {goto skipevasion;}
+	if (!(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x1+0x2)) {goto skipevasion;}
 	// 0 ;----------------
 	// 0 ;* check airborne
 	// 0 ;----------------
@@ -1183,9 +1183,9 @@ edummylabel47:
 	// 0 ;---------------
 	// 0 ;* release chaff (if required)
 	/* test	_AC_FLAGS[si],AFLG_RAD_LOCK */
-	TEST(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x2);
+	TEST(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x2);
 	/* jz	@F */
-	if (!(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x2)) {goto dummylabel144;}
+	if (!(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x2)) {goto dummylabel144;}
 	/* push	si */
 	PUSH(si);
 	/* mov	ax,_AC_VTAS[si] */
@@ -1201,14 +1201,14 @@ edummylabel47:
 	/* pop	si */
 	POP(si);
 	/* or	_AC_FLAGS[si],AFLG_REL_CHAFF */
-	OR(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x4);
+	OR(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x4);
 	// 0 ;* release flare (if required)
 dummylabel144:
 	// 5137 
 	/* @@:		test	_AC_FLAGS[si],AFLG_IR_LOCK */
-	TEST(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x1);
+	TEST(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x1);
 	/* jz	@F */
-	if (!(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x1)) {goto dummylabel145;}
+	if (!(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x1)) {goto dummylabel145;}
 	/* push	si */
 	PUSH(si);
 	/* mov	ax,_AC_VTAS[si] */
@@ -1224,7 +1224,7 @@ dummylabel144:
 	/* pop	si */
 	POP(si);
 	/* or	_AC_FLAGS[si],AFLG_REL_FLARE */
-	OR(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x8);
+	OR(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x8);
 	// 0 ;* reset decoy release timer
 dummylabel145:
 	// 5139 
@@ -1244,7 +1244,7 @@ setdecoytimer:
 skipevasion:
 	// 5143 
 	/* SkipEvasion:	and	_AC_FLAGS[si],NOT (AFLG_IR_LOCK+AFLG_RAD_LOCK) */
-	AND(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, ~(0x1+0x2));
+	AND(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, ~(0x1+0x2));
 	/* ret */
 	RETF(0);
 

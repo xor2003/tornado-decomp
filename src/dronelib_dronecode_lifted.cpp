@@ -130,9 +130,9 @@ dummylabel6:
 	/* jne	@F */
 	if ((dw)(ax) != (dw)(2)) {goto dummylabel7;}
 	/* test	_AC_FLAGS[si],AFLG_REL_CHAFF */
-	TEST(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x4);
+	TEST(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x4);
 	/* jnz	SetDroneChaff */
-	if ((*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x4) != 0) {goto setdronechaff;}
+	if ((*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x4) != 0) {goto setdronechaff;}
 	/* jmp	ClrDroneChaff */
 	goto clrdronechaff;
 	// 0 ;-----------------
@@ -145,9 +145,9 @@ dummylabel7:
 	/* jne	ClrDroneChaff */
 	if ((dw)(ax) != (dw)(4)) {goto clrdronechaff;}
 	/* test	_HC_FLAGS[si],HFLG_REL_CHAFF */
-	TEST(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x4);
+	TEST(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x4);
 	/* jnz	SetDroneChaff */
-	if ((*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x4) != 0) {goto setdronechaff;}
+	if ((*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x4) != 0) {goto setdronechaff;}
 clrdronechaff:
 	// 4389 
 	/* ClrDroneChaff:	clc			;cf = 0 (no chaff) */
@@ -207,9 +207,9 @@ dummylabel9:
 	/* jne	@F */
 	if ((dw)(ax) != (dw)(2)) {goto dummylabel10;}
 	/* test	_AC_FLAGS[si],AFLG_REL_FLARE */
-	TEST(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x8);
+	TEST(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x8);
 	/* jnz	SetDroneFlare */
-	if ((*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x8) != 0) {goto setdroneflare;}
+	if ((*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x8) != 0) {goto setdroneflare;}
 	/* jmp	ClrDroneFlare */
 	goto clrdroneflare;
 	// 0 ;-----------------
@@ -222,9 +222,9 @@ dummylabel10:
 	/* jne	ClrDroneFlare */
 	if ((dw)(ax) != (dw)(4)) {goto clrdroneflare;}
 	/* test	_HC_FLAGS[si],HFLG_REL_FLARE */
-	TEST(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x8);
+	TEST(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x8);
 	/* jnz	SetDroneFlare */
-	if ((*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x8) != 0) {goto setdroneflare;}
+	if ((*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x8) != 0) {goto setdroneflare;}
 clrdroneflare:
 	// 4401 
 	/* ClrDroneFlare:	clc			;cf = 0 (no flare) */
@@ -601,13 +601,13 @@ edummylabel6:
 	/* jz	@F */
 	if (!(wpn_weapon.wpn_flags & 0x100)) {goto dummylabel23;}
 	/* or	_AC_FLAGS[si],AFLG_IR_LOCK */
-	OR(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x1);
+	OR(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x1);
 	/* jmp	ExitWpnLock */
 	goto exitwpnlock;
 dummylabel23:
 	// 4465 
 	/* @@:		or	_AC_FLAGS[si],AFLG_RAD_LOCK */
-	OR(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x2);
+	OR(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x2);
 	/* jmp	ExitWpnLock */
 	goto exitwpnlock;
 	// 0 ;-----------------
@@ -624,13 +624,13 @@ skipaclock:
 	/* jz	@F */
 	if (!(wpn_weapon.wpn_flags & 0x100)) {goto dummylabel24;}
 	/* or	_HC_FLAGS[si],HFLG_IR_LOCK */
-	OR(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x1);
+	OR(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x1);
 	/* jmp	ExitWpnLock */
 	goto exitwpnlock;
 dummylabel24:
 	// 4469 
 	/* @@:		or	_HC_FLAGS[si],HFLG_RAD_LOCK */
-	OR(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x2);
+	OR(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x2);
 exitwpnlock:
 	// 4471 
 	/* ExitWpnLock:	ret */

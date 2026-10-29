@@ -21,14 +21,14 @@
 edummylabel20:
 	// 4591 
 	/* and	_HC_FLAGS[si],NOT (HFLG_REL_CHAFF+HFLG_REL_FLARE) */
-	AND(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, ~(0x4+0x8));
+	AND(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, ~(0x4+0x8));
 	// 0 ;----------------------
 	// 0 ;* test for weapon lock
 	// 0 ;----------------------
 	/* test	_HC_FLAGS[si],HFLG_IR_LOCK+HFLG_RAD_LOCK */
-	TEST(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x1+0x2);
+	TEST(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x1+0x2);
 	/* jz	SkipEvasion */
-	if (!(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x1+0x2)) {goto skipevasion;}
+	if (!(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x1+0x2)) {goto skipevasion;}
 	// 0 ;----------------
 	// 0 ;* check airborne
 	// 0 ;----------------
@@ -52,9 +52,9 @@ edummylabel20:
 	// 0 ;---------------
 	// 0 ;* release chaff (if required)
 	/* test	_HC_FLAGS[si],HFLG_RAD_LOCK */
-	TEST(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x2);
+	TEST(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x2);
 	/* jz	@F */
-	if (!(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x2)) {goto dummylabel37;}
+	if (!(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x2)) {goto dummylabel37;}
 	/* push	si */
 	PUSH(si);
 	/* mov	ax,_HC_VTAS[si] */
@@ -70,14 +70,14 @@ edummylabel20:
 	/* pop	si */
 	POP(si);
 	/* or	_HC_FLAGS[si],HFLG_REL_CHAFF */
-	OR(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x4);
+	OR(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x4);
 	// 0 ;* release flare (if required)
 dummylabel37:
 	// 4593 
 	/* @@:		test	_HC_FLAGS[si],HFLG_IR_LOCK */
-	TEST(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x1);
+	TEST(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x1);
 	/* jz	@F */
-	if (!(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x1)) {goto dummylabel38;}
+	if (!(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags & 0x1)) {goto dummylabel38;}
 	/* push	si */
 	PUSH(si);
 	/* mov	ax,_HC_VTAS[si] */
@@ -93,7 +93,7 @@ dummylabel37:
 	/* pop	si */
 	POP(si);
 	/* or	_HC_FLAGS[si],HFLG_REL_FLARE */
-	OR(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x8);
+	OR(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, 0x8);
 	// 0 ;* reset decoy release timer
 dummylabel38:
 	// 4595 
@@ -113,7 +113,7 @@ setdecoytimer:
 skipevasion:
 	// 4599 
 	/* SkipEvasion:	and	_HC_FLAGS[si],NOT (HFLG_IR_LOCK+HFLG_RAD_LOCK) */
-	AND(*(db*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, ~(0x1+0x2));
+	AND(*(dw*)&((helicopter*)raddr(ds,(6+18)+si))->hc_flags, ~(0x1+0x2));
 	/* ret */
 	RETF(0);
 

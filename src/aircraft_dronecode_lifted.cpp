@@ -269,9 +269,9 @@ setctrlmode:
 	XOR(al, al);
 	// 0 ;* if IL-76 Mainstay then show radome
 	/* cmp	_AC_TYPE[si],IL76_MAINSTAY	;IL76 Mainstay? */
-	CMP(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_type, 22);
+	CMP(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_type, 22);
 	/* jne	@F	     			;no -> */
-	if ((db)(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_type) != (db)(22)) {goto dummylabel1;}
+	if ((dw)(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_type) != (dw)(22)) {goto dummylabel1;}
 	/* or	al,AC_SPECIALS */
 	OR(al, 0x20);
 dummylabel1:
@@ -3627,9 +3627,9 @@ edummylabel23:
 dummylabel51:
 	// 4641 
 	/* @@:		cmp	_AC_CTRL_MODE[si],CTRL_COMBAT */
-	CMP(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode, 14);
+	CMP(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode, 14);
 	/* jne	@F */
-	if ((db)(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode) != (db)(14)) {goto dummylabel52;}
+	if ((dw)(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode) != (dw)(14)) {goto dummylabel52;}
 	/* cmp	WORD PTR _VP_ZFT_HI[si],0 */
 	CMP(*(dw*)(((db*)&((viewpoint*)raddr(ds,(6+(2))+si))->vp_zft)), 0);
 	/* ja	@F */
@@ -6005,9 +6005,9 @@ __m2c_macrolocal_109_skip:
 	if ((db)(((aircraft*)raddr(ds,(6+18)+si))->ac_side) != (db)(2)) {goto dummylabel100;}
 	// 0 ;* opponent in combat mode?
 	/* cmp	_AC_CTRL_MODE[si],CTRL_COMBAT */
-	CMP(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode, 14);
+	CMP(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode, 14);
 	/* jne	@F */
-	if ((db)(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode) != (db)(14)) {goto dummylabel100;}
+	if ((dw)(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode) != (dw)(14)) {goto dummylabel100;}
 	// 0 ;* opponent vs Tornado?
 	/* cmp	_AC_OPP_PTR[si],OFFSET M_MOBILE */
 	CMP(*(dw*)(((db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_opp_ptr)), m2c::near_offset_external(m_mobile));
@@ -6744,14 +6744,14 @@ edummylabel29:
 	if ((db)(((aircraft*)raddr(ds,(6+18)+si))->ac_side) == (db)(0)) {goto icunavail;}
 	// 0 ;* check in tracking mode (ie. unavailabe if landing etc.)
 	/* cmp	_AC_CTRL_MODE[si],CTRL_TRACK */
-	CMP(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode, 4);
+	CMP(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode, 4);
 	/* jne	ICUnavail */
-	if ((db)(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode) != (db)(4)) {goto icunavail;}
+	if ((dw)(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode) != (dw)(4)) {goto icunavail;}
 	// 0 ;* check for "break" (ie. unavailable if returning to base)
 	/* test	_AC_FLAGS[si],AFLG_BREAK */
-	TEST(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x100);
+	TEST(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, 0x100);
 	/* jnz	ICUnavail */
-	if ((*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x100) != 0) {goto icunavail;}
+	if ((*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags & 0x100) != 0) {goto icunavail;}
 icavail:
 	// 4927 
 	/* ICAvail:	clc			;interceptor available */
@@ -6767,13 +6767,13 @@ icunavail:
 setcombatmode:
 	// 6836 
 	/* mov	_AC_CTRL_MODE[si],CTRL_COMBAT ;* kill: ax, flags */
-	m2c::setdata(&(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode), m2c::getdata(14));
+	m2c::setdata(&(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_ctrl_mode), m2c::getdata(14));
 edummylabel30:
 	// 4931 
 	/* mov	_AC_OPP_PTR[si],di */
 	m2c::setdata(&(*(dw*)(((db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_opp_ptr))), m2c::getdata(di));
 	/* and	_AC_FLAGS[si],NOT (AFLG_EVADE_HI+AFLG_EVADE_LO+AFLG_UPRIGHT) */
-	AND(*(db*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, ~(0x10+0x20+0x80));
+	AND(*(dw*)&((aircraft*)raddr(ds,(6+18)+si))->ac_flags, ~(0x10+0x20+0x80));
 	/* xor	ax,ax */
 	XOR(ax, ax);
 	/* mov	_AC_PREV_PERR[si],ax */

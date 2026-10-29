@@ -29,9 +29,9 @@ edummylabel55:
 drawloop:
 	// 5517 
 	/* DrawLoop:	cmp	_WPN_TYPE[si],NULL_WEAPON	;in use? */
-	CMP(*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type, -1);
+	CMP(*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type, -1);
 	/* je	@F	      			;no -> */
-	if ((db)(*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type) == (db)(-1)) {goto dummylabel161;}
+	if ((dw)(*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type) == (dw)(-1)) {goto dummylabel161;}
 	/* push	cx */
 	PUSH(cx);
 	/* push	si */

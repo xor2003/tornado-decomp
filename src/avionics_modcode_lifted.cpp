@@ -7802,13 +7802,13 @@ edummylabel40:
 missilescan:
 	// 5083 
 	/* MissileScan:	cmp	_WPN_TYPE[si],NULL_WEAPON */
-	CMP(*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type, -1);
+	CMP(*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type, -1);
 	/* je	NextWeapon */
-	if ((db)(*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type) == (db)(-1)) {goto nextweapon;}
+	if ((dw)(*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type) == (dw)(-1)) {goto nextweapon;}
 	/* test	_WPN_FLAGS[si],WFLG_TLOCK */
-	TEST(*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_flags, 0x800);
+	TEST(*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_flags, 0x800);
 	/* jnz	MissileLocated */
-	if ((*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_flags & 0x800) != 0) {goto missilelocated;}
+	if ((*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_flags & 0x800) != 0) {goto missilelocated;}
 nextweapon:
 	// 5085 
 	/* NextWeapon:	add	si,WPN_DATA_SIZE */

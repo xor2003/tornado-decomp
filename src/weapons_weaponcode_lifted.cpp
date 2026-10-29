@@ -232,9 +232,9 @@ edummylabel3:
 updateloop:
 	// 4389 
 	/* UpdateLoop:	cmp	_WPN_TYPE[si],NULL_WEAPON	;in use? */
-	CMP(*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type, -1);
+	CMP(*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type, -1);
 	/* je	UpdateNext     			;no -> */
-	if ((db)(*(db*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type) == (db)(-1)) {goto updatenext;}
+	if ((dw)(*(dw*)&((weapon*)raddr(ds,(6+18)+si))->wpn_type) == (dw)(-1)) {goto updatenext;}
 	/* mov	ES:WeaponPtr,si */
 	weaponptr = si;
 	/* push	cx */
@@ -5504,7 +5504,7 @@ edummylabel24:
 	/* mov	ES:MOB_ANIM[si],0 */
 	m2c::setdata(&(((mobile*)raddr(es,si))->mob_anim), m2c::getdata(0));
 	/* or	ES:_WPN_FLAGS[si],WFLG_BOMBLET */
-	OR(*(db*)&((weapon*)raddr(es,(6+18)+si))->wpn_flags, 0x40);
+	OR(*(dw*)&((weapon*)raddr(es,(6+18)+si))->wpn_flags, 0x40);
 	// 0 ;* modify hdg (-3 .. +3 pdegs)
 	/* call	RandX */
 	CALLF(randx, 0);
@@ -5521,7 +5521,7 @@ edummylabel24:
 	/* add	ES:_VP_HDG[si],ax */
 	ADD(*(dw*)(((db*)&((viewpoint*)raddr(es,(6)+si))->vp_hdg)), ax);
 	/* and	ES:_VP_HDG[si],511 */
-	AND(*(db*)&((viewpoint*)raddr(es,(6)+si))->vp_hdg, 511);
+	AND(*(dw*)&((viewpoint*)raddr(es,(6)+si))->vp_hdg, 511);
 	// 0 ;* modify vertical velocity (-16 .. +16 ft/sec)
 	/* call	RandX */
 	CALLF(randx, 0);
@@ -10067,9 +10067,9 @@ findwpnloop:
 	/* je	@F			;yes -> */
 	if ((dw)(si) == (dw)(viewweaponptr)) {goto dummylabel134;}
 	/* cmp	ES:_WPN_TYPE[si],NULL_WEAPON	;unused? */
-	CMP(*(db*)&((weapon*)raddr(es,(6+18)+si))->wpn_type, -1);
+	CMP(*(dw*)&((weapon*)raddr(es,(6+18)+si))->wpn_type, -1);
 	/* je	WeaponAvail	 		;yes -> */
-	if ((db)(*(db*)&((weapon*)raddr(es,(6+18)+si))->wpn_type) == (db)(-1)) {goto weaponavail;}
+	if ((dw)(*(dw*)&((weapon*)raddr(es,(6+18)+si))->wpn_type) == (dw)(-1)) {goto weaponavail;}
 dummylabel134:
 	// 5303 
 	/* @@:		add	si,WPN_DATA_SIZE */

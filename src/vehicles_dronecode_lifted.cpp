@@ -625,7 +625,7 @@ dummylabel7:
 	/* jz	SlopeOk				;no -> */
 	if (!(((route_node*)raddr(ds,di))->route_attr & 0x20)) {goto slopeok;}
 	/* mov	_VP_PITCH[si],PITCH_DN */
-	m2c::setdata(&(*(db*)&((viewpoint*)raddr(ds,(6)+si))->vp_pitch), m2c::getdata(512-3));
+	m2c::setdata(&(*(dw*)&((viewpoint*)raddr(ds,(6)+si))->vp_pitch), m2c::getdata(512-3));
 	// 0 ;* if lead vehicle then
 	// 0 ;*    set convoy aiming speed
 	// 0 ;*    if delay required then
@@ -1052,9 +1052,9 @@ edummylabel5:
 dummylabel11:
 	// 4447 
 	/* @@:		cmp	_VP_PITCH[si],PITCH_DN	;downslope? */
-	CMP(*(db*)&((viewpoint*)raddr(ds,(6)+si))->vp_pitch, 512-3);
+	CMP(*(dw*)&((viewpoint*)raddr(ds,(6)+si))->vp_pitch, 512-3);
 	/* jne	ExitSlope     		;no -> */
-	if ((db)(*(db*)&((viewpoint*)raddr(ds,(6)+si))->vp_pitch) != (db)(512-3)) {goto exitslope;}
+	if ((dw)(*(dw*)&((viewpoint*)raddr(ds,(6)+si))->vp_pitch) != (dw)(512-3)) {goto exitslope;}
 	/* cmp	WORD PTR _VP_ZFT_HI[si],0	;zft < 0? */
 	CMP(*(dw*)(((db*)&((viewpoint*)raddr(ds,(6+(2))+si))->vp_zft)), 0);
 	/* jns	ExitSlope			;no -> */
