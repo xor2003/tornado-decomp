@@ -87,8 +87,15 @@ def dispatch_entries(srcdir, declared):
             continue
         rep = unique[0]
         for kn in knames:
-            if kn not in weaks and not kn.startswith("_"):
-                persrc.setdefault(kn, {})[stem] = rep
+            if kn.startswith("_"):
+                continue
+            # kn weak in this file -> its direct PROCS entry tests this
+            # copy — unless the same weak exists in OTHER TUs too: then
+            # the linker merged them and `kn` binds ONE arbitrary copy,
+            # so each module still needs a kn__stem dispatch entry
+            if kn in weaks and len(weakfiles[kn]) == 1:
+                continue
+            persrc.setdefault(kn, {})[stem] = rep
     # k<name> constants collide across modules: m2c::kcliplineend is
     # 0x106c in com_clip.h but 0x107d in vscreen.h (each lifted TU sees
     # its own via M2C_CODE_EQUATE_ first-include guards), and _equates.h
