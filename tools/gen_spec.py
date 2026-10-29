@@ -145,7 +145,7 @@ def main():
             # EQU/member names (`= NNNN C NAME EQU val` + `NAME EQU`):
             # NAME[reg] indexing a constant is a struc-member read —
             # the reg is a record pointer, not an array index
-            equs = set(re.findall(r'^\s*=.*?\bC\s+(\w+)\s+EQU\b',
+            equs = set(re.findall(r'^\s*=\s*\S+\s+(?:C\s+)?(\w+)\s+EQU\b',
                                   txt, re.M))
             equs |= set(re.findall(r'^\s*(\w+)\s+EQU\s', txt, re.M))
             # STRUC field names are also member constants (FIELD[reg])
