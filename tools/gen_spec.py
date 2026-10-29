@@ -180,6 +180,17 @@ def main():
                             _iname, _ireg = _im.group(1), _im.group(2)
                             if _iname in equs and _ireg not in pin:
                                 pin.append(_ireg)
+                        # bare [reg]/seg:[reg] memory operands are pointer
+                        # uses — pin the reg at seeded scratch (e.g.
+                        # `xchg al,es:[di]` buffer walks), but only when
+                        # the reg is not also a named-array index
+                        _named = set(_im.group(1) for _im in re.finditer(
+                            r'\b\w+\s*\[\s*(si|di|bx|bp)\s*[+\]]', body))
+                        for _ireg in re.findall(
+                                r'(?:\b[ecd]s\s*:\s*|(?<![\w.]))'
+                                r'\[\s*(si|di|bx|bp)\s*\]', body):
+                            if _ireg not in pin and _ireg not in _named:
+                                pin.append(_ireg)
                         pinopt = f':pin={",".join(pin)}' if pin else ''
                         # sym[reg] indexed reads need in-range indices
                         # plus range-seeded elements (idx= mode)
