@@ -232,7 +232,8 @@ def _lst_fields(path):
     out, rec = {}, None
     fdecl = re.compile(r'^\s*([0-9A-Fa-f]{4})\s+.*?'
                        r'\b(\w+)\s+(DB|DW|DD|DT|DQ)\b')
-    for ln in open(path, errors='replace').read().splitlines():
+    txt = open(path, errors='replace').read()
+    for ln in txt.splitlines():
         if rec is None:
             m = re.search(r'\b(\w+)\s+STRUC[T]?\b', ln, re.I)
             if m:
@@ -245,6 +246,28 @@ def _lst_fields(path):
         if m:
             out.setdefault(rec + '.' + m.group(2).upper(),
                            int(m.group(1), 16))
+    # `ALIAS EQU FIELD(+n)` aliases a struc member under a second name
+    # (`VP_ZFT_LO EQU VP_ZFT`) — the alias isn't a DB/DW decl, so fold it
+    # into every struc owning the RHS field
+    fld2ty = {}
+    for k in out:
+        ty, fn = k.split('.', 1)
+        fld2ty.setdefault(fn, []).append(ty)
+    for am in re.finditer(
+            r'^\s*=\s*(\S+)\s+(?:C\s+)?(\w+)\s+EQU\s+(\w+)'
+            r'(?:\s*\+\s*([0-9A-Fa-f]+))?', txt, re.M):
+        aval, an, rhs, plus = am.group(1), am.group(2).upper(), \
+            am.group(3).upper(), am.group(4)
+        if re.fullmatch(r'[0-9A-Fa-f]+', aval):
+            # `= 000A C NAME EQU FIELD+2` — the column already holds the
+            # alias's resolved field offset
+            for ty in fld2ty.get(rhs, ()):
+                out.setdefault(ty + '.' + an, int(aval, 16))
+        elif rhs in fld2ty:
+            for ty in fld2ty[rhs]:
+                out.setdefault(
+                    ty + '.' + an,
+                    out[ty + '.' + rhs] + (int(plus, 10) if plus else 0))
     return out
 
 @functools.lru_cache(maxsize=None)
@@ -287,6 +310,34 @@ def _lst_dataptrs(path):
                     out.add(s)
                     break
     return out
+
+@functools.lru_cache(maxsize=None)
+def _lst_decls(path):
+    """{name.lower(): (elem_size, extent)} for scalar data decls.
+    A named decl's extent runs to the next *named* decl's offset so
+    unnamed array-continuation rows (AirRadarScan's `DW 5/11`) count as
+    part of it.  Struc instances are skipped — record windows have their
+    own deliberate bounds.  Used to keep seeds inside the declared cell:
+    a word write at a `DB` bleeds a byte into whichever *different* sym
+    each layout packs next (BreakFlag->HelicopterPtr in the port)."""
+    elsz = {'DB': 1, 'DW': 2, 'DD': 4, 'DF': 6, 'DQ': 8, 'DT': 10}
+    dre = re.compile(r'^\s*([0-9A-Fa-f]{4})\s+[0-9A-Fa-f]+\t+'
+                     r'(\w*)\t+(DB|DW|DD|DT|DQ|DF)\b')
+    rows = []
+    for ln in open(path, errors='replace'):
+        m = dre.match(ln)
+        if m:
+            rows.append((int(m.group(1), 16), m.group(2).lower(),
+                         elsz[m.group(3)]))
+    out = {}
+    for i, (off, nm, sz) in enumerate(rows):
+        if not nm:
+            continue
+        nxt = next((o for o, n2, _s in rows[i + 1:] if n2), None)
+        ext = min(max(nxt - off, sz), 0x200) \
+            if nxt is not None and nxt > off else sz
+        out.setdefault(nm, (sz, ext))
+    return out, rows
 
 @functools.lru_cache(maxsize=None)
 def _pat_regex(pat):
@@ -368,11 +419,16 @@ def run_original(addr, vec, pokes=(), timeout=25, membox=None):
                    KVIKDOS_MEM_DUMP=dumpf,
                    KVIKDOS_MEM_DUMP_START='0x%lx' % membox[0],
                    KVIKDOS_MEM_DUMP_SIZE='0x%lx' % membox[1])
+    if os.environ.get('DIFF_DEBUG_ORIGARGV'):
+        print('ORIGARGV ' + repr(cmd), file=sys.stderr)
     try:
         out = subprocess.run(cmd, capture_output=True, text=True, errors='replace',
                     timeout=timeout, env=env)
     except subprocess.TimeoutExpired:
         return 'TIMEOUT', None
+    if os.environ.get('DIFF_DEBUG_ORIGARGV'):
+        print('ORIGOUT ' + repr(out.stdout[-400:]) + ' ERR ' +
+              repr(out.stderr[-200:]), file=sys.stderr)
     box = None
     if dumpf:
         try:
@@ -422,6 +478,10 @@ def run_port(probe, proc, vec, pokes=(), dumps=()):
                                 else bytes.fromhex(dm.group(2)))
     m = RESULT_RE.search(out.stdout)
     if m:
+        if os.environ.get('DIFF_DEBUG_PROC', '').lower() in (
+                proc.split('__')[0].lower(), proc.lower()):
+            print(f'DBG-ARGV {proc} {args[1:8]}\n  pokes={args[9:]}',
+                  file=sys.stderr)
         return m.groups(), mem
     if os.environ.get('DIFF_DEBUG_PROC'):
         print(f'DBG-PORTFAIL {proc} rc={out.returncode} '
@@ -545,7 +605,7 @@ def main():
                 r'__attribute__\(\(weak\)\)\s*bool\s+(\w+)\s*\(',
                 open(lf, errors='replace').read()):
             weak_owner.setdefault(wm.group(1), stem)
-    addrs, symoff, lstsyms_all = {}, {}, {}
+    addrs, symoff, lstsyms_all, ambig = {}, {}, {}, {}
     csmap = real_cs_map(exe)
     calltgts = near_call_targets(exe) | set(csmap)
     # linker map: public symbol -> linked seg:off. Map segs are pre-load;
@@ -661,7 +721,12 @@ def main():
             # residual multi-hits are duplicate bodies present twice in
             # the exe (two modules sharing one helper); all remaining
             # candidates are call targets, so any copy is a valid
-            # original — take the lowest address deterministically
+            # original — take the lowest address deterministically.
+            # Keep the candidates: parallel module variants (AIRCRAFT vs
+            # HELICOPS GroundCheck) differ only in wildcarded operand
+            # values — a post-pass re-picks by operand content once
+            # sibling-proc displacements are known
+            ambig[(lst, proc)] = (list(hits), syms)
             print(f'{lst}:{proc}: {len(hits)} identical bodies, '
                   f'using {hits[0]+img:#x}', file=sys.stderr)
             hits = hits[:1]
@@ -681,6 +746,50 @@ def main():
             print(f'{lst}:{proc}: locate failed ({len(hits)} hits)',
                   file=sys.stderr)
 
+    # operand-value disambiguation: parallel module variants share one
+    # wildcarded signature (AIRCRAFT/HELICOPS GroundCheck differ only in
+    # the ptr-cell operand — `0000 R` both).  Each candidate hit stores
+    # the *linked* displacement of its data operands; compare them
+    # against the expected disp learned from already-located sibling
+    # procs in the same listing — the hit whose operands match belongs
+    # to this module's body
+    if ambig:
+        modsym = {}
+        for (l2, _p2), so in symoff.items():
+            for n2, t2 in so.items():
+                modsym.setdefault((l2.lower(), n2.upper()), t2[1])
+        for (lst, proc), (hits, syms) in ambig.items():
+            scored = []
+            for h in hits:
+                score = 0
+                for n, (o, s, im, mb, ir, oz, ca) in syms.items():
+                    if im or s != 'ds' or o is None:
+                        continue
+                    exp = modsym.get(
+                        (lst.lower(), n.split('.')[0].upper()))
+                    if exp is None:
+                        continue
+                    actual = int.from_bytes(
+                        exe[img + h + o:img + h + o + 2], 'little')
+                    score += 1 if actual == exp else -1
+                scored.append((score, h))
+            scored.sort()
+            if scored and scored[-1][0] > 0 and \
+                    scored[-1][1] != hits[0]:
+                h = scored[-1][1]
+                print(f'{lst}:{proc}: operand disambiguation -> '
+                      f'{h + img:#x} (score {scored[-1][0]})',
+                      file=sys.stderr)
+                flat = LOAD_FLAT + h
+                seg = csmap.get(flat, flat // 16)
+                addrs[(lst, proc)] = (seg, flat - seg * 16,
+                                      addrs[(lst, proc)][2])
+                symoff[(lst, proc)] = {
+                    n: (s, int.from_bytes(exe[img+h+o:img+h+o+2],
+                                          'little'),
+                        im, mb, ir, oz, ca)
+                    for n, (o, s, im, mb, ir, oz, ca) in syms.items()}
+
     # .lst/.LST pairs and alias spec lines often resolve to the same
     # shipped address — run the vectors once, mark the rest as 'dup'.
     # .lst variants (the base build) win over .LST so their syms drive
@@ -697,6 +806,9 @@ def main():
         else:
             dedup[addr] = key
     if a.locate_only:
+        if os.environ.get('DIFF_DEBUG_ADDRS'):
+            for k, v in sorted(addrs.items()):
+                print('ADDR', k, v, file=sys.stderr)
         ok = sum(1 for v in addrs.values() if v and v != 'dup')
         dup = sum(1 for v in addrs.values() if v == 'dup')
         print(f'== located={ok} dup={dup} failed={len(addrs)-ok-dup}')
@@ -717,6 +829,46 @@ def main():
     lstsyms = {}
     for (l, _p), so in symoff.items():
         lstsyms.setdefault(l, set()).update(so)
+
+    # declared element size + extent per scalar sym — seeds must not
+    # extend past the decl: bytes beyond it are a different logical cell
+    # in each layout (TmpICRng's DD got +4..+e range writes that smashed
+    # HelicopterPtr in the port's packing)
+    declsz = {}
+    declall = []     # [(shipped_disp, name, extent)] sorted below
+    for line in open(a.spec):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        lst0 = parse_spec_line(line)[0]
+        lp0 = lst0 if os.path.isabs(lst0) else os.path.join(
+            '/home/xor/inertia_player/examples/Tornado', lst0)
+        _dmap, _drows = _lst_decls(lp0)
+        for dn, (dsz, dext) in _dmap.items():
+            declsz.setdefault(dn, (dsz, dext))
+        # record-instance disps: STRUC instances (AC_Data, HC_Mobile…)
+        # are never operand-referenced so gsyms can't resolve them —
+        # derive their shipped disps from the listing's symtab plus the
+        # module's listing->shipped delta (median over shared names)
+        symtab = _lst_symtab(lp0)
+        delta = sorted(gsyms_l[n.lower()][1] - d
+                       for n, (_t, d) in symtab.items()
+                       if n.lower() in gsyms_l)
+        if not delta:
+            continue
+        md = delta[len(delta) // 2]
+        for doff, dnm, _esz in _drows:
+            if dnm:
+                declall.append((doff + md, dnm, _dmap[dnm][1]))
+        for n, (t, d) in symtab.items():
+            if n.lower() in gsyms_l or n.lower().lstrip('_') in known_labels:
+                continue
+            gsyms.setdefault(
+                n, ('ds', d + md, False, '', frozenset(), 2, 0))
+    gsyms_sorted = sorted(gsyms)
+    gsyms_l = {n.lower(): v for n, v in gsyms.items()}
+    declall.sort()
+    doffs = [x[0] for x in declall]
 
     tasks, nskip, nportonly, port_only_seen = [], 0, 0, set()
     for line in open(a.spec):
@@ -933,6 +1085,11 @@ def main():
         idxset = frozenset(idx)
         for vi in range(len(VECTORS)):
             op, pp = list(opokes), list(ppokes)
+            # record-window seeds go FIRST so named sym pokes (ptr cells,
+            # record members) land last and win inside the window on both
+            # layouts — a *ptr cell packed inside the record region keeps
+            # its @-anchor instead of being clobbered by window bytes
+            winop, winpp = [], []
             # port_only: orig pokes are dead weight — keep op empty so
             # the 1000-poke cap can't truncate port-side seeding
             opush = (lambda *a: None) if port_only else op.append
@@ -960,6 +1117,12 @@ def main():
                 for i, n in enumerate(names):
                     s_kind, disp, is_imm, fname, idxr, osz, cadd = \
                         (so.get(n) or gsyms[n])
+                    if os.environ.get('DIFF_DEBUG_PROC') == proc and \
+                            'ptr' in n.lower():
+                        print(f'DBG-SYM {n} kind={s_kind} imm={is_imm} '
+                              f'fname={fname} osz={osz} cadd={cadd} '
+                              f'codecell={n.lower() in codecells} '
+                              f'inportsyms={n.lower().split(".")[0] in (port_syms or ())}')
                     if s_kind != 'ds' or is_imm:
                         continue        # ss-syms + immediate bases left alone
                     ln = n.lower()
@@ -983,41 +1146,112 @@ def main():
                         pref = [t for t in (pref_of(stem)
                                           if len(stem) >= 3 else [])
                                 if t != n]
+                        recw = False
                         if pref:
                             cands = pref
                         else:
                             # no same-prefix target: a *ptr cell indexes a
                             # record/array — prefer STRUC instances (AC_Data
                             # etc.) so the walk lands on seeded record bytes
-                            # rather than whatever follows a scalar cell
+                            # rather than whatever follows a scalar cell.
+                            # The proc's own _FAMILY_FIELD operands vote the
+                            # record family (_HC_FLAGS -> hc_* instance);
+                            # the anchor is the family's lowest-disp member
+                            # (record start: MOBILE < VIEW < DATA) so the
+                            # seeded window covers every walked field
                             recs = [itynames[l] for l in itynames
                                     if l != ln and
                                     (port_syms is None or l in port_syms)
-                                    and itynames[l] in gsyms]
-                            cands = recs or [t for _l, t in cidx if t != n]
+                                    and l in gsyms_l]
+                            if recs:
+                                fam = {}
+                                # _FAMILY_FIELD[reg] operands are EQU
+                                # constants — never in `so` — so vote the
+                                # record family from the listing body text
+                                _bf = _lst_procs(lp_t).get(
+                                    proc.lower(), (None, []))[1]
+                                for bl in _bf:
+                                    for m2 in re.finditer(
+                                            r'\b_?([a-z]{2})_[a-z0-9_]*'
+                                            r'\s*\[', bl, re.I):
+                                        g2 = m2.group(1).lower()
+                                        if g2 == 'vp':
+                                            # _VP_* fields live inside
+                                            # every record's view part —
+                                            # no family vote
+                                            continue
+                                        fam[g2] = fam.get(g2, 0) + 1
+                                fb = max(fam, key=fam.get) if fam else ''
+                                frex = [r for r in recs
+                                        if r.lower().startswith(fb + '_')]
+                                if os.environ.get('DIFF_DEBUG_PROC') == proc:
+                                    print(f'DBG-FAM {proc} n={n} own={own[:6]} '
+                                          f'fam={fam} fb={fb} frex={frex[:4]} '
+                                          f'nrecs={len(recs)}')
+                                frex.sort(key=lambda r:
+                                          gsyms_l[r.lower()][1])
+                                cands = frex[:1] or recs
+                            else:
+                                cands = [t for _l, t in cidx if t != n]
+                            recw = bool(recs)
                         if not cands and                                 (port_syms is None or ln in port_syms):
                             cands = [n]
                         if not cands:
                             continue
                         tgt = cands[i % len(cands)]
                         opush((DS_SEG, disp,
-                                   (so.get(tgt) or gsyms[tgt])[1], 2))
-                        pp.append((ln, '@' + tgt.lower(), 2))
+                                   (so.get(tgt) or gsyms.get(tgt)
+                                    or gsyms_l[tgt.lower()])[1], 2))
+                        # dotted member names (ac_data.ac_wp_ptr) don't
+                        # resolve in the probe's flat SYMS — emit the
+                        # record base + struc-declared field offset
+                        pln = ln
+                        if '.' in ln:
+                            _pb, _pf = ln.split('.', 1)
+                            _fo = fields.get(
+                                itype.get(_pb.upper(), _pb.upper())
+                                + '.' + _pf.upper())
+                            if _fo is not None:
+                                pln = f'{_pb}+{_fo:x}'
+                        pp.append((pln, '@' + tgt.lower(), 2))
                         # range-seed only a same-prefix target (RhsPtr->RhsX
                         # is its real array; +2k stays inside it on both
                         # layouts).  A random peer target isn't walked.
                         if pref:
-                            tdisp = (so.get(tgt) or gsyms[tgt])[1]
+                            tdisp = (so.get(tgt) or gsyms.get(tgt)
+                                     or gsyms_l[tgt.lower()])[1]
+                            dend = declsz.get(tgt.lower(), (0, 0x10000))[1]
                             for k in range(1, 8):
+                                if 2*k + 2 > dend:
+                                    break   # scalar target — don't bleed
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
                                 opush((DS_SEG, tdisp + 2*k, rv, 2))
                                 pp.append((tgt.lower() + '+%x' % (2*k),
                                            rv, 2))
+                        elif recw:
+                            # record-instance anchor: _FIELD[reg] walks
+                            # read across the record (MOB+VIEW+AC parts
+                            # are contiguous) — seed a full-record window
+                            # past the anchor so member reads on either
+                            # side see identical bytes
+                            tdisp = (so.get(tgt) or gsyms.get(tgt)
+                                     or gsyms_l[tgt.lower()])[1]
+                            for k in range(0x40):
+                                rv = EDGE[(vi + i + k) % len(EDGE)]
+                                winop.append((DS_SEG, tdisp + 2*k, rv, 2))
+                                winpp.append((tgt.lower() + '+%x' % (2*k),
+                                              rv, 2))
                     else:
                         # operand size drives the write width — a byte
                         # member (`mov cl,VP.F`) gets a byte poke, not the
-                        # port sym's declared word
+                        # port sym's declared word.  Clamp to the decl's
+                        # element size: `cmp BreakFlag,0` parses osz=2 but
+                        # the DB's second byte is the next *named* cell —
+                        # a different sym in each layout
                         esz = osz
+                        _d = declsz.get(ln.split('.')[0])
+                        if _d:
+                            esz = min(esz, _d[0])
                         v = EDGE[(vi + i) % len(EDGE)]
                         if esz == 1:
                             v &= 0xff
@@ -1042,16 +1276,35 @@ def main():
                         if not -0x400 <= pdelta <= 0x400:
                             pdelta = 0
                         lnbase = ln.split('.')[0]
-                        pp.append((lnbase + '+%x' % abs(pdelta)
-                                   if pdelta > 0 else
-                                   lnbase + '+-%x' % abs(pdelta)
-                                   if pdelta else lnbase, v, esz))
+                        dend = declsz.get(lnbase, (0, 0x10000))[1]
+                        if _d and pdelta >= dend:
+                            # the operand addend reached past this decl
+                            # into the next cell (`TmpICRng+6` reads
+                            # EWRExposeTimer) — port-side seed the cell
+                            # that *owns* disp instead of base+addend
+                            oi = bisect.bisect_right(doffs, disp) - 1
+                            if 0 <= oi < len(declall):
+                                od, onm, oext = declall[oi]
+                                if disp - od < oext:
+                                    lnbase, pdelta, dend = \
+                                        onm, disp - od, oext
+                        if pdelta < dend:
+                            wesz = esz if pdelta + esz <= dend \
+                                else dend - pdelta
+                            pp.append((lnbase + '+%x' % abs(pdelta)
+                                       if pdelta > 0 else
+                                       lnbase + '+-%x' % abs(pdelta)
+                                       if pdelta else lnbase,
+                                       v & (0xff if wesz == 1 else 0xffff),
+                                       wesz))
                         # idx= proc: the reg indexes this sym as an array —
                         # range-seed elements 1..15 so arr[i] reads the same
                         # seeded value on both sides (same relative offset
                         # inside each layout's own copy of the array)
                         if idxr & idxset:
                             for k in range(1, 16):
+                                if pdelta + esz * (k + 1) > dend:
+                                    break   # past the decl — other cell
                                 rv2 = EDGE[(vi + i + k) % len(EDGE)]
                                 if esz == 1:
                                     rv2 &= 0xff
@@ -1071,8 +1324,21 @@ def main():
                       f'\nDBG-OP {[o for o in op if o[0]==0x110 and 0x1388<=o[1]<0x14a0]}'
                       f'\nDBG-PP {[p for p in pp if p[0].split("+")[0] in ("xcrt","ycrt","outcode","xft","yft")]}',
                       file=sys.stderr)
+                if os.environ.get('DIFF_DEBUG_ALLPP'):
+                    print(f'DBG-ALLPP {pp}', file=sys.stderr)
+            if os.environ.get('DIFF_DEBUG_FINALPP') == proc:
+                for _pi, _pe in enumerate(winpp + pp):
+                    print(f'FINALPP {proc} v{vi} {_pi} {_pe}',
+                          file=sys.stderr)
+                _lo, _hi = 0xf1c0, 0xf240
+                if os.environ.get('DIFF_DEBUG_OPADDR'):
+                    _oa = int(os.environ['DIFF_DEBUG_OPADDR'], 16)
+                    _lo, _hi = _oa - 1, _oa + 1
+                print(f'FINALOP {proc} v{vi} '
+                      f'{[(i, o) for i, o in enumerate(winop + op) if o[0]==DS_SEG and _lo<=o[1]<=_hi]}',
+                      file=sys.stderr)
             tasks.append((proc, vi, tuple(ov), tuple(pv), addr, skip,
-                          tuple(op), tuple(pp), lst, cls,
+                          tuple(winop + op), tuple(winpp + pp), lst, cls,
                           tuple(wro), tuple(wrp), membox))
 
     # candidate pointer-result deltas: a pointer-valued output can anchor

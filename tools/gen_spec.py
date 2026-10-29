@@ -322,6 +322,17 @@ def main():
                         if not cls and re.search(
                                 r'\blods[bwd]?\b', body):
                             cls = ':class=array'
+                        # record-table stride walks (`add si,AC_REC_SIZE`
+                        # + _FIELD[si] reads) iterate past the one seeded
+                        # record into unseeded table content — class=array
+                        if not cls:
+                            _rw = re.search(
+                                r'\b(?:add|sub)\s+(si|di|bx|bp)\s*,\s*'
+                                r'\w*REC_SIZE\b', body, re.I)
+                            if _rw and re.search(
+                                    r'\b\w+\s*\[\s*' + _rw.group(1)
+                                    + r'\s*\]', body, re.I):
+                                cls = ':class=array'
                         # procs that switch ds/es into a runtime segment
                         # (MOBOBJ1 etc. — loaded from files, not the image)
                         # read state no static poke can reach — class=ctx.
