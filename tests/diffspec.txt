@@ -1276,7 +1276,7 @@ TORNADO/MUSIC.lst:ResumeMusic:class=ivt
 TORNADO/MUSIC.lst:RefreshMusic:class=ivt
 TORNADO/NAVIGPAN.LST:UpdateNavig:pin=di:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:class=ctx
 TORNADO/NAVIGPAN.LST:InitPanel
-TORNADO/NAVIGPAN.LST:UpdateADI
+TORNADO/NAVIGPAN.LST:UpdateADI:class=ctx
 TORNADO/NAVIGPAN.LST:DrawADIRollBug:idx=si:class=ctx
 TORNADO/NAVIGPAN.LST:UpdateHSI:idx=si:wr=LocalXPos:wr=GlideYPos:class=ctx
 TORNADO/NAVIGPAN.LST:UpdateAltimeter:idx=si:wr=TempVal:class=ctx
@@ -1289,7 +1289,7 @@ TORNADO/NAVIGPAN.LST:UpdateStores2:idx=si,bx:wr=ArmBlink:wr=ArmBlinkTimer:wr=Prt
 TORNADO/NAVIGPAN.LST:UpdateStores3:idx=si,bx:wr=ArmBlink:wr=ArmBlinkTimer:wr=PrtLn:wr=PrtCl:wr=DecAttr:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateNavig:pin=di:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:class=ctx
 TORNADO/NAVIGPAN.lst:InitPanel
-TORNADO/NAVIGPAN.lst:UpdateADI
+TORNADO/NAVIGPAN.lst:UpdateADI:class=ctx
 TORNADO/NAVIGPAN.lst:DrawADIRollBug:idx=si:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateHSI:idx=si:wr=LocalXPos:wr=GlideYPos:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateAltimeter:idx=si:wr=TempVal:class=ctx
@@ -1305,7 +1305,7 @@ TORNADO/PILOTPAN.LST:InitPanel
 TORNADO/PILOTPAN.LST:UpdateEngRPM:idx=si:class=ctx
 TORNADO/PILOTPAN.LST:UpdateEngTemp:idx=si:class=ctx
 TORNADO/PILOTPAN.LST:UpdateFuel:idx=si:class=ctx
-TORNADO/PILOTPAN.LST:UpdateADI
+TORNADO/PILOTPAN.LST:UpdateADI:class=ctx
 TORNADO/PILOTPAN.LST:DrawADIRollBug:idx=si:class=ctx
 TORNADO/PILOTPAN.LST:UpdateHSI:idx=si:wr=LocalXPos:wr=GlideYPos:class=ctx
 TORNADO/PILOTPAN.LST:UpdateGMeter:idx=si:class=ctx
@@ -1331,7 +1331,7 @@ TORNADO/PILOTPAN.lst:InitPanel
 TORNADO/PILOTPAN.lst:UpdateEngRPM:idx=si:class=ctx
 TORNADO/PILOTPAN.lst:UpdateEngTemp:idx=si:class=ctx
 TORNADO/PILOTPAN.lst:UpdateFuel:idx=si:class=ctx
-TORNADO/PILOTPAN.lst:UpdateADI
+TORNADO/PILOTPAN.lst:UpdateADI:class=ctx
 TORNADO/PILOTPAN.lst:DrawADIRollBug:idx=si:class=ctx
 TORNADO/PILOTPAN.lst:UpdateHSI:idx=si:wr=LocalXPos:wr=GlideYPos:class=ctx
 TORNADO/PILOTPAN.lst:UpdateGMeter:idx=si:class=ctx
@@ -1990,7 +1990,7 @@ VISUAL/HILLS.lst:CalcZHPos:pin=si:idx=di,bx,bp:wr=Xe:wr=Ye:wr=Ze
 VISUAL/HILLS.lst:CalcZIPos:pin=si:idx=di,bx,bp:wr=Xe:wr=Ye:wr=Ze
 VISUAL/HILLS.lst:CalcGndHeight:pin=si:idx=bx,bp
 VISUAL/HILLS.lst:QCalcGndHeight:pin=si:idx=bx,bp
-VISUAL/HORIZON.LST:UserHorizon:pin=si:wr=GndSkyCols:wr=V_SinR:wr=V_CosR:wr=GradEnabled
+VISUAL/HORIZON.LST:UserHorizon:pin=si:wr=GndSkyCols:wr=V_SinR:wr=V_CosR:wr=GradEnabled:class=ctx
 VISUAL/HORIZON.LST:DrawHorizon:idx=bx:wr=FadeLevel1:wr=FadeStart1:wr=FadeCount1:wr=FadeRCol1:wr=FadeGCol1:wr=FadeBCol1:wr=SkyCol:wr=GndCol:wr=NewPitch:wr=GradVisible:wr=LhsRhsCols:wr=TopBotCols:wr=Hx1:wr=Hy1:wr=Hx2:wr=Hy2:wr=LhsX:wr=Col1:class=ctx
 VISUAL/HORIZON.LST:SortRGBGnd:pin=si:wr=SetPaletteFlag
 VISUAL/HORIZON.LST:SortRGBSky:pin=si:wr=SetPaletteFlag
@@ -1998,7 +1998,7 @@ VISUAL/HORIZON.LST:Octant1
 VISUAL/HORIZON.LST:Octant2
 VISUAL/HORIZON.LST:Octant7
 VISUAL/HORIZON.LST:Octant8
-VISUAL/HORIZON.lst:UserHorizon:pin=si:wr=GndSkyCols:wr=V_SinR:wr=V_CosR:wr=GradEnabled
+VISUAL/HORIZON.lst:UserHorizon:pin=si:wr=GndSkyCols:wr=V_SinR:wr=V_CosR:wr=GradEnabled:class=ctx
 VISUAL/HORIZON.lst:DrawHorizon:idx=bx:wr=FadeLevel1:wr=FadeStart1:wr=FadeCount1:wr=FadeRCol1:wr=FadeGCol1:wr=FadeBCol1:wr=SkyCol:wr=GndCol:wr=NewPitch:wr=GradVisible:wr=LhsRhsCols:wr=TopBotCols:wr=Hx1:wr=Hy1:wr=Hx2:wr=Hy2:wr=LhsX:wr=Col1:class=ctx
 VISUAL/HORIZON.lst:SortRGBGnd:pin=si:wr=SetPaletteFlag
 VISUAL/HORIZON.lst:SortRGBSky:pin=si:wr=SetPaletteFlag
@@ -2134,13 +2134,13 @@ VISUAL/RWY_TAXI.LST:ScanVertex8:idx=di,bx,bp:wr=RwyLightCol:wr=Xe:wr=Ye:wr=Ze:cl
 VISUAL/RWY_TAXI.LST:MakeVertex1:idx=si,di,bx,bp:wr=RwyLightCol:wr=XPos:wr=YPos:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/RWY_TAXI.LST:MakeVertex2:idx=si,di,bx,bp:wr=RwyLightCol:wr=XPos:wr=YPos:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/RWY_TAXI.LST:DrawRwyLights1:idx=si:wr=RwyLightCol:class=ctx
-VISUAL/RWY_TAXI.LST:DrawRwyLights2:wr=RwyLightCol
-VISUAL/RWY_TAXI.LST:DrawRwyLights8:wr=RwyLightCol
+VISUAL/RWY_TAXI.LST:DrawRwyLights2:wr=RwyLightCol:class=ctx
+VISUAL/RWY_TAXI.LST:DrawRwyLights8:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.LST:DrawRwyLights16:class=ctx
 VISUAL/RWY_TAXI.LST:DrawApprLights1:idx=si:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.LST:CreateLights1
 VISUAL/RWY_TAXI.LST:DrawApprLights2:idx=si:wr=RwyLightCol:class=ctx
-VISUAL/RWY_TAXI.LST:DrawApprLights8:wr=RwyLightCol
+VISUAL/RWY_TAXI.LST:DrawApprLights8:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.LST:CreateLights2
 VISUAL/RWY_TAXI.lst:DrawRunways:pin=si:idx=bx,bp:wr=RwyLightsOn:class=ctx
 VISUAL/RWY_TAXI.lst:SortRunway1:pin=si:idx=di,bx:class=ctx
@@ -2154,13 +2154,13 @@ VISUAL/RWY_TAXI.lst:ScanVertex8:idx=di,bx,bp:wr=RwyLightCol:wr=Xe:wr=Ye:wr=Ze:cl
 VISUAL/RWY_TAXI.lst:MakeVertex1:idx=si,di,bx,bp:wr=RwyLightCol:wr=XPos:wr=YPos:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/RWY_TAXI.lst:MakeVertex2:idx=si,di,bx,bp:wr=RwyLightCol:wr=XPos:wr=YPos:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/RWY_TAXI.lst:DrawRwyLights1:idx=si:wr=RwyLightCol:class=ctx
-VISUAL/RWY_TAXI.lst:DrawRwyLights2:wr=RwyLightCol
-VISUAL/RWY_TAXI.lst:DrawRwyLights8:wr=RwyLightCol
+VISUAL/RWY_TAXI.lst:DrawRwyLights2:wr=RwyLightCol:class=ctx
+VISUAL/RWY_TAXI.lst:DrawRwyLights8:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.lst:DrawRwyLights16:class=ctx
 VISUAL/RWY_TAXI.lst:DrawApprLights1:idx=si:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.lst:CreateLights1
 VISUAL/RWY_TAXI.lst:DrawApprLights2:idx=si:wr=RwyLightCol:class=ctx
-VISUAL/RWY_TAXI.lst:DrawApprLights8:wr=RwyLightCol
+VISUAL/RWY_TAXI.lst:DrawApprLights8:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.lst:CreateLights2
 VISUAL/SCANFACE.LST:ScanFace:idx=bx:class=array
 VISUAL/SCANFACE.LST:SortPrmPoly1:pin=di:wr=Cyclic

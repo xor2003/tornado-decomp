@@ -190,14 +190,49 @@ def main():
                         _bd, re.I):
                     thunks.add(_pm.group(1))
     calls = {}   # proc -> set(call/jmp targets) for ctx propagation
+    lblcalls = {}  # near-label name -> call targets in its block
     clsmap = {}  # proc -> cls actually assigned
     dispdep = set()  # procs whose ctx is dispatch-dependency (propagates)
+    _callre = re.compile(
+        r'\b(?:call|jmp)\s+(?:\w+\s+ptr\s+)?(\w+)\b', re.I)
     for root in ('LIB8086', 'TORNADO', 'VISUAL'):
         for lst in sorted(glob.glob(os.path.join(
                 srcroot, root, '*.[lL][sS][tT]'))):
             rel = f'{root}/{os.path.basename(lst)}'
             stem = os.path.splitext(os.path.basename(lst))[0].lower()
             txt = open(lst, errors='replace').read()
+            # NEAR/FAR labels are call targets whose bodies may own
+            # further calls (UserHorizon -> IntoHorizon -> BlockFill);
+            # record their edges so dep propagation can see through them
+            for _lm in re.finditer(
+                    r'^\s*[0-9A-Fa-f]{4}\s+(?:[0-9A-Fa-f]{2}\s+)*'
+                    r'(\w+)\s+LABEL\s+(?:NEAR|FAR)', txt, re.M):
+                _nx = re.search(
+                    r'^\s*[0-9A-Fa-f]{4}\s+(?:[0-9A-Fa-f]{2}\s+)*'
+                    r'\w+\s+(?:PROC|LABEL)\b',
+                    txt[_lm.end():], re.M)
+                _lb = txt[_lm.end():_lm.end() + (
+                    _nx.start() if _nx else len(txt))]
+                _lb = re.sub(r';[^\n]*', '', _lb)
+                lblcalls.setdefault(_lm.group(1).lower(),
+                                    set()).update(_callre.findall(_lb))
+                # a label body calling a cell-thunk is dispatch-
+                # dependent — seed so callers inherit
+                if thunks and re.search(
+                        r'\b(?:call|jmp)\s+(?:\w+\s+ptr\s+)?('
+                        + '|'.join(re.escape(t) for t in thunks)
+                        + r')\b', _lb, re.I):
+                    dispdep.add(_lm.group(1).lower())
+            # static jump tables (`Octant DW Octant2 / DW Octant1 ...`)
+            # resolve `call tbl[reg]` edges to their real callee names;
+            # propagation then marks callers dep only if a callee is dep
+            for _tm in re.finditer(
+                    r'^\s*(\w+)\s+DW\s+(\w+)\s*(?:;[^\n]*)?'
+                    r'((?:\n\s*DW\s+\w+[^\n]*)*)', txt, re.M):
+                _es = [_tm.group(2)] + re.findall(
+                    r'\bDW\s+(\w+)\b', _tm.group(3))
+                lblcalls.setdefault(_tm.group(1).lower(),
+                                    set()).update(_es)
             # EQU/member names (`= NNNN C NAME EQU val` + `NAME EQU`):
             # NAME[reg] indexing a constant is a struc-member read —
             # the reg is a record pointer, not an array index
@@ -359,6 +394,18 @@ def main():
                                 f',{min(_l, 0x100):x}' if _l > 4 else '')
                         out.append(
                             f'{rel}:{p}{pinopt}{idxopt}{wropt}{cls or ""}')
+    # resolve label targets' bodies into each proc's edge set
+    # (proc -> label -> thunk chains); iterate to cover label->label
+    while True:
+        grow = False
+        for p, cs in calls.items():
+            for t in list(cs):
+                extra = lblcalls.get(t.lower())
+                if extra and not extra <= cs:
+                    cs |= extra
+                    grow = True
+        if not grow:
+            break
     # dispatch-dependency propagates transitively through call edges: a
     # proc calling a dispatch-dependent callee can't produce comparable
     # results standalone either (UpdateADI -> UserHorizon -> thunk).
