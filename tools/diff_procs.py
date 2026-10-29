@@ -485,7 +485,7 @@ def main():
                 r'__attribute__\(\(weak\)\)\s*bool\s+(\w+)\s*\(',
                 open(lf, errors='replace').read()):
             weak_owner.setdefault(wm.group(1), stem)
-    addrs, symoff = {}, {}
+    addrs, symoff, lstsyms_all = {}, {}, {}
     csmap = real_cs_map(exe)
     calltgts = near_call_targets(exe) | set(csmap)
     # linker map: public symbol -> linked seg:off. Map segs are pre-load;
@@ -604,6 +604,7 @@ def main():
             print(f'{lst}:{proc}: {len(hits)} identical bodies, '
                   f'using {hits[0]+img:#x}', file=sys.stderr)
             hits = hits[:1]
+        lstsyms_all[(lst, proc)] = syms
         if len(hits) == 1:
             h = hits[0]
             flat = LOAD_FLAT + h
@@ -656,7 +657,7 @@ def main():
     for (l, _p), so in symoff.items():
         lstsyms.setdefault(l, set()).update(so)
 
-    tasks, nskip = [], 0
+    tasks, nskip, nportonly, port_only_seen = [], 0, 0, set()
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
@@ -664,14 +665,35 @@ def main():
         lst, proc, _p, _k, skip, vecs, manual, pokes, cls, pin, idx, \
             pvlist = parse_spec_line(line)
         addr = addrs.get((lst, proc))
-        if not addr or addr == 'dup' or manual:
+        if addr == 'dup' or manual:
             nskip += 1
             continue
+        # unlocated in FLIGHT.EXE (dead-source/driver variants): still
+        # exercise the port side — a translated proc that hangs or
+        # crashes standalone is a regression even with no original
+        port_only = not addr
+        if port_only:
+            nportonly += 1
+            # .lst/.LST variants bind the same probe entry — once is
+            # enough (no orig address to disambiguate them by)
+            pkey = (os.path.splitext(os.path.basename(lst))[0].lower(),
+                    proc.lower())
+            if pkey in port_only_seen:
+                nskip += 1
+                continue
+            port_only_seen.add(pkey)
         # resolve spec pokes: orig-side --poke-word/--poke-byte at the
         # symbol's shipped displacement; port-side probe poke=<name>:<val>.
         # A poke unresolved on EITHER side would seed asymmetric state, so
         # any missing symbol skips the whole proc.
         so = symoff.get((lst, proc), {})
+        if port_only:
+            # unlocated: fall back to the listing's own sym table — the
+            # shipped disp is unknown (disp=0; orig calls never run) but
+            # port-side seeding still reaches the proc's data refs
+            so = {n: (s, 0, im, mb, ir, oz, ca)
+                  for n, (o, s, im, mb, ir, oz, ca)
+                  in lstsyms_all.get((lst, proc), {}).items()}
         opokes, ppokes, missing = [], [], []
         for sn, ov, pv, sz in pokes:
             # poke=sym+hexoff:val — seed an array element past the base
@@ -687,19 +709,27 @@ def main():
                         if n.lower() == base.lower()),
                        None) or gsyms_l.get(base.lower())
             if hit is None:
-                missing.append(f'{sn}(orig)')
-                continue
-            s, disp, _im, _mb, _ir, _oz = hit
+                if port_only:
+                    hit = ('ds', 0, False, '', frozenset(), 2, 0)
+                else:
+                    missing.append(f'{sn}(orig)')
+                    continue
+            s, disp, _im, _mb, _ir, _oz, _ca = hit
             if isinstance(ov, str):      # @target: orig value = its shipped disp
                 th = next((v for n, v in so.items()
                            if n.lower() == ov[1:].lower()),
                           None) or gsyms_l.get(ov[1:].lower())
                 if th is None:
-                    missing.append(f'{ov}(orig)')
-                    continue
+                    if port_only:
+                        th = ('ds', 0, False, '', frozenset(), 2, 0)
+                    else:
+                        missing.append(f'{ov}(orig)')
+                        continue
                 ov = th[1]
-            opokes.append((DS_SEG if s == 'ds' else int(SS.split(':')[0], 16),
-                           disp + off, ov, sz))
+            if not port_only:
+                opokes.append((DS_SEG if s == 'ds' else
+                               int(SS.split(':')[0], 16),
+                               disp + off, ov, sz))
             if port_syms is not None and base.lower() not in port_syms:
                 missing.append(f'{sn}(port)')
                 continue
@@ -711,8 +741,11 @@ def main():
                         if n.lower() == sn.lower()),
                        None) or gsyms_l.get(sn.lower())
             if hit is None:
-                missing.append(f'{sn}(orig)')
-                continue
+                if port_only:
+                    hit = ('ds', 0, False, '', frozenset(), 2, 0)
+                else:
+                    missing.append(f'{sn}(orig)')
+                    continue
             s, disp = hit[0], hit[1]
             if port_syms is not None and sn.lower() not in port_syms:
                 missing.append(f'{sn}(port)')
@@ -727,12 +760,15 @@ def main():
             continue
         # module-mismatch binding: same-name procs in other modules are
         # static in the lifted TUs; without a <proc>__<stem> alias the
-        # probe binds whichever module emitted the weak symbol
+        # probe binds whichever module emitted the weak symbol.  For
+        # port-only rows there's no original to misattribute — running
+        # the bound variant still exercises translated code.
         stem_l = os.path.splitext(os.path.basename(lst))[0].lower()
         pn_l = f'{proc.lower()}__{stem_l}'
         owner_l = weak_owner.get(proc.lower())
         if (port_procs is not None and pn_l not in port_procs
-                and owner_l is not None and owner_l != stem_l):
+                and owner_l is not None and owner_l != stem_l
+                and not port_only):
             nskip += 1
             continue
         EDGE = [0x0000, 0xffff, 0x0001, 0x8000, 0x55aa, 0x7f7f]
@@ -807,11 +843,14 @@ def main():
         idxset = frozenset(idx)
         for vi in range(len(VECTORS)):
             op, pp = list(opokes), list(ppokes)
+            # port_only: orig pokes are dead weight — keep op empty so
+            # the 1000-poke cap can't truncate port-side seeding
+            opush = (lambda *a: None) if port_only else op.append
             ov = list(vecs.get(vi, VECTORS[vi]))
             pv = list(ov)
             for pseg, pdisp, psn, pvals in pvseeds:
                 pv2 = pvals[vi % len(pvals)]
-                op.append((pseg, pdisp, pv2, 2))
+                opush((pseg, pdisp, pv2, 2))
                 pp.append((psn, pv2, 2))
             for reg, (s, e) in pinmap.items():
                 # pin the reg 64 bytes into the seeded scratch: backward
@@ -821,7 +860,7 @@ def main():
                 # seed 128 bytes of scratch struct on both sides
                 for k in range(64):
                     rv = EDGE[(vi + k) % len(EDGE)]
-                    op.append((DS_SEG, e[1] + 2*k, rv, 2))
+                    opush((DS_SEG, e[1] + 2*k, rv, 2))
                     pp.append((s + '+%x' % (2*k), rv, 2))
             for reg in idx:
                 j = VECIDX.get(reg)
@@ -863,7 +902,7 @@ def main():
                         if not cands:
                             continue
                         tgt = cands[i % len(cands)]
-                        op.append((DS_SEG, disp,
+                        opush((DS_SEG, disp,
                                    (so.get(tgt) or gsyms[tgt])[1], 2))
                         pp.append((ln, '@' + tgt.lower(), 2))
                         # range-seed only a same-prefix target (RhsPtr->RhsX
@@ -873,7 +912,7 @@ def main():
                             tdisp = (so.get(tgt) or gsyms[tgt])[1]
                             for k in range(1, 8):
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
-                                op.append((DS_SEG, tdisp + 2*k, rv, 2))
+                                opush((DS_SEG, tdisp + 2*k, rv, 2))
                                 pp.append((tgt.lower() + '+%x' % (2*k),
                                            rv, 2))
                     else:
@@ -884,7 +923,7 @@ def main():
                         v = EDGE[(vi + i) % len(EDGE)]
                         if esz == 1:
                             v &= 0xff
-                        op.append((DS_SEG, disp, v, esz))
+                        opush((DS_SEG, disp, v, esz))
                         # struc-member reads (`mov al,Struc.Field`)
                         # encode base+fieldoff in the shipped disp while
                         # the port sym names the record base — shift the
@@ -918,7 +957,7 @@ def main():
                                 rv2 = EDGE[(vi + i + k) % len(EDGE)]
                                 if esz == 1:
                                     rv2 &= 0xff
-                                op.append((DS_SEG, disp + esz * k,
+                                opush((DS_SEG, disp + esz * k,
                                            rv2, esz))
                                 pp.append((lnbase + '+%x' % (pdelta + esz * k),
                                            rv2, esz))
@@ -942,10 +981,11 @@ def main():
             procname = pn
         else:
             procname = proc.lower()
-        return (lst, proc), vi, run_original(addr, ovec, opokes), \
+        ro = run_original(addr, ovec, opokes) if addr else 'NOORIG'
+        return (lst, proc), vi, ro, \
             run_port(a.probe, procname, pvec, ppokes)
 
-    npass = ndiff = nto = 0
+    npass = ndiff = nto = nportok = nporthang = nnoresult = 0
     xdiff = {}
     if a.replay:
         results = []
@@ -992,7 +1032,8 @@ def main():
         PTRREGS = ('bx','cx','si','di','bp')
         norm = set()
         ok = [(ro, rp) for _v, ro, rp in rows
-              if ro not in ('TIMEOUT','NORESULT') and rp not in ('TIMEOUT','NORESULT')]
+              if ro not in ('TIMEOUT','NORESULT','NOORIG')
+              and rp not in ('TIMEOUT','NORESULT')]
         for r in PTRREGS:
             if r in skip or len(ok) < 2:
                 continue
@@ -1023,6 +1064,17 @@ def main():
                      for ro, rp in ok})) == d for pr in norm):
                 norm.add(r)
         for vi, ro, rp in rows:
+            if ro == 'NOORIG':
+                # port-only coverage (unlocated dead-source): TIMEOUT is
+                # a hang suspect; NORESULT = untranslated/unreachable
+                if rp == 'TIMEOUT':
+                    nporthang += 1
+                    print(f'{lst}:{proc} v{vi} PORTHANG')
+                elif rp == 'NORESULT':
+                    nnoresult += 1
+                else:
+                    nportok += 1
+                continue
             if ro in ('TIMEOUT','NORESULT'):
                 print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
                 nto += 1
@@ -1072,7 +1124,8 @@ def main():
                 ndiff += 1
                 print(f'{lst}:{proc} v{vi} DIFF\n  orig: {ro}\n  port: {rp}')
     print(f'== pass={npass} diff={ndiff} xdiff={sum(xdiff.values())} '
-          f'{xdiff} timeout={nto} skip={nskip}')
+          f'{xdiff} timeout={nto} skip={nskip} '
+          f'portok={nportok} porthang={nporthang} noresult={nnoresult}')
     sys.exit(1 if ndiff else 0)
 
 main()
