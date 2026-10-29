@@ -123,6 +123,35 @@ OPTS = {
     'LineClipAbove': ':class=ctx', 'LineClipBelow': ':class=ctx',
     'LineClipLeft': ':class=ctx', 'LineClipRight': ':class=ctx',
     'LineClipBehind': ':class=ctx', 'LineClipCheck': ':class=ctx',
+    # ctx: heavy procs that chain into runtime-initialized state —
+    # panel/file loaders, per-mode dispatch cells (_UpdatePanel[bx],
+    # weapon/sound tables) — standalone calls abort on dispatch asserts
+    # or chase unseeded chains; verified port-only crash/dispmiss.
+    'UpdateNavig': ':class=ctx', 'UpdatePilot': ':class=ctx',
+    'UpdateStores': ':class=ctx', 'UpdateStores3': ':class=ctx',
+    'SelectActDisp': ':class=ctx', 'UpdateRWR2': ':class=ctx',
+    'UpdateADI2': ':class=ctx', 'UpdateCtrlSFace': ':class=ctx',
+    'UpdateEScope2': ':class=ctx', 'UpdateHUD2': ':class=ctx',
+    'UpdateOnePlane': ':class=ctx', 'UpdateOneHeli': ':class=ctx',
+    'AutoAltitude': ':class=ctx', 'WeaponsControl': ':class=ctx',
+    'UpdateWeapons': ':class=ctx', 'FLIRDisp': ':class=ctx',
+    'FLIRDisp_Ori': ':class=ctx', 'FLIRDisp_Ori2': ':class=ctx',
+    'FLIRDisp_Ori3': ':class=ctx', 'FLIRDisp_Ori4': ':class=ctx',
+    'TIALDDisp': ':class=ctx', 'TIALDDisp_Ori': ':class=ctx',
+    'TIALDDisp_Ori2': ':class=ctx', 'RefDisp': ':class=ctx',
+    'ScanSmoke': ':class=ctx', 'RetrieveData': ':class=ctx',
+    'VGA_LoadPanel': ':class=ctx', 'VGA_InitPanels': ':class=ctx',
+    'LoadPilotPan': ':class=ctx', 'LoadPSidePan': ':class=ctx',
+    'LoadNavigPan': ':class=ctx', 'LoadNSidePan': ':class=ctx',
+    'VGA_ClrPilotPan': ':class=ctx', 'VGA_ClrNavigPan': ':class=ctx',
+    'VGA_DrwNavigPan': ':class=ctx', 'VGA_IronWork': ':class=ctx',
+    'VideoBlitter': ':class=ctx', 'QExtraSprite': ':class=ctx',
+    'DrawRadarNoise': ':class=ctx', 'StoreWorkScreen': ':class=ctx',
+    'SetGameViewMode': ':class=ctx', 'UpdateGameView': ':class=ctx',
+    'AdjustZoom': ':class=ctx', 'AdjustTrack': ':class=ctx',
+    'RotateHdg': ':class=ctx', 'DemoView': ':class=ctx',
+    'WeaponView': ':class=ctx', 'AdjustWpnZoom': ':class=ctx',
+    'UpdatePanel': ':class=ctx',
 }
 
 
