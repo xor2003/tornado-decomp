@@ -166,6 +166,7 @@ def main():
                                probe_txt))
     out, seen = [], set()
     ext = {}   # sym -> byte extent from data decls (all listings pooled)
+    thunks = set()  # procs dispatching through a runtime-selected _Cell
     for root in ('LIB8086', 'TORNADO', 'VISUAL'):
         for lst in sorted(glob.glob(os.path.join(
                 srcroot, root, '*.[lL][sS][tT]'))):
@@ -177,6 +178,17 @@ def main():
                 _esz = {'DB':1,'DW':2,'DD':4,'DQ':8,'DT':10}[_em.group(2)]
                 ext.setdefault(_em.group(1).lower(),
                                int(_em.group(3), 16) * _esz)
+            for _pm in re.finditer(
+                    r'^\s*[0-9A-Fa-f]{4}\s+(\w+)\s+PROC\s+(?:NEAR|FAR)',
+                    txt, re.M):
+                _bd = txt[_pm.end():txt.find('ENDP', _pm.end())]
+                _cm = re.search(
+                    r'\bmov\s+((?:ax|bx|cx|dx|si|di|bp))\s*,\s*_\w+',
+                    _bd, re.I)
+                if _cm and re.search(
+                        r'\b(?:jmp|call)\s+' + _cm.group(1) + r'\b',
+                        _bd, re.I):
+                    thunks.add(_pm.group(1))
     for root in ('LIB8086', 'TORNADO', 'VISUAL'):
         for lst in sorted(glob.glob(os.path.join(
                 srcroot, root, '*.[lL][sS][tT]'))):
@@ -257,6 +269,14 @@ def main():
                                     r'\b(?:jmp|call)\s+'
                                     + _cm.group(1) + r'\b', body, re.I):
                                 cls = ':class=ctx'
+                        # callers of cell-thunks inherit ctx — the thunk
+                        # never dispatches standalone (orig hangs chasing
+                        # unselected cells, port aborts on dispatch miss)
+                        if not cls and thunks and re.search(
+                                r'\b(?:call|jmp)\s+(?:\w+\s+ptr\s+)?('
+                                + '|'.join(re.escape(t) for t in thunks)
+                                + r')\b', body, re.I):
+                            cls = ':class=ctx'
                         if not cls and re.search(
                                 r'\blods[bwd]?\b', body):
                             cls = ':class=array'
