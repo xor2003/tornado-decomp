@@ -809,7 +809,8 @@ def main():
                 scored.append((score, h))
             scored.sort()
             if scored and scored[-1][0] > 0 and \
-                    scored[-1][1] != hits[0]:
+                    scored[-1][1] != hits[0] and \
+                    isinstance(addrs.get((lst, proc)), tuple):
                 h = scored[-1][1]
                 print(f'{lst}:{proc}: operand disambiguation -> '
                       f'{h + img:#x} (score {scored[-1][0]})',
