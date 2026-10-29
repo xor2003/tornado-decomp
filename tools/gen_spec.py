@@ -176,6 +176,26 @@ def main():
                         if not cls and re.search(
                                 r'\blods[bwd]?\b', body):
                             cls = ':class=array'
+                        # procs that switch ds/es into a runtime segment
+                        # (MOBOBJ1 etc. — loaded from files, not the image)
+                        # read state no static poke can reach — class=ctx.
+                        # catches both `mov ds,SEG` and `mov dx,SEG;mov ds,dx`
+                        if not cls:
+                            _rseg = (r'MOBOBJ\d|FEATOBJ\d|FLATOBJ\d|'
+                                     r'GRNDOBJ\d|MSECDATA\d|SECDATA\d|'
+                                     r'WPNDATA|WSDATA|TILEDATA|SKYDATA')
+                            if re.search(
+                                    r'\b(?:ds|es)\s*,\s*(?:' + _rseg + r')\b',
+                                    body):
+                                cls = ':class=ctx'
+                            else:
+                                _ms = re.search(
+                                    r'\bmov\s+(ax|bx|cx|dx|si|di|bp)\s*,\s*'
+                                    r'(' + _rseg + r')\b', body, re.I)
+                                if _ms and re.search(
+                                        r'\bmov\s+(?:ds|es)\s*,\s*'
+                                        + _ms.group(1) + r'\b', body, re.I):
+                                    cls = ':class=ctx'
                         out.append(
                             f'{rel}:{p}{pinopt}{idxopt}{cls or ""}')
     print('\n'.join(out))
