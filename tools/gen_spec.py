@@ -190,9 +190,12 @@ def main():
                         _bd, re.I):
                     thunks.add(_pm.group(1))
     calls = {}   # proc -> set(call/jmp targets) for ctx propagation
+    bodies = {}  # proc -> comment-stripped body (deref checks)
+    pcells = {}  # proc -> pointer-ish cells it mutates (walk results)
     lblcalls = {}  # near-label name -> call targets in its block
     clsmap = {}  # proc -> cls actually assigned
     dispdep = set()  # procs whose ctx is dispatch-dependency (propagates)
+    arrdep = set()   # procs whose array walk is content-dep (propagates)
     _callre = re.compile(
         r'\b(?:call|jmp)\s+(?:\w+\s+ptr\s+)?(\w+)\b', re.I)
     for root in ('LIB8086', 'TORNADO', 'VISUAL'):
@@ -333,6 +336,50 @@ def main():
                                     r'\b\w+\s*\[\s*' + _rw.group(1)
                                     + r'\s*\]', body, re.I):
                                 cls = ':class=array'
+                        # pointer chase: `mov di,PERF_CRUISE[di]` loads
+                        # a table offset out of a data cell, then indexes
+                        # further tables with it (CRS_*[di]) — the cell's
+                        # seeded bytes index unseeded table content —
+                        # class=array.  The chased reg must stay live: a
+                        # table use has to land between the chase and the
+                        # next write to that reg.  `push r`/`pop r` pairs
+                        # preserve the chased value across temp reuse.
+                        if not cls:
+                            _bl = body.splitlines()
+                            for _pi, _pl in enumerate(_bl):
+                                _pc = re.search(
+                                    r'\bmov\s+(si|di|bx|bp)\s*,\s*(\w+)'
+                                    r'\s*\[\s*\1\s*\]', _pl, re.I)
+                                if not _pc:
+                                    continue
+                                _r, _saved = _pc.group(1), 0
+                                for _ql in _bl[_pi + 1:]:
+                                    if re.search(
+                                            r'\bpush\s+' + _r + r'\b',
+                                            _ql, re.I):
+                                        _saved += 1
+                                        continue
+                                    if re.search(
+                                            r'\bpop\s+' + _r + r'\b',
+                                            _ql, re.I):
+                                        if _saved:
+                                            _saved -= 1
+                                            continue
+                                        break   # restores foreign val
+                                    if not _saved and re.search(
+                                            r'\b\w+\s*\[\s*' + _r
+                                            + r'\s*\]', _ql):
+                                        cls = ':class=array'
+                                        break
+                                    if not _saved and re.search(
+                                            r'\b(?:mov|xchg|add|sub|'
+                                            r'xor|and|or|lea)\s+' + _r
+                                            + r'\s*,|\b(?:inc|dec|shl|'
+                                            r'shr|neg|not)\s+' + _r
+                                            + r'\b', _ql, re.I):
+                                        break   # reg clobbered — dead
+                                if cls:
+                                    break
                         # procs that switch ds/es into a runtime segment
                         # (MOBOBJ1 etc. — loaded from files, not the image)
                         # read state no static poke can reach — class=ctx.
@@ -364,9 +411,17 @@ def main():
                         calls[p] = set(re.findall(
                             r'\b(?:call|jmp)\s+(?:\w+\s+ptr\s+)?(\w+)\b',
                             bodync, re.I))
+                        bodies[p] = bodync
+                        pcells[p] = {m.group(1).lower() for m in
+                                     re.finditer(
+                            r'\b(?:mov|add|sub|inc|dec|and|or|xor)\s+'
+                            r'(?:\w+\s+ptr\s+)?([\w.]*ptr[\w.]*)\s*,',
+                            bodync, re.I)}
                         clsmap[p] = cls
                         if dep:
                             dispdep.add(p.lower())
+                        if cls == ':class=array':
+                            arrdep.add(p.lower())
                         wrd = []
                         for _wm in re.finditer(
                                 r'\b(?:mov|xchg|add|sub|adc|sbb|and|or|'
@@ -433,6 +488,46 @@ def main():
     if ctxset:
         out = [l + ':class=ctx'
                if l.split(':')[1].lower() in ctxset and ':class=' not in l
+               else l
+               for l in out]
+    # array-walk divergence propagates along call edges only where it can
+    # escape: a caller that dereferences a pointer cell an array-callee
+    # mutated (CalcNextWP walks AC_WP_PTR -> SelectNextWP stores it ->
+    # AutoRoute reads WP_ATTR[si] off it), or a pure composite whose
+    # whole body is calls (CtrlTrack — its regs are callee leftovers).
+    # ctx-classed procs are already masked.
+    arrset = set(arrdep) - ctxset
+    while True:
+        grow = set()
+        for p, cs in calls.items():
+            pl = p.lower()
+            if pl in arrset or pl in ctxset:
+                continue
+            acs = [t for t in cs if t.lower() in arrset]
+            if not acs:
+                continue
+            bd = bodies.get(p, '')
+            dep = set()
+            for t in acs:
+                dep |= pcells.get(t, set()) | pcells.get(t.lower(), set())
+            # pure composite (CtrlTrack): no own memory indexing — the
+            # captured regs are whatever the callees left behind
+            hit = not re.search(r'\[', bd)
+            for m2 in re.finditer(
+                    r'\bmov\s+(si|di|bx|bp)\s*,\s*(?:\w+\s+ptr\s+)?'
+                    r'([\w.]+)', bd, re.I):
+                if m2.group(2).lower() in dep and re.search(
+                        r'\b\w+\s*\[\s*' + m2.group(1) + r'\s*\]', bd):
+                    hit = True
+                    break
+            if hit:
+                grow.add(pl)
+        if not grow:
+            break
+        arrset |= grow
+    if arrset:
+        out = [l + ':class=array'
+               if l.split(':')[1].lower() in arrset and ':class=' not in l
                else l
                for l in out]
     print('\n'.join(out))

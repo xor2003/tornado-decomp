@@ -1184,6 +1184,16 @@ def main():
                                 fb = max(fam, key=fam.get) if fam else ''
                                 frex = [r for r in recs
                                         if r.lower().startswith(fb + '_')]
+                                if not frex and fb:
+                                    # type vote: strucs declaring FB_*
+                                    # fields (WP_ATTR -> WAYPOINT ->
+                                    # TaxiWP) when no fb_* instance
+                                    fty = {k.split('.')[0] for k in fields
+                                           if '.' in k and
+                                           k.split('.')[1].startswith(
+                                               fb.upper() + '_')}
+                                    frex = [r for r in recs
+                                            if itype.get(r.upper()) in fty]
                                 if os.environ.get('DIFF_DEBUG_PROC') == proc:
                                     print(f'DBG-FAM {proc} n={n} own={own[:6]} '
                                           f'fam={fam} fb={fb} frex={frex[:4]} '
@@ -1606,6 +1616,11 @@ def main():
                         continue
                     off = next(i for i, (a_, b_) in enumerate(zip(ob, pb))
                                if a_ != b_)
+                    # classed procs (array walks etc.) diverge in memory
+                    # the same way they diverge in regs — expected, not
+                    # a regression signal
+                    if class_of.get((lst, proc)):
+                        break
                     nmemdiff += 1
                     print(f'{lst}:{proc} v{vi} MEMDIFF rng{ri} '
                           f'+{off:x}: orig={ob[off]:02x} '
