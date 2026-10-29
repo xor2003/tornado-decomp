@@ -142,6 +142,17 @@ def main():
             rel = f'{root}/{os.path.basename(lst)}'
             stem = os.path.splitext(os.path.basename(lst))[0].lower()
             txt = open(lst, errors='replace').read()
+            # EQU/member names (`= NNNN C NAME EQU val` + `NAME EQU`):
+            # NAME[reg] indexing a constant is a struc-member read —
+            # the reg is a record pointer, not an array index
+            equs = set(re.findall(r'^\s*=.*?\bC\s+(\w+)\s+EQU\b',
+                                  txt, re.M))
+            equs |= set(re.findall(r'^\s*(\w+)\s+EQU\s', txt, re.M))
+            # STRUC field names are also member constants (FIELD[reg])
+            for _sm in re.finditer(r'\bSTRUCT?\b(.*?)\bENDS\b', txt, re.S):
+                equs |= set(re.findall(
+                    r'^\s*[0-9A-Fa-f]+\s+[0-9A-Fa-f]*\s+C\s+(\w+)\s+D[BWDT]',
+                    _sm.group(1), re.M))
             for m in re.finditer(
                     r'^\s*[0-9A-Fa-f]{4}\s+(\w+)\s+PROC\s+(NEAR|FAR)',
                     txt, re.M):
@@ -161,10 +172,18 @@ def main():
                         pin = [r for r in ('si', 'di', 'bx')
                                if re.search(r'mov\s+\w*[Pp]tr\s*,\s*' + r
                                             + r'\b', body)]
+                        # MEMBER[reg] with MEMBER an EQU constant is a
+                        # struc-member read (OBJ_XSECPOS[si]) — pin the
+                        # reg at a seeded scratch record, like *Ptr args
+                        for _im in re.finditer(
+                                r'\b(\w+)\s*\[\s*(si|di|bx|bp)\s*\]', body):
+                            _iname, _ireg = _im.group(1), _im.group(2)
+                            if _iname in equs and _ireg not in pin:
+                                pin.append(_ireg)
                         pinopt = f':pin={",".join(pin)}' if pin else ''
                         # sym[reg] indexed reads need in-range indices
                         # plus range-seeded elements (idx= mode)
-                        idx = [r for r in ('si', 'di', 'bx')
+                        idx = [r for r in ('si', 'di', 'bx', 'bp')
                                if r not in pin and
                                re.search(r'\w+\s*\[\s*' + r + r'\s*[+\]]',
                                          body)]
