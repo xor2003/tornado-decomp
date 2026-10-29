@@ -242,7 +242,8 @@ def main():
             # STRUC field names are also member constants (FIELD[reg])
             for _sm in re.finditer(r'\bSTRUCT?\b(.*?)\bENDS\b', txt, re.S):
                 equs |= set(re.findall(
-                    r'^\s*[0-9A-Fa-f]+\s+[0-9A-Fa-f]*\s+C\s+(\w+)\s+D[BWDT]',
+                    r'^\s*[0-9A-Fa-f]+\s+[0-9A-Fa-f]*\s+(?:C\s+)?'
+                    r'(\w+)\s+D[BWDT]',
                     _sm.group(1), re.M))
             for m in re.finditer(
                     r'^\s*[0-9A-Fa-f]{4}\s+(\w+)\s+PROC\s+(NEAR|FAR)',
