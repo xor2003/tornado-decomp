@@ -617,6 +617,13 @@ edummylabel4:
 	// 0 ;* calc bar length
 dummylabel11:
 	// 4435 
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	// 4435 
 	/* adc	ax,0		;1/2 bit round up (0 ..43) */
 	ADC(ax, 0);
 	// 0 ;* draw meter bar (3 pixels wide)
@@ -763,6 +770,15 @@ edummylabel5:
 	XOR(ax, ax);
 	// 0 ;* calc AoA indicator line length (1 pixel = 1 degree)
 dummylabel12:
+	// 4439 
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
 	// 4439 
 	/* adc	ax,0		;1/2 bit round up (0 .. 22) */
 	ADC(ax, 0);

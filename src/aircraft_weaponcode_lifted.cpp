@@ -382,6 +382,15 @@ lgbok:
 	goto exitlgb;
 	// 0 ;* update number of weapons remaining in package
 dummylabel135:
+	// 5037 
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
 	// 5045 
 	/* and	al,WPACK_NUM_MASK */
 	AND(al, 0xf0);
@@ -826,6 +835,15 @@ dummylabel139:
 	goto exitalarm;
 	// 0 ;* update number of weapons remaining in package
 dummylabel140:
+	// 5081 
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
 	// 5093 
 	/* and	al,WPACK_NUM_MASK */
 	AND(al, 0xf0);
@@ -1066,6 +1084,15 @@ dummylabel141:
 	goto exitagm;
 	// 0 ;* update number of weapons remaining in package
 dummylabel142:
+	// 5109 
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
+	/* shl	al,1 */
+	SHL(al, 1);
 	// 5125 
 	/* and	al,WPACK_NUM_MASK */
 	AND(al, 0xf0);

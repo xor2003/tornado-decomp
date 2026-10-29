@@ -908,6 +908,27 @@ dummylabel8:
 	// 0 ;* aiming speed = dist * 800 / time (ft/sec * 8)
 dummylabel9:
 	// 4441 
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	// 4441 
 	/* mov	si,ax */
 	si = ax;
 	/* mov	di,dx */
@@ -2235,6 +2256,13 @@ accelok:
 	/* mov	ax,64*8		;limit */
 	ax = 64*8;
 dummylabel29:
+	// 4553 
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
 	// 4561 
 	/* xor	ax,dx		;restore sign */
 	XOR(ax, dx);
@@ -2449,6 +2477,15 @@ edummylabel17:
 	/* jmp	DxOk */
 	goto dxok;
 dummylabel32:
+	// 4563 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	// 4571 
 dxok:
 	// 4573 
@@ -2511,6 +2548,15 @@ dxok:
 	/* jmp	DyOk */
 	goto dyok;
 dummylabel33:
+	// 4567 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	// 4575 
 dyok:
 	// 4577 
@@ -2589,6 +2635,15 @@ dyok:
 	/* jmp	DzOk */
 	goto dzok;
 dummylabel34:
+	// 4571 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	// 4579 
 dzok:
 	// 4581 

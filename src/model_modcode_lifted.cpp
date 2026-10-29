@@ -10606,6 +10606,15 @@ dummylabel157:
 	goto dxok;
 dummylabel158:
 	// 5071 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	// 5071 
 	/* adc	ax,0 */
 	ADC(ax, 0);
 	/* adc	dx,0 */
@@ -10716,6 +10725,15 @@ dxok:
 	goto dyok;
 dummylabel159:
 	// 5075 
+	/* shr	cx,1 */
+	SHR(cx, 1);
+	/* rcr	bx,1 */
+	RCR(bx, 1);
+	/* shr	cx,1 */
+	SHR(cx, 1);
+	/* rcr	bx,1 */
+	RCR(bx, 1);
+	// 5075 
 	/* adc	bx,0 */
 	ADC(bx, 0);
 	/* adc	cx,0 */
@@ -10773,6 +10791,15 @@ dyok:
 	/* jmp	DzOk */
 	goto dzok;
 dummylabel160:
+	// 5079 
+	/* shr	di,1 */
+	SHR(di, 1);
+	/* rcr	si,1 */
+	RCR(si, 1);
+	/* shr	di,1 */
+	SHR(di, 1);
+	/* rcr	si,1 */
+	RCR(si, 1);
 	// 5079 
 	/* adc	si,0 */
 	ADC(si, 0);

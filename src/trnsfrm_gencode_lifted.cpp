@@ -615,6 +615,15 @@ dummylabel1:
 	if ((dw)(bp) <= (dw)(10000)) {goto zrelok;}
 dummylabel2:
 	// 4377 
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* rcr	bp,1 */
+	RCR(bp, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* rcr	bp,1 */
+	RCR(bp, 1);
+	// 4377 
 	/* add	bp,7500		;abs(z rel) / 4 + 7500 */
 	ADD(bp, 7500);
 zrelok:

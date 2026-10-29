@@ -1661,6 +1661,27 @@ dummylabel18:
 	// 0 ;* aiming speed = dist * 800 / time (ft/sec * 8)
 dummylabel19:
 	// 4481 
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	// 4481 
 	/* mov	si,ax */
 	si = ax;
 	/* mov	di,dx */
@@ -2604,6 +2625,15 @@ skiptf:
 	/* mov	ax,WORD PTR AC_WPRng */
 	ax = *(dw*)(&ac_wprng);
 dummylabel31:
+	// 4563 
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
 	// 4571 
 	/* sub	ax,20		;compensate (for auto alt reaction delay) */
 	SUB(ax, 20);
@@ -3452,6 +3482,15 @@ edummylabel22:
 	/* jmp	DxOk */
 	goto dxok;
 dummylabel48:
+	// 4619 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	// 4627 
 dxok:
 	// 4629 
@@ -3514,6 +3553,15 @@ dxok:
 	/* jmp	DyOk */
 	goto dyok;
 dummylabel49:
+	// 4623 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	// 4631 
 dyok:
 	// 4633 
@@ -3592,6 +3640,15 @@ dyok:
 	/* jmp	DzOk */
 	goto dzok;
 dummylabel50:
+	// 4627 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	// 4635 
 dzok:
 	// 4637 
@@ -5585,6 +5642,15 @@ dummylabel90:
 	if ((dw)(ax) <= (dw)(bp)) {goto setcombatspeed;}
 	// 0 ;* aiming speed = sbound(target speed + range / 4, vmin, vmax)
 dummylabel91:
+	// 4801 
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
+	/* shr	dx,1 */
+	SHR(dx, 1);
+	/* rcr	ax,1 */
+	RCR(ax, 1);
 	// 4809 
 	/* add	ax,OppVtas */
 	ADD(ax, oppvtas);

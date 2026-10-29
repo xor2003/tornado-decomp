@@ -162,6 +162,15 @@ dummylabel1:
 	if ((dw)(cx) <= (dw)(10000)) {goto zrelok;}
 dummylabel2:
 	// 4375 
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* rcr	cx,1 */
+	RCR(cx, 1);
+	/* shr	ax,1 */
+	SHR(ax, 1);
+	/* rcr	cx,1 */
+	RCR(cx, 1);
+	// 4375 
 	/* add	cx,7500		;abs(z rel) / 4 + 7500 */
 	ADD(cx, 7500);
 	/* cmp	cx,+16383	;in range? */

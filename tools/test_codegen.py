@@ -22,7 +22,7 @@ SRC_DIR = sys.argv[2] if len(sys.argv) > 2 else \
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src")
 
 LABEL_RE   = re.compile(r'^\s*([A-Za-z_?@$][\w?@$]*)\s*:\s*(.*)$')
-REPT_LABEL = re.compile(r'^\s*([A-Za-z_][\w?]*)\s*:\s*REPT\s+(\d+)', re.I)
+REPT_LABEL = re.compile(r'^\s*([A-Za-z_@$?][\w?@$]*)\s*:\s*REPT\s+(\d+)', re.I)
 REMOVED    = re.compile(r'/\*\s*m2c-(?:phantom|dedup)(?:\s+removed)?:\s*(.*?)\s*\*/')
 RET_RE     = re.compile(r'\bret[nf]?\b', re.I)
 LABEL_DEF  = re.compile(r'^\s*([a-z_][\w?]*)\s*:\s*$')
@@ -86,6 +86,7 @@ def main():
 
     rept_sites = []
     skipped = set()
+    ENDM_RE = re.compile(r'^\s*ENDM\b', re.I)
     for root, _, files in os.walk(ASM_DIR):
         for f in files:
             if not f.upper().endswith('.ASM'):
@@ -94,13 +95,61 @@ def main():
                 skipped.add(f)
                 continue
             p = os.path.join(root, f)
-            for n, ln in enumerate(open(p, encoding='utf-8', errors='replace'), 1):
+            rows = open(p, encoding='utf-8', errors='replace').read().splitlines()
+            for n, ln in enumerate(rows, 1):
                 m = REPT_LABEL.match(ln)
                 if m:
-                    rept_sites.append((f, n, m.group(1), int(m.group(2))))
+                    # capture body up to ENDM
+                    body = []
+                    for ln2 in rows[n:]:
+                        if ENDM_RE.match(ln2):
+                            break
+                        body.append(ln2)
+                    rept_sites.append((f, n, m.group(1), int(m.group(2)), body))
 
-    for f, n, lbl, cnt in rept_sites:
+    # expected REPT body ops, e.g. ('shr','dx,1') -> 'SHR(dx, 1)'
+    def body_ops(body):
+        ops = []
+        for ln in body:
+            code = ln.split(';', 1)[0].strip()
+            mm = re.match(r'(shl|shr|rcl|rcr|rol|ror|sar|sal)\s+([^\s;]+)', code, re.I)
+            if mm:
+                ops.append(mm.group(1).upper())
+        return ops
+
+    def anon_run_present(stem, ops, cnt):
+        """For anonymous `@@` REPT (no name to map), confirm the module's
+        lifted files contain `cnt` consecutive copies of the body op run."""
+        if not ops:
+            return False
+        want = ops * cnt
+        pat = re.compile(r'\b(' + '|'.join(set(ops)) + r')\s*\(', re.I)
+        for lf, lns in lifted.items():
+            if not lf.startswith(stem + '_') and lf != stem + '_lifted.cpp':
+                continue
+            seq = []
+            for ln in lns:
+                mm = pat.search(ln)
+                if mm:
+                    seq.append(mm.group(1).upper())
+                elif is_code(ln) and not re.match(r'^\s*(e?dummy|\w+label\d*|[\w?]+):', ln):
+                    seq.append('X')  # non-op real instruction breaks the run
+                if len(seq) >= len(want):
+                    if seq[-len(want):] == want:
+                        return True
+                    # sliding window: drop head to keep scanning cheap
+                    seq = seq[-len(want):]
+        return False
+
+    for f, n, lbl, cnt, body in rept_sites:
         nl = norm_label(lbl)
+        if not nl:
+            # anonymous `@@` label: verify by consecutive-op-run presence
+            stem = os.path.splitext(f)[0].lower()
+            if not anon_run_present(stem, body_ops(body), cnt):
+                failures.append(
+                    f"A {f}:{n} @@: REPT {cnt} body missing in lifted code")
+            continue
         bodies = label_bodies.get(nl, [])
         live = [(lf, b) for lf, b in bodies if any(is_code(x) for x in b)]
         if not live:
