@@ -143029,10 +143029,16 @@ static _STATE st;
    the translated data image (for struct-pointer args). */
 static unsigned long regval(const char* s) {
     if (s[0] != '@') return std::strtoul(s, 0, 16);
+    /* @<sym>+<delta>: offset <delta> bytes into the sym's storage —
+       pinned buffer pointers may need mid-scratch headroom ([si-8]) */
+    const char* adj = std::strchr(s, '+');
+    long delta = adj ? std::strtol(adj + 1, 0, 16) : 0;
+    size_t nl = adj ? (size_t)(adj - (s + 1)) : std::strlen(s + 1);
     for (const SymEnt& e : SYMS)
-        if (!std::strcmp(e.name, s + 1)) {
+        if (!std::strncmp(e.name, s + 1, nl) && !e.name[nl]) {
             void* tp = *e.slot;
-            if (tp) return (unsigned long)((char*)tp - (char*)segbasep);
+            if (tp) return (unsigned long)
+                ((char*)tp + delta - (char*)segbasep);
             break;
         }
     std::fprintf(stderr, "unknown reg sym %s\n", s);

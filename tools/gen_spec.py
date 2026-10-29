@@ -182,13 +182,14 @@ def main():
                                 pin.append(_ireg)
                         # bare [reg]/seg:[reg] memory operands are pointer
                         # uses — pin the reg at seeded scratch (e.g.
-                        # `xchg al,es:[di]` buffer walks), but only when
-                        # the reg is not also a named-array index
+                        # `xchg al,es:[di]`, `[si-8]` buffer walks), but
+                        # only when the reg is not also a named-array index
                         _named = set(_im.group(1) for _im in re.finditer(
                             r'\b\w+\s*\[\s*(si|di|bx|bp)\s*[+\]]', body))
                         for _ireg in re.findall(
                                 r'(?:\b[ecd]s\s*:\s*|(?<![\w.]))'
-                                r'\[\s*(si|di|bx|bp)\s*\]', body):
+                                r'\[\s*(si|di|bx|bp)\s*(?:[+\-]\w+)?\]',
+                                body):
                             if _ireg not in pin and _ireg not in _named:
                                 pin.append(_ireg)
                         pinopt = f':pin={",".join(pin)}' if pin else ''

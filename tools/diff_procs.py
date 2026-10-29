@@ -814,8 +814,10 @@ def main():
                 op.append((pseg, pdisp, pv2, 2))
                 pp.append((psn, pv2, 2))
             for reg, (s, e) in pinmap.items():
-                ov[VECIDX[reg]] = e[1]
-                pv[VECIDX[reg]] = '@' + s
+                # pin the reg 64 bytes into the seeded scratch: backward
+                # member reads ([si-8] poly-buffer walks) stay in bounds
+                ov[VECIDX[reg]] = e[1] + 0x40
+                pv[VECIDX[reg]] = '@' + s + '+40'
                 # seed 128 bytes of scratch struct on both sides
                 for k in range(64):
                     rv = EDGE[(vi + k) % len(EDGE)]

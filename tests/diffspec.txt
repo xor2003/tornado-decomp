@@ -106,7 +106,7 @@ LIB8086/COM_DRVR.LST:LoadScreen:class=ctx
 LIB8086/COM_DRVR.LST:UncompressPic:class=ctx
 LIB8086/COM_DRVR.LST:HorizonFill:class=ctx
 LIB8086/COM_DRVR.LST:Null:class=variant
-LIB8086/COM_DRVR.LST:SetAttributes:idx=bx:class=array
+LIB8086/COM_DRVR.LST:SetAttributes:pin=si:idx=bx:class=array
 LIB8086/COM_DRVR.LST:SetPalette:class=hwio
 LIB8086/COM_DRVR.LST:SetSSpriteClip:idx=di:class=array
 LIB8086/COM_DRVR.lst:SetVideoMode:pin=di:idx=si,bx:class=hwio
@@ -133,7 +133,7 @@ LIB8086/COM_DRVR.lst:LoadScreen:class=ctx
 LIB8086/COM_DRVR.lst:UncompressPic:class=ctx
 LIB8086/COM_DRVR.lst:HorizonFill:class=ctx
 LIB8086/COM_DRVR.lst:Null:class=variant
-LIB8086/COM_DRVR.lst:SetAttributes:idx=bx:class=array
+LIB8086/COM_DRVR.lst:SetAttributes:pin=si:idx=bx:class=array
 LIB8086/COM_DRVR.lst:SetPalette:class=hwio
 LIB8086/COM_DRVR.lst:SetSSpriteClip:idx=di:class=array
 LIB8086/CRITICAL.LST:InstallCritErr:class=ivt
@@ -261,11 +261,11 @@ LIB8086/KEYBOARD.lst:RestoreKbd:class=ivt
 LIB8086/KEYBOARD.lst:KbdIntr:idx=bx:class=ivt
 LIB8086/KEYBOARD.lst:ClearKeyBuffer:class=ivt
 LIB8086/MATHFUNC.LST:CalcDeltaTime:idx=bx
-LIB8086/MATHFUNC.LST:CalcDeltaXY:idx=di:skip=si
+LIB8086/MATHFUNC.LST:CalcDeltaXY:pin=si:idx=di:skip=si
 LIB8086/MATHFUNC.LST:Sqrt
 LIB8086/MATHFUNC.LST:Sqrt32
 LIB8086/MATHFUNC.lst:CalcDeltaTime:idx=bx
-LIB8086/MATHFUNC.lst:CalcDeltaXY:idx=di:skip=si
+LIB8086/MATHFUNC.lst:CalcDeltaXY:pin=si:idx=di:skip=si
 LIB8086/MATHFUNC.lst:Sqrt
 LIB8086/MATHFUNC.lst:Sqrt32
 LIB8086/MISCLIB.LST:PrintEGASpace:postpone
@@ -498,10 +498,10 @@ LIB8086/VGA_DRVR.LST:VGA_MSprite:pin=si:class=hwio
 LIB8086/VGA_DRVR.LST:VGA_BSprite:pin=si:class=array
 LIB8086/VGA_DRVR.LST:WriteSprite:pin=di:@@52 56 57 8a e6 32 f6 ff e1 ac 3a c4 74 03 26 88 05 47:manual
 LIB8086/VGA_DRVR.LST:VGA_QSprite:pin=si:class=hwio
-LIB8086/VGA_DRVR.LST:VGA_InitSS:idx=bx:class=hwio
-LIB8086/VGA_DRVR.LST:VGA_InitMS:idx=bx:class=hwio
-LIB8086/VGA_DRVR.LST:VGA_InitQS:idx=bx:class=hwio
-LIB8086/VGA_DRVR.LST:ConvertVGAData
+LIB8086/VGA_DRVR.LST:VGA_InitSS:pin=si:idx=bx:class=hwio
+LIB8086/VGA_DRVR.LST:VGA_InitMS:pin=si:idx=bx:class=hwio
+LIB8086/VGA_DRVR.LST:VGA_InitQS:pin=si:idx=bx:class=hwio
+LIB8086/VGA_DRVR.LST:ConvertVGAData:pin=si
 LIB8086/VGA_DRVR.LST:VGA_BFill:class=hwio
 LIB8086/VGA_DRVR.LST:VGA_SaveMouse:class=hwio
 LIB8086/VGA_DRVR.LST:VGA_LoadMouse:class=hwio
@@ -540,10 +540,10 @@ LIB8086/VGA_DRVR.lst:VGA_MSprite:pin=si:class=hwio
 LIB8086/VGA_DRVR.lst:VGA_BSprite:pin=si:class=array
 LIB8086/VGA_DRVR.lst:WriteSprite:pin=di:@@52 56 57 8a e6 32 f6 ff e1 ac 3a c4 74 03 26 88 05 47:manual
 LIB8086/VGA_DRVR.lst:VGA_QSprite:pin=si:class=hwio
-LIB8086/VGA_DRVR.lst:VGA_InitSS:idx=bx:class=hwio
-LIB8086/VGA_DRVR.lst:VGA_InitMS:idx=bx:class=hwio
-LIB8086/VGA_DRVR.lst:VGA_InitQS:idx=bx:class=hwio
-LIB8086/VGA_DRVR.lst:ConvertVGAData
+LIB8086/VGA_DRVR.lst:VGA_InitSS:pin=si:idx=bx:class=hwio
+LIB8086/VGA_DRVR.lst:VGA_InitMS:pin=si:idx=bx:class=hwio
+LIB8086/VGA_DRVR.lst:VGA_InitQS:pin=si:idx=bx:class=hwio
+LIB8086/VGA_DRVR.lst:ConvertVGAData:pin=si
 LIB8086/VGA_DRVR.lst:VGA_BFill:class=hwio
 LIB8086/VGA_DRVR.lst:VGA_SaveMouse:class=hwio
 LIB8086/VGA_DRVR.lst:VGA_LoadMouse:class=hwio
@@ -578,7 +578,7 @@ TORNADO/AIRCRAFT.LST:CtrlTrack
 TORNADO/AIRCRAFT.LST:CtrlApproach
 TORNADO/AIRCRAFT.LST:CtrlTouchDown
 TORNADO/AIRCRAFT.LST:CtrlLanding:pin=si:idx=di
-TORNADO/AIRCRAFT.LST:InitTaxi:idx=bx,bp
+TORNADO/AIRCRAFT.LST:InitTaxi:pin=si:idx=bx,bp
 TORNADO/AIRCRAFT.LST:CtrlTaxi:pin=si
 TORNADO/AIRCRAFT.LST:SortTaxiXY:pin=di,si
 TORNADO/AIRCRAFT.LST:CalcTaxiRngBrg
@@ -626,7 +626,7 @@ TORNADO/AIRCRAFT.lst:CtrlTrack
 TORNADO/AIRCRAFT.lst:CtrlApproach
 TORNADO/AIRCRAFT.lst:CtrlTouchDown
 TORNADO/AIRCRAFT.lst:CtrlLanding:pin=si:idx=di
-TORNADO/AIRCRAFT.lst:InitTaxi:idx=bx,bp
+TORNADO/AIRCRAFT.lst:InitTaxi:pin=si:idx=bx,bp
 TORNADO/AIRCRAFT.lst:CtrlTaxi:pin=si
 TORNADO/AIRCRAFT.lst:SortTaxiXY:pin=di,si
 TORNADO/AIRCRAFT.lst:CalcTaxiRngBrg
@@ -1166,7 +1166,7 @@ TORNADO/MODEL.LST:PostAmble:idx=bx
 TORNADO/MODEL.LST:GameIntr20:idx=bx
 TORNADO/MODEL.LST:GameIntr100:idx=bx
 TORNADO/MODEL.LST:UpdatePosn
-TORNADO/MODEL.LST:CalcSFValue
+TORNADO/MODEL.LST:CalcSFValue:pin=si
 TORNADO/MODEL.LST:CalcEngTemp
 TORNADO/MODEL.LST:DampRate
 TORNADO/MODEL.LST:DestroyTornado
@@ -1194,7 +1194,7 @@ TORNADO/MODEL.lst:PostAmble:idx=bx
 TORNADO/MODEL.lst:GameIntr20:idx=bx
 TORNADO/MODEL.lst:GameIntr100:idx=bx
 TORNADO/MODEL.lst:UpdatePosn
-TORNADO/MODEL.lst:CalcSFValue
+TORNADO/MODEL.lst:CalcSFValue:pin=si
 TORNADO/MODEL.lst:CalcEngTemp
 TORNADO/MODEL.lst:DampRate
 TORNADO/MODEL.lst:DestroyTornado
@@ -1222,7 +1222,7 @@ TORNADO/MOVEMAP.LST:DrawRoads:idx=bp
 TORNADO/MOVEMAP.LST:DrawRoadNode:idx=bx
 TORNADO/MOVEMAP.LST:DrawRailways:idx=bx,bp
 TORNADO/MOVEMAP.LST:DrawRivers:idx=bx,bp
-TORNADO/MOVEMAP.LST:DrawFeatures:idx=di,bx,bp:class=array
+TORNADO/MOVEMAP.LST:DrawFeatures:pin=si:idx=di,bx,bp:class=array
 TORNADO/MOVEMAP.LST:DrawHills:idx=bp
 TORNADO/MOVEMAP.LST:DrawGndObjects:pin=bx:idx=bp:class=array
 TORNADO/MOVEMAP.LST:SortCurrentWP:pin=si
@@ -1247,7 +1247,7 @@ TORNADO/MOVEMAP.lst:DrawRoads:idx=bp
 TORNADO/MOVEMAP.lst:DrawRoadNode:idx=bx
 TORNADO/MOVEMAP.lst:DrawRailways:idx=bx,bp
 TORNADO/MOVEMAP.lst:DrawRivers:idx=bx,bp
-TORNADO/MOVEMAP.lst:DrawFeatures:idx=di,bx,bp:class=array
+TORNADO/MOVEMAP.lst:DrawFeatures:pin=si:idx=di,bx,bp:class=array
 TORNADO/MOVEMAP.lst:DrawHills:idx=bp
 TORNADO/MOVEMAP.lst:DrawGndObjects:pin=bx:idx=bp:class=array
 TORNADO/MOVEMAP.lst:SortCurrentWP:pin=si
@@ -1577,7 +1577,7 @@ TORNADO/VEHICLES.lst:CalcDXYZwrtT:pin=si:idx=bx
 TORNADO/VEHICLES.lst:SortSlope:pin=si
 TORNADO/VEHICLES.lst:CheckBridge:pin=si,di:idx=bx,bp:class=ctx
 TORNADO/VGAPANEL.LST:VGA_InitPanels
-TORNADO/VGAPANEL.LST:InterleaveData
+TORNADO/VGAPANEL.LST:InterleaveData:pin=si
 TORNADO/VGAPANEL.LST:RetrieveData
 TORNADO/VGAPANEL.LST:VGA_LoadPanel:pin=si:idx=bx
 TORNADO/VGAPANEL.LST:LoadPilotPan
@@ -1601,7 +1601,7 @@ TORNADO/VGAPANEL.LST:CopyPreviewPan
 TORNADO/VGAPANEL.LST:DrawPreviewPan
 TORNADO/VGAPANEL.LST:StoreWorkScreen
 TORNADO/VGAPANEL.lst:VGA_InitPanels
-TORNADO/VGAPANEL.lst:InterleaveData
+TORNADO/VGAPANEL.lst:InterleaveData:pin=si
 TORNADO/VGAPANEL.lst:RetrieveData
 TORNADO/VGAPANEL.lst:VGA_LoadPanel:pin=si:idx=bx
 TORNADO/VGAPANEL.lst:LoadPilotPan
@@ -1705,7 +1705,7 @@ TORNADO/WEAPONS.LST:KillGndObjects:pin=si:idx=bx,bp:class=ctx
 TORNADO/WEAPONS.LST:KillStatMobiles:pin=si:idx=bx,bp:class=ctx
 TORNADO/WEAPONS.LST:KillMobiles:pin=si:idx=bx
 TORNADO/WEAPONS.LST:KillTrees:idx=bx,bp
-TORNADO/WEAPONS.LST:ScanTrees
+TORNADO/WEAPONS.LST:ScanTrees:pin=bx
 TORNADO/WEAPONS.LST:CreateExplosion
 TORNADO/WEAPONS.LST:CalcPylonPos
 TORNADO/WEAPONS.LST:CalcDecoyPos
@@ -1761,7 +1761,7 @@ TORNADO/WEAPONS.lst:KillGndObjects:pin=si:idx=bx,bp:class=ctx
 TORNADO/WEAPONS.lst:KillStatMobiles:pin=si:idx=bx,bp:class=ctx
 TORNADO/WEAPONS.lst:KillMobiles:pin=si:idx=bx
 TORNADO/WEAPONS.lst:KillTrees:idx=bx,bp
-TORNADO/WEAPONS.lst:ScanTrees
+TORNADO/WEAPONS.lst:ScanTrees:pin=bx
 TORNADO/WEAPONS.lst:CreateExplosion
 TORNADO/WEAPONS.lst:CalcPylonPos
 TORNADO/WEAPONS.lst:CalcDecoyPos
@@ -1779,7 +1779,7 @@ VISUAL/ALT_CLIP.lst:ALT_CircleCRT
 VISUAL/CLOUDS.LST:InitClouds
 VISUAL/CLOUDS.LST:DrawClouds1:idx=bx,bp
 VISUAL/CLOUDS.LST:DrawClouds2:idx=bx,bp
-VISUAL/CLOUDS.LST:DrawOneCloud:idx=bx:class=array
+VISUAL/CLOUDS.LST:DrawOneCloud:pin=si:idx=bx:class=array
 VISUAL/CLOUDS.LST:CalcSctrScale
 VISUAL/CLOUDS.LST:CalcCentre1:idx=si,di,bx
 VISUAL/CLOUDS.LST:CalcCentre2:idx=si,di,bx
@@ -1793,7 +1793,7 @@ VISUAL/CLOUDS.LST:RandomizeClouds:idx=di:class=array
 VISUAL/CLOUDS.lst:InitClouds
 VISUAL/CLOUDS.lst:DrawClouds1:idx=bx,bp
 VISUAL/CLOUDS.lst:DrawClouds2:idx=bx,bp
-VISUAL/CLOUDS.lst:DrawOneCloud:idx=bx:class=array
+VISUAL/CLOUDS.lst:DrawOneCloud:pin=si:idx=bx:class=array
 VISUAL/CLOUDS.lst:CalcSctrScale
 VISUAL/CLOUDS.lst:CalcCentre1:idx=si,di,bx
 VISUAL/CLOUDS.lst:CalcCentre2:idx=si,di,bx
@@ -1805,12 +1805,12 @@ VISUAL/CLOUDS.lst:ScanVertex8:idx=di,bx:class=array
 VISUAL/CLOUDS.lst:ScanVertex16:idx=di,bx:class=array
 VISUAL/CLOUDS.lst:RandomizeClouds:idx=di:class=array
 VISUAL/COLLIDE.LST:SurfaceCheck:pin=si
-VISUAL/COLLIDE.LST:CloudCheck:pin=si:idx=bx
+VISUAL/COLLIDE.LST:CloudCheck:pin=si,bp:idx=bx
 VISUAL/COLLIDE.LST:CheckRivers:idx=bx,bp
 VISUAL/COLLIDE.LST:CheckLakes:idx=bx,bp
 VISUAL/COLLIDE.LST:CheckHard:idx=bx,bp
 VISUAL/COLLIDE.LST:CheckFeature:pin=si:idx=di,bx:class=array
-VISUAL/COLLIDE.LST:CheckRoads:idx=si,di
+VISUAL/COLLIDE.LST:CheckRoads:pin=bp:idx=si,di
 VISUAL/COLLIDE.LST:CheckRailways:idx=si,di,bp
 VISUAL/COLLIDE.LST:CheckRunways:idx=si,di,bx,bp
 VISUAL/COLLIDE.LST:CheckTaxiways:pin=si:idx=di,bx,bp:class=array
@@ -1822,12 +1822,12 @@ VISUAL/COLLIDE.LST:TreeCollision:idx=si,bx,bp
 VISUAL/COLLIDE.LST:ScanTrees:idx=si,bx:class=ctx
 VISUAL/COLLIDE.LST:CraterCollision:pin=di:idx=si,bx:class=ctx
 VISUAL/COLLIDE.lst:SurfaceCheck:pin=si
-VISUAL/COLLIDE.lst:CloudCheck:pin=si:idx=bx
+VISUAL/COLLIDE.lst:CloudCheck:pin=si,bp:idx=bx
 VISUAL/COLLIDE.lst:CheckRivers:idx=bx,bp
 VISUAL/COLLIDE.lst:CheckLakes:idx=bx,bp
 VISUAL/COLLIDE.lst:CheckHard:idx=bx,bp
 VISUAL/COLLIDE.lst:CheckFeature:pin=si:idx=di,bx:class=array
-VISUAL/COLLIDE.lst:CheckRoads:idx=si,di
+VISUAL/COLLIDE.lst:CheckRoads:pin=bp:idx=si,di
 VISUAL/COLLIDE.lst:CheckRailways:idx=si,di,bp
 VISUAL/COLLIDE.lst:CheckRunways:idx=si,di,bx,bp
 VISUAL/COLLIDE.lst:CheckTaxiways:pin=si:idx=di,bx,bp:class=array
@@ -1847,7 +1847,7 @@ VISUAL/COM_CLIP.LST:CalcCRT:class=ctx
 VISUAL/COM_CLIP.LST:CircleCRT:class=ctx
 VISUAL/COM_CLIP.LST:PolyClip:idx=bx
 VISUAL/COM_CLIP.LST:DrawPoly:idx=bx:class=array
-VISUAL/COM_CLIP.LST:ClipPoly:pin=di:idx=bx:class=ctx
+VISUAL/COM_CLIP.LST:ClipPoly:pin=di,si:idx=bx:class=ctx
 VISUAL/COM_CLIP.LST:PolyClipCheck
 VISUAL/COM_CLIP.LST:PolyClipBehind:pin=si,di
 VISUAL/COM_CLIP.LST:PolyClipAbove:pin=si,di
@@ -1889,7 +1889,7 @@ VISUAL/COM_CLIP.lst:CalcCRT:class=ctx
 VISUAL/COM_CLIP.lst:CircleCRT:class=ctx
 VISUAL/COM_CLIP.lst:PolyClip:idx=bx
 VISUAL/COM_CLIP.lst:DrawPoly:idx=bx:class=array
-VISUAL/COM_CLIP.lst:ClipPoly:pin=di:idx=bx:class=ctx
+VISUAL/COM_CLIP.lst:ClipPoly:pin=di,si:idx=bx:class=ctx
 VISUAL/COM_CLIP.lst:PolyClipCheck
 VISUAL/COM_CLIP.lst:PolyClipBehind:pin=si,di
 VISUAL/COM_CLIP.lst:PolyClipAbove:pin=si,di
@@ -1933,13 +1933,13 @@ VISUAL/EXT_CLIP.lst:EXT_ScaleVP:idx=si
 VISUAL/EXT_CLIP.lst:EXT_CalcCRT
 VISUAL/EXT_CLIP.lst:EXT_CircleCRT
 VISUAL/FEATURES.LST:DrawRivers:idx=bx,bp
-VISUAL/FEATURES.LST:DrawFeatures1:idx=bx,bp:class=array
+VISUAL/FEATURES.LST:DrawFeatures1:pin=si:idx=bx,bp:class=array
 VISUAL/FEATURES.LST:ScanVertex1:idx=di,bx:class=array
 VISUAL/FEATURES.LST:ScanVertex2:idx=di,bx:class=array
 VISUAL/FEATURES.LST:ScanVertex8:idx=di,bx:class=array
 VISUAL/FEATURES.LST:ScanVertex16:idx=di,bx:class=array
 VISUAL/FEATURES.lst:DrawRivers:idx=bx,bp
-VISUAL/FEATURES.lst:DrawFeatures1:idx=bx,bp:class=array
+VISUAL/FEATURES.lst:DrawFeatures1:pin=si:idx=bx,bp:class=array
 VISUAL/FEATURES.lst:ScanVertex1:idx=di,bx:class=array
 VISUAL/FEATURES.lst:ScanVertex2:idx=di,bx:class=array
 VISUAL/FEATURES.lst:ScanVertex8:idx=di,bx:class=array
@@ -1963,7 +1963,7 @@ VISUAL/GROUND.lst:CalcObjectPos16:pin=si:idx=di,bx
 VISUAL/GROUND.lst:ScanVertexList:idx=di,bx:class=array
 VISUAL/GROUND.lst:ScanFlatVrtxLst:idx=di,bx:class=array
 VISUAL/HILLS.LST:ScanHills:idx=bx,bp
-VISUAL/HILLS.LST:SortHillFace:pin=di:idx=bx
+VISUAL/HILLS.LST:SortHillFace:pin=di,si:idx=bx
 VISUAL/HILLS.LST:DrawHillFace:pin=si:idx=bx:class=array
 VISUAL/HILLS.LST:CalcZAPos:pin=si:idx=di,bx,bp
 VISUAL/HILLS.LST:CalcZBPos:pin=si:idx=di,bx,bp
@@ -1977,7 +1977,7 @@ VISUAL/HILLS.LST:CalcZIPos:pin=si:idx=di,bx,bp
 VISUAL/HILLS.LST:CalcGndHeight:pin=si:idx=bx,bp
 VISUAL/HILLS.LST:QCalcGndHeight:pin=si:idx=bx,bp
 VISUAL/HILLS.lst:ScanHills:idx=bx,bp
-VISUAL/HILLS.lst:SortHillFace:pin=di:idx=bx
+VISUAL/HILLS.lst:SortHillFace:pin=di,si:idx=bx
 VISUAL/HILLS.lst:DrawHillFace:pin=si:idx=bx:class=array
 VISUAL/HILLS.lst:CalcZAPos:pin=si:idx=di,bx,bp
 VISUAL/HILLS.lst:CalcZBPos:pin=si:idx=di,bx,bp
@@ -2347,7 +2347,7 @@ VISUAL/VSCREEN.LST:VQuickOutCodes
 VISUAL/VSCREEN.LST:VTransform:idx=si
 VISUAL/VSCREEN.LST:VPolyClip:idx=bx
 VISUAL/VSCREEN.LST:DrawPoly:idx=bx:class=array
-VISUAL/VSCREEN.LST:ClipPoly:pin=di:idx=bx:class=array
+VISUAL/VSCREEN.LST:ClipPoly:pin=di,si:idx=bx:class=array
 VISUAL/VSCREEN.LST:PolyClipCheck
 VISUAL/VSCREEN.LST:PolyClipAbove:pin=si,di
 VISUAL/VSCREEN.LST:PolyClipBelow:pin=si,di
@@ -2373,7 +2373,7 @@ VISUAL/VSCREEN.lst:VQuickOutCodes
 VISUAL/VSCREEN.lst:VTransform:idx=si
 VISUAL/VSCREEN.lst:VPolyClip:idx=bx
 VISUAL/VSCREEN.lst:DrawPoly:idx=bx:class=array
-VISUAL/VSCREEN.lst:ClipPoly:pin=di:idx=bx:class=array
+VISUAL/VSCREEN.lst:ClipPoly:pin=di,si:idx=bx:class=array
 VISUAL/VSCREEN.lst:PolyClipCheck
 VISUAL/VSCREEN.lst:PolyClipAbove:pin=si,di
 VISUAL/VSCREEN.lst:PolyClipBelow:pin=si,di
