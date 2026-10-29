@@ -388,6 +388,10 @@ def run_port(probe, proc, vec, pokes=()):
     except subprocess.TimeoutExpired:
         return 'TIMEOUT'
     m = RESULT_RE.search(out.stdout)
+    if not m and os.environ.get('DIFF_DEBUG_PROC'):
+        print(f'DBG-PORTFAIL {proc} rc={out.returncode} '
+              f'argv={args[1:]}\n  out={out.stdout[-400:]} '
+              f'err={out.stderr[-400:]}', file=sys.stderr)
     return m.groups() if m else 'NORESULT'
 
 FIELD = ('ax','bx','cx','dx','si','di','sp','bp','flags','ds','es','ss')
@@ -1066,12 +1070,19 @@ def main():
         for vi, ro, rp in rows:
             if ro == 'NOORIG':
                 # port-only coverage (unlocated dead-source): TIMEOUT is
-                # a hang suspect; NORESULT = untranslated/unreachable
-                if rp == 'TIMEOUT':
-                    nporthang += 1
-                    print(f'{lst}:{proc} v{vi} PORTHANG')
-                elif rp == 'NORESULT':
-                    nnoresult += 1
+                # a hang suspect; NORESULT = untranslated/crashed — but a
+                # known env class (ivt/hwio/ctx/array) already explains it
+                if rp in ('TIMEOUT', 'NORESULT'):
+                    cl = class_of.get((lst, proc))
+                    if cl:
+                        xdiff[cl] = xdiff.get(cl, 0) + 1
+                        print(f'{lst}:{proc} v{vi} XDIFF({cl})')
+                    elif rp == 'TIMEOUT':
+                        nporthang += 1
+                        print(f'{lst}:{proc} v{vi} PORTHANG')
+                    else:
+                        nnoresult += 1
+                        print(f'{lst}:{proc} v{vi} NORESULT')
                 else:
                     nportok += 1
                 continue
