@@ -24,7 +24,7 @@ usage: tools/diff_procs.py <specfile> [--probe ./test_probe] [--exe FLIGHT.EXE]
     manual         proc needs setup this harness can't provide; count as skip
 """
 import argparse, bisect, functools, glob, hashlib, os, re, subprocess, \
-    sys, tempfile, threading
+    sys, tempfile, threading, time
 from concurrent.futures import ThreadPoolExecutor
 
 EXE      = '/home/xor/games/Tornado/TORNADO/FLIGHT/FLIGHT.EXE'
@@ -1569,6 +1569,14 @@ def main():
             ok = any(isinstance(
                 run_original(t[4], t[2], t[6], timeout=30)[0], tuple)
                 for t in tries)
+            if tries and not ok:
+                # transient starvation (orphan sweep processes) can
+                # timeout every sample — verify with one fresh retry
+                # before condemning the environment
+                time.sleep(5)
+                t = tries[len(tries) // 2]
+                ok = isinstance(
+                    run_original(t[4], t[2], t[6], timeout=30)[0], tuple)
             if tries and not ok:
                 sys.exit('FATAL: preflight orig calls all failed '
                          '(emulator environment unhealthy) — aborting sweep')
