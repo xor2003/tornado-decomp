@@ -749,7 +749,7 @@ TORNADO/AVIONICS.lst:AircraftRadar:pin=si:idx=bp:wr=RWRThreatIndex:wr=RWRThreatF
 TORNADO/AVIONICS.lst:ScanMSL:pin=si:idx=bp:wr=RWRThreatIndex:wr=RWRThreatFlags:class=array
 TORNADO/AVIONICS.lst:RadShadCheck
 TORNADO/COMPANEL.LST:SetPanelMode:idx=bx:wr=PanelMode:wr=PanelLoad
-TORNADO/COMPANEL.LST:InitPanels:idx=bx
+TORNADO/COMPANEL.LST:InitPanels:idx=bx:class=ctx
 TORNADO/COMPANEL.LST:LoadPanel:idx=bx:class=array
 TORNADO/COMPANEL.LST:ClearPilotPanel:idx=bx
 TORNADO/COMPANEL.LST:ClearNavigPanel:idx=bx
@@ -760,7 +760,7 @@ TORNADO/COMPANEL.LST:DrawBrackets:idx=bx
 TORNADO/COMPANEL.LST:UpdatePanel:idx=bx:class=ctx
 TORNADO/COMPANEL.LST:Null:class=variant
 TORNADO/COMPANEL.lst:SetPanelMode:idx=bx:wr=PanelMode:wr=PanelLoad
-TORNADO/COMPANEL.lst:InitPanels:idx=bx
+TORNADO/COMPANEL.lst:InitPanels:idx=bx:class=ctx
 TORNADO/COMPANEL.lst:LoadPanel:idx=bx:class=array
 TORNADO/COMPANEL.lst:ClearPilotPanel:idx=bx
 TORNADO/COMPANEL.lst:ClearNavigPanel:idx=bx
@@ -1275,7 +1275,7 @@ TORNADO/MUSIC.lst:SuspendMusic:class=ivt
 TORNADO/MUSIC.lst:ResumeMusic:class=ivt
 TORNADO/MUSIC.lst:RefreshMusic:class=ivt
 TORNADO/NAVIGPAN.LST:UpdateNavig:pin=di:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:class=ctx
-TORNADO/NAVIGPAN.LST:InitPanel
+TORNADO/NAVIGPAN.LST:InitPanel:class=ctx
 TORNADO/NAVIGPAN.LST:UpdateADI:class=ctx
 TORNADO/NAVIGPAN.LST:DrawADIRollBug:idx=si:class=ctx
 TORNADO/NAVIGPAN.LST:UpdateHSI:idx=si:wr=LocalXPos:wr=GlideYPos:class=ctx
@@ -1288,7 +1288,7 @@ TORNADO/NAVIGPAN.LST:UpdateADI2:class=ctx
 TORNADO/NAVIGPAN.LST:UpdateStores2:idx=si,bx:wr=ArmBlink:wr=ArmBlinkTimer:wr=PrtLn:wr=PrtCl:wr=DecAttr:class=ctx
 TORNADO/NAVIGPAN.LST:UpdateStores3:idx=si,bx:wr=ArmBlink:wr=ArmBlinkTimer:wr=PrtLn:wr=PrtCl:wr=DecAttr:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateNavig:pin=di:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:class=ctx
-TORNADO/NAVIGPAN.lst:InitPanel
+TORNADO/NAVIGPAN.lst:InitPanel:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateADI:class=ctx
 TORNADO/NAVIGPAN.lst:DrawADIRollBug:idx=si:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateHSI:idx=si:wr=LocalXPos:wr=GlideYPos:class=ctx
@@ -1301,7 +1301,7 @@ TORNADO/NAVIGPAN.lst:UpdateADI2:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateStores2:idx=si,bx:wr=ArmBlink:wr=ArmBlinkTimer:wr=PrtLn:wr=PrtCl:wr=DecAttr:class=ctx
 TORNADO/NAVIGPAN.lst:UpdateStores3:idx=si,bx:wr=ArmBlink:wr=ArmBlinkTimer:wr=PrtLn:wr=PrtCl:wr=DecAttr:class=ctx
 TORNADO/PILOTPAN.LST:UpdatePilot:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:class=ctx
-TORNADO/PILOTPAN.LST:InitPanel
+TORNADO/PILOTPAN.LST:InitPanel:class=ctx
 TORNADO/PILOTPAN.LST:UpdateEngRPM:idx=si:class=ctx
 TORNADO/PILOTPAN.LST:UpdateEngTemp:idx=si:class=ctx
 TORNADO/PILOTPAN.LST:UpdateFuel:idx=si:class=ctx
@@ -1327,7 +1327,7 @@ TORNADO/PILOTPAN.LST:ACSymbol:class=ctx
 TORNADO/PILOTPAN.LST:MSLSymbol1:class=ctx
 TORNADO/PILOTPAN.LST:MSLSymbol2:class=ctx
 TORNADO/PILOTPAN.lst:UpdatePilot:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:class=ctx
-TORNADO/PILOTPAN.lst:InitPanel
+TORNADO/PILOTPAN.lst:InitPanel:class=ctx
 TORNADO/PILOTPAN.lst:UpdateEngRPM:idx=si:class=ctx
 TORNADO/PILOTPAN.lst:UpdateEngTemp:idx=si:class=ctx
 TORNADO/PILOTPAN.lst:UpdateFuel:idx=si:class=ctx

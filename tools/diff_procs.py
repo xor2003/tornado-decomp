@@ -245,7 +245,7 @@ def _lst_symtab(path):
     """listing symbol table: NAME -> (type, DATA-seg displacement).
     Maps record instances (VP) to their struc type (VIEWPORT)."""
     out = {}
-    mre = re.compile(r'^\s*(\w+)\s+(?:\.\s+)+(\w+)\s+'
+    mre = re.compile(r'^\s*([\w$]+)\s+(?:\.\s+)+(\w+)\s+'
                      r'([0-9A-Fa-f]{4})\s+DATA\s*$')
     for ln in open(path, errors='replace').read().splitlines():
         m = mre.match(ln)
@@ -883,13 +883,46 @@ def main():
                     _d2 = _t2[1] - _t2[6] - _pf
                     _db[_d2] = _db.get(_d2, 0) + 1
         dbias = max(_db, key=_db.get) if _db else None
+        # per-listing listing->shipped delta for imm-operand scoring:
+        # `mov reg,OFFSET Sym` encodes symtab_offset + module delta —
+        # the only discriminator in call+imm-only bodies (InitPanel
+        # siblings share every wildcarded signature byte)
+        lst_md, lst_st = {}, {}
+        for (l3, _p3) in ambig:
+            if l3 in lst_md:
+                continue
+            _lp3 = l3 if os.path.isabs(l3) else os.path.join(
+                '/home/xor/inertia_player/examples/Tornado', l3)
+            _st3 = {k.upper().replace('$', ''): v
+                    for k, v in _lst_symtab(_lp3).items()}
+            lst_st[l3] = _st3
+            _dl3 = sorted(t3[1] - _st3[n3.upper().replace('$', '')][1]
+                          for (l4, _p4), so4 in symoff.items()
+                          if l4 == l3
+                          for n3, t3 in so4.items()
+                          if n3.upper().replace('$', '') in _st3)
+            lst_md[l3] = _dl3[len(_dl3) // 2] if _dl3 else None
         for (lst, proc), (hits, syms) in ambig.items():
             scored = []
             for h in hits:
                 score = 0
                 for n, (o, s, im, mb, ir, oz, ca) in syms.items():
-                    if im or s != 'ds' or o is None or ca < 0:
-                        continue    # ca<0: folded addend — unpredictable disp
+                    if s != 'ds' or o is None:
+                        continue
+                    if im:
+                        # `mov reg,OFFSET Sym`: expected shipped imm =
+                        # symtab offset + this listing's data delta
+                        _stv = lst_st.get(lst, {}).get(
+                            n.upper().replace('$', ''))
+                        _mdv = lst_md.get(lst)
+                        if _stv is not None and _mdv is not None:
+                            actual = int.from_bytes(
+                                exe[img + h + o:img + h + o + 2],
+                                'little')
+                            score += 2 if actual == _stv[1] + _mdv else -2
+                        continue
+                    if ca < 0:
+                        continue    # folded addend — unpredictable disp
                     actual = int.from_bytes(
                         exe[img + h + o:img + h + o + 2], 'little')
                     mk = (lst.lower(), n.split('.')[0].upper())
