@@ -143079,6 +143079,8 @@ int main(int argc, char** argv) {
 
     setenv("M2C_NO_IRQ", "1", 1);
     m2c::init(&st);
+    m2c::Initializer();              /* segment images (tables, defaults)
+                                        — pokes below override as needed */
     std::memset(&st, 0, sizeof st);
     st.ds = st.es = 7;                 /* seg_para(data) */
     st.ss = 0x900;

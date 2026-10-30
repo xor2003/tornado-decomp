@@ -117,6 +117,10 @@ def parse_lst_pattern(path, proc, maxlen=64):
                 if b not in (0x26, 0x2e, 0x3e, 0x36, 0xf2, 0xf3,
                              0x64, 0x65):
                     break
+            # implicit SS: [bp]/[sp]-based operands are stack-relative
+            # even without a 0x36 prefix (ArcSinTable[bp] reads SS:disp)
+            if seg == 'ds' and re.search(r'\[[^\]]*\b(?:bp|sp)\b', ops):
+                seg = 'ss'
             # immediate operands (OFFSET x, lea) carry an address value:
             # poking the operand redirects the base to unsynchronized
             # memory — only memory-operand cells are safe to seed
@@ -1184,6 +1188,10 @@ def main():
             # port_only: orig pokes are dead weight — keep op empty so
             # the 1000-poke cap can't truncate port-side seeding
             opush = (lambda *a: None) if port_only else op.append
+            # orig-side seed segment: stack-seg syms (ArcSinTable et al.
+            # live under SS) must poke SS:disp, not DS:disp
+            oss = int(SS.split(':')[0], 16)
+            oseg = lambda k: DS_SEG if k == 'ds' else oss
             ov = list(vecs.get(vi, VECTORS[vi]))
             pv = list(ov)
             for pseg, pdisp, psn, pvals in pvseeds:
@@ -1308,7 +1316,7 @@ def main():
                         if not cands:
                             continue
                         tgt = cands[i % len(cands)]
-                        opush((DS_SEG, disp,
+                        opush((oseg(s_kind), disp,
                                    (so.get(tgt) or gsyms.get(tgt)
                                     or gsyms_l[tgt.lower()])[1], 2))
                         # dotted member names (ac_data.ac_wp_ptr) don't
@@ -1335,7 +1343,9 @@ def main():
                                 if 2*k + 2 > dend:
                                     break   # scalar target — don't bleed
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
-                                opush((DS_SEG, tdisp + 2*k, rv, 2))
+                                opush((oseg((so.get(tgt) or gsyms.get(tgt)
+                                             or gsyms_l[tgt.lower()])[0]),
+                                       tdisp + 2*k, rv, 2))
                                 pp.append((port_name(tgt.lower(), stem_l) +
                                            '+%x' % (2*k), rv, 2))
                                 pnames.add(tgt.lower() + '+%x' % (2*k))
@@ -1349,7 +1359,10 @@ def main():
                                      or gsyms_l[tgt.lower()])[1]
                             for k in range(0x40):
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
-                                winop.append((DS_SEG, tdisp + 2*k, rv, 2))
+                                winop.append((oseg((so.get(tgt) or
+                                                    gsyms.get(tgt) or
+                                                    gsyms_l[tgt.lower()])[0]),
+                                              tdisp + 2*k, rv, 2))
                                 winpp.append((port_name(tgt.lower(), stem_l) +
                                               '+%x' % (2*k), rv, 2))
                     else:
@@ -1366,7 +1379,7 @@ def main():
                         v = EDGE[(vi + i) % len(EDGE)]
                         if esz == 1:
                             v &= 0xff
-                        opush((DS_SEG, disp, v, esz))
+                        opush((oseg(s_kind), disp, v, esz))
                         # struc-member reads (`mov al,Struc.Field`)
                         # encode base+fieldoff in the shipped disp while
                         # the port sym names the record base — shift the
@@ -1421,7 +1434,7 @@ def main():
                                 rv2 = EDGE[(vi + i + k) % len(EDGE)]
                                 if esz == 1:
                                     rv2 &= 0xff
-                                opush((DS_SEG, disp + esz * k,
+                                opush((oseg(s_kind), disp + esz * k,
                                            rv2, esz))
                                 pp.append((port_name(lnbase, stem_l) +
                                            '+%x' % (pdelta + esz * k),
