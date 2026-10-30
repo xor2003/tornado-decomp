@@ -626,6 +626,17 @@ def main():
         port_procs = set(n for n, _f in re.findall(
             r'^    \{"(\w+)",\s*(\w+)(?:,\s*\(m2c::_offsets\)[^)]*)\},\s*$',
             open(pcpp).read(), re.M))
+
+    def port_name(ln, stem):
+        # module-private duplicate globals are renamed sym__stem_hash by
+        # the translator; a spec's bare name must bind the stem-matching
+        # private variant on the port side, not the shared base sym
+        if port_syms is None:
+            return ln
+        pref = ln + '__' + stem
+        hits = [s for s in port_syms if s == pref or
+                s.startswith(pref + '_')]
+        return sorted(hits)[0] if hits else ln
     # which module owns each weak wrapper: a same-name proc in another
     # module is `static` and unreachable — testing that spec entry would
     # bind the wrong implementation (a guaranteed false DIFF)
@@ -933,6 +944,7 @@ def main():
             continue
         lst, proc, _p, _k, skip, vecs, manual, pokes, cls, pin, idx, \
             pvlist, wrs = parse_spec_line(line)
+        stem_l = os.path.splitext(os.path.basename(lst))[0].lower()
         addr = addrs.get((lst, proc))
         if addr == 'dup' or manual:
             nskip += 1
@@ -999,10 +1011,12 @@ def main():
                 opokes.append((DS_SEG if s == 'ds' else
                                int(SS.split(':')[0], 16),
                                disp + off, ov, sz))
-            if port_syms is not None and base.lower() not in port_syms:
+            pbase = port_name(base.lower(), stem_l)
+            if port_syms is not None and pbase not in port_syms:
                 missing.append(f'{sn}(port)')
                 continue
-            ppokes.append((sn.lower(), pv, sz))
+            pn = pbase + ('+%x' % off if off else '')
+            ppokes.append((pn, pv, sz))
         # per-vector pokes: resolve to (seg, disp, portname, vals)
         pvseeds = []
         for sn, vals in pvlist:
@@ -1016,12 +1030,13 @@ def main():
                     missing.append(f'{sn}(orig)')
                     continue
             s, disp = hit[0], hit[1]
-            if port_syms is not None and sn.lower() not in port_syms:
+            pln = port_name(sn.lower(), stem_l)
+            if port_syms is not None and pln not in port_syms:
                 missing.append(f'{sn}(port)')
                 continue
             pvseeds.append((
                 DS_SEG if s == 'ds' else int(SS.split(':')[0], 16),
-                disp, sn.lower(), vals))
+                disp, pln, vals))
         if missing:
             print(f'{proc}: poke syms unresolved: {missing} - skipped',
                   file=sys.stderr)
@@ -1135,15 +1150,16 @@ def main():
                 wmiss.append(wn)
                 continue
             ln = wn.lower()
-            if port_syms is not None and ln not in port_syms:
+            pln = port_name(ln, stem_l)
+            if port_syms is not None and pln not in port_syms:
                 wmiss.append(wn + '(port)')
                 continue
             # default range = the sym's own extent — anything past it is a
             # different logical cell in each layout (see Exit3DFlag+1)
-            wlen2 = wlen or port_esz.get(ln) or \
+            wlen2 = wlen or port_esz.get(pln) or \
                 (hit[5] if len(hit) > 5 else 2) or 2
             wro.append((DS_SEG * 16 + hit[1] + woff, wlen2))
-            wrp.append((ln + ('+%x' % woff if woff else ''), wlen2))
+            wrp.append((pln + ('+%x' % woff if woff else ''), wlen2))
         if wmiss:
             print(f'{proc}: wr ranges dropped, syms unknown: {wmiss}',
                   file=sys.stderr)
@@ -1190,8 +1206,12 @@ def main():
                     ov[j] = pv[j] = vi * 2
             if a.auto:
                 # live set for the "explicit spec poke wins" check —
-                # the genexpr rescanned all of pp per sym (O(pokes))
-                pnames = {sn for sn, _v, _z in pp}
+                # the genexpr rescanned all of pp per sym (O(pokes)).
+                # Keys are ORIG spec names — pp now holds resolved port
+                # names which differ for stem-renamed private syms
+                pnames = {sn.split('+')[0].lower()
+                          for sn, _o, _v, _z in pokes} | \
+                         {sn.lower() for sn, _v in pvlist}
                 for i, n in enumerate(names):
                     s_kind, disp, is_imm, fname, idxr, osz, cadd = \
                         (so.get(n) or gsyms[n])
@@ -1206,8 +1226,9 @@ def main():
                     ln = n.lower()
                     if ln in pnames:
                         continue        # explicit spec poke wins
+                    pbase0 = port_name(ln.split('.')[0], stem_l)
                     if port_syms is not None and \
-                            ln.split('.')[0] not in port_syms:
+                            pbase0 not in port_syms:
                         continue        # not translated under this name
                     if CODEPTRRE.search(n) or ln in codecells:
                         continue        # code-ptr cell: keep linked value
@@ -1293,16 +1314,16 @@ def main():
                         # dotted member names (ac_data.ac_wp_ptr) don't
                         # resolve in the probe's flat SYMS — emit the
                         # record base + struc-declared field offset
-                        pln = ln
+                        pln = pbase0
                         if '.' in ln:
                             _pb, _pf = ln.split('.', 1)
                             _fo = fields.get(
                                 itype.get(_pb.upper(), _pb.upper())
                                 + '.' + _pf.upper())
                             if _fo is not None:
-                                pln = f'{_pb}+{_fo:x}'
-                        pp.append((pln, '@' + tgt.lower(), 2))
-                        pnames.add(pln)
+                                pln = f'{pbase0}+{_fo:x}'
+                        pp.append((pln, '@' + port_name(tgt.lower(), stem_l), 2))
+                        pnames.add(ln)
                         # range-seed only a same-prefix target (RhsPtr->RhsX
                         # is its real array; +2k stays inside it on both
                         # layouts).  A random peer target isn't walked.
@@ -1315,8 +1336,8 @@ def main():
                                     break   # scalar target — don't bleed
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
                                 opush((DS_SEG, tdisp + 2*k, rv, 2))
-                                pp.append((tgt.lower() + '+%x' % (2*k),
-                                           rv, 2))
+                                pp.append((port_name(tgt.lower(), stem_l) +
+                                           '+%x' % (2*k), rv, 2))
                                 pnames.add(tgt.lower() + '+%x' % (2*k))
                         elif recw:
                             # record-instance anchor: _FIELD[reg] walks
@@ -1329,8 +1350,8 @@ def main():
                             for k in range(0x40):
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
                                 winop.append((DS_SEG, tdisp + 2*k, rv, 2))
-                                winpp.append((tgt.lower() + '+%x' % (2*k),
-                                              rv, 2))
+                                winpp.append((port_name(tgt.lower(), stem_l) +
+                                              '+%x' % (2*k), rv, 2))
                     else:
                         # operand size drives the write width — a byte
                         # member (`mov cl,VP.F`) gets a byte poke, not the
@@ -1381,13 +1402,14 @@ def main():
                         if pdelta < dend:
                             wesz = esz if pdelta + esz <= dend \
                                 else dend - pdelta
-                            pp.append((lnbase + '+%x' % abs(pdelta)
+                            plnb = port_name(lnbase, stem_l)
+                            pp.append((plnb + '+%x' % abs(pdelta)
                                        if pdelta > 0 else
-                                       lnbase + '+-%x' % abs(pdelta)
-                                       if pdelta else lnbase,
+                                       plnb + '+-%x' % abs(pdelta)
+                                       if pdelta else plnb,
                                        v & (0xff if wesz == 1 else 0xffff),
                                        wesz))
-                            pnames.add(pp[-1][0])
+                            pnames.add(ln)
                         # idx= proc: the reg indexes this sym as an array —
                         # range-seed elements 1..15 so arr[i] reads the same
                         # seeded value on both sides (same relative offset
@@ -1401,9 +1423,10 @@ def main():
                                     rv2 &= 0xff
                                 opush((DS_SEG, disp + esz * k,
                                            rv2, esz))
-                                pp.append((lnbase + '+%x' % (pdelta + esz * k),
+                                pp.append((port_name(lnbase, stem_l) +
+                                           '+%x' % (pdelta + esz * k),
                                            rv2, esz))
-                                pnames.add(pp[-1][0])
+                                pnames.add(ln)
                         # NOTE: no range-seeding of plain scalars — disp+N
                         # hits a different logical cell in each layout, so
                         # wild-index reads (AttrTable[screenmode]) stay a
