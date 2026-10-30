@@ -718,6 +718,7 @@ def main():
             pass
     loadbias = 0
     deltas = []
+    mod_votes = {}
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
@@ -732,9 +733,22 @@ def main():
         h0 = locate(exe, pat0) if pat0 else []
         if len(h0) == 1:
             deltas.append(h0[0] + img - mflat)
+            # per-module file->map delta votes: the shipped exe is a
+            # different build revision for some modules (tails drift,
+            # prefix locates land elsewhere), so a rejected body can
+            # still be confirmed when it sits at its module's linked
+            # offset.  A unique full-pattern hit votes unconditionally —
+            # every named byte matched, so it can't be prefix junk
+            stem0 = os.path.basename(lst0).rsplit('.', 1)[0].upper()
+            mod_votes.setdefault(stem0, []).append(
+                h0[0] + img - mflat)
     if deltas:
         deltas.sort()
         loadbias = deltas[len(deltas) // 2]
+    mod_delta = {}
+    for _st, _vs in mod_votes.items():
+        _vs.sort()
+        mod_delta[_st] = _vs[len(_vs) // 2]
     # struc layouts: instance -> type (symtab, e.g. VP -> VIEWPORT) and
     # TYPE.FIELD -> field offset.  Record-member pokes (`mov
     # cl,VP.V_SCALE_UP`) land at <record sym>+<field offset> on the port.
@@ -828,10 +842,61 @@ def main():
             if named:
                 good = sum(1 for i, b in named if exe[img + h + i] == b)
                 if good / len(named) < 0.75:
-                    print(f'{lst}:{proc}: locate rejected '
-                          f'({good}/{len(named)} bytes match at '
-                          f'{h + img:#x})', file=sys.stderr)
-                    hits = []
+                    # the shipped build is a different source revision
+                    # for some modules — real bodies drift after a long
+                    # matching head.  Two rescue tests:
+                    #  (a) public proc near its module's linked offset
+                    #      (per-module file->map delta mode, +-128);
+                    #      re-scan ambig siblings too — hits[0] may be a
+                    #      prefix twin while a sibling sits on the map
+                    #  (b) long leading named-byte run (>=48) + score>=30%
+                    #      — a contiguous opcode-pattern match that long
+                    #      is the same proc with a revised tail; private
+                    #      procs have no map truth so this is their only
+                    #      rescue.  Junk prefix hits run <=~11
+                    run = 0
+                    for _ix, _b in named:
+                        if exe[img + h + _ix] != _b:
+                            break
+                        run = _ix + 1
+                    stem = os.path.basename(lst).rsplit('.', 1)[0].upper()
+                    mflat2 = pubs.get(proc.upper()) or pubs.get(
+                        proc.split('__')[0].upper())
+                    mode = mod_delta.get(stem)
+                    rescued = None
+                    if mflat2 is not None and mode is not None:
+                        cands = [h] + [c for c in ambig.get(
+                            (lst, proc), ([], {}))[0] if c != h]
+                        for c in sorted(
+                                cands,
+                                key=lambda c: abs(c + img - mflat2 - mode)):
+                            if abs(c + img - mflat2 - mode) > 128:
+                                break
+                            # hits[0] itself still needs a plausible
+                            # leading run; a sibling candidate is
+                            # confirmed by map position alone (a revised
+                            # tail can shrink the run to nothing)
+                            if c != h:
+                                rescued = c
+                                break
+                            if run >= 24:
+                                rescued = c
+                                break
+                    if rescued is None and (
+                            mflat2 is None or mode is None) and (
+                            run >= 48 or
+                            (run >= 24 and good / len(named) >= 0.30)):
+                        rescued = h
+                    if rescued is not None:
+                        print(f'{lst}:{proc}: locate accepted '
+                              f'({good}/{len(named)} bytes, run={run} '
+                              f'at {rescued + img:#x})', file=sys.stderr)
+                        hits = [rescued]
+                    else:
+                        print(f'{lst}:{proc}: locate rejected '
+                              f'({good}/{len(named)} bytes match at '
+                              f'{h + img:#x})', file=sys.stderr)
+                        hits = []
         if len(hits) == 1:
             h = hits[0]
             flat = LOAD_FLAT + h
