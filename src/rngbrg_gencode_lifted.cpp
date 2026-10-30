@@ -737,6 +737,15 @@ contbrg:
 	// 0 ;* long range = [min(abs(Dx), abs(Dy)) + 4 * max(abs(Dx), abs(Dy))] / 4
 dummylabel4:
 	// 4393 
+	/* @@:	REPT 2 ;*4 — dropped by translator, spliced back */
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
+	/* shl	ax,1 */
+	SHL(ax, 1);
+	/* rcl	dx,1 */
+	RCL(dx, 1);
 	/* add	ax,bp */
 	ADD(ax, bp);
 	/* adc	dx,cx */
