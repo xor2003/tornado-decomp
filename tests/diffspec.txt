@@ -520,7 +520,7 @@ LIB8086/VGA_DRVR.LST:InstantFadeIn:wr=FadeLevel3:wr=FadeRCol3:wr=FadeGCol3:wr=Fa
 LIB8086/VGA_DRVR.LST:FadeDown:wr=FadeLevel3:wr=FadeRCol3:wr=FadeGCol3:wr=FadeBCol3:wr=FadeStart3:wr=FadeCount3:wr=Frames
 LIB8086/VGA_DRVR.LST:FadeUp:wr=FadeLevel3:wr=FadeRCol3:wr=FadeGCol3:wr=FadeBCol3:wr=FadeStart3:wr=FadeCount3:wr=CountDown
 LIB8086/VGA_DRVR.LST:UpdateFade:wr=FadeFlag
-LIB8086/VGA_DRVR.LST:UnpackDeltaPic:pin=si,di
+LIB8086/VGA_DRVR.LST:UnpackDeltaPic:pin=si,di:class=hwio
 LIB8086/VGA_DRVR.LST:ScreenShaker
 LIB8086/VGA_DRVR.lst:VGA_VMode:wr=ScreenPage:wr=SetPaletteFlag:wr=FadeLevel3:wr=FadeRCol3:wr=FadeGCol3:wr=FadeBCol3:wr=FadeStart3:wr=FadeCount3:class=hwio
 LIB8086/VGA_DRVR.lst:VGA_DLoad:idx=bx:wr=ScreenPage:wr=SetPaletteFlag:wr=FadeFlag:class=hwio
@@ -562,7 +562,7 @@ LIB8086/VGA_DRVR.lst:InstantFadeIn:wr=FadeLevel3:wr=FadeRCol3:wr=FadeGCol3:wr=Fa
 LIB8086/VGA_DRVR.lst:FadeDown:wr=FadeLevel3:wr=FadeRCol3:wr=FadeGCol3:wr=FadeBCol3:wr=FadeStart3:wr=FadeCount3:wr=Frames
 LIB8086/VGA_DRVR.lst:FadeUp:wr=FadeLevel3:wr=FadeRCol3:wr=FadeGCol3:wr=FadeBCol3:wr=FadeStart3:wr=FadeCount3:wr=CountDown
 LIB8086/VGA_DRVR.lst:UpdateFade:wr=FadeFlag
-LIB8086/VGA_DRVR.lst:UnpackDeltaPic:pin=si,di
+LIB8086/VGA_DRVR.lst:UnpackDeltaPic:pin=si,di:class=hwio
 LIB8086/VGA_DRVR.lst:ScreenShaker
 TORNADO/AAA.LST:UpdateAAA:pin=si:idx=bp:wr=AAAMode1:wr=AAATimer1:wr=AAAPtr1:wr=AAAMode2:wr=AAATimer2:wr=AAAPtr2:class=array
 TORNADO/AAA.LST:AAAFire:pin=si,di
@@ -835,7 +835,7 @@ TORNADO/EXPLORE.LST:InitCtrlDevice:idx=bx:wr=X_ElePosn:wr=X_AilPosn:wr=X_ThrotPo
 TORNADO/EXPLORE.LST:DispInfoBar:idx=bx:wr=SpeedCol:wr=DispVkts:wr=DispHdg:wr=DispAlt
 TORNADO/EXPLORE.LST:ExploreIntr100:wr=Timer50:wr=Night:wr=GradEnabled:wr=StarsEnabled:wr=CloudsEnabled:wr=NVG_set:wr=X_AilPosn:wr=X_ElePosn:wr=X_Vtas:wr=X_RFine:wr=X_PFine:class=variant
 TORNADO/EXPLORE.LST:UpdatePosn
-TORNADO/EXPLORE.LST:UpdateKeys
+TORNADO/EXPLORE.LST:UpdateKeys:class=ctx
 TORNADO/EXPLORE.LST:UserOptions:wr=X_CtrlDevice:wr=JoySensitivity
 TORNADO/EXPLORE.lst:MapExplore:wr=DieFlag:class=ctx
 TORNADO/EXPLORE.lst:InitMapExplore:wr=MouseXMin:wr=MouseXMax:wr=MouseYMin:wr=MouseYMax:class=ctx
@@ -860,7 +860,7 @@ TORNADO/EXPLORE.lst:InitCtrlDevice:idx=bx:wr=X_ElePosn:wr=X_AilPosn:wr=X_ThrotPo
 TORNADO/EXPLORE.lst:DispInfoBar:idx=bx:wr=SpeedCol:wr=DispVkts:wr=DispHdg:wr=DispAlt
 TORNADO/EXPLORE.lst:ExploreIntr100:wr=Timer50:wr=Night:wr=GradEnabled:wr=StarsEnabled:wr=CloudsEnabled:wr=NVG_set:wr=X_AilPosn:wr=X_ElePosn:wr=X_Vtas:wr=X_RFine:wr=X_PFine:class=variant
 TORNADO/EXPLORE.lst:UpdatePosn
-TORNADO/EXPLORE.lst:UpdateKeys
+TORNADO/EXPLORE.lst:UpdateKeys:class=ctx
 TORNADO/EXPLORE.lst:UserOptions:wr=X_CtrlDevice:wr=JoySensitivity
 TORNADO/EXTRNPAN.LST:LoadExtrnPan:pin=si:wr=SetPaletteFlag:class=ctx
 TORNADO/EXTRNPAN.LST:UpdateExtrn:pin=si:wr=SetPaletteFlag:wr=PrintOver:wr=VSICol:wr=VSIVal:wr=FuelCol:wr=ViewCol:wr=PrtCl:wr=PrtLn:wr=ForeCol:wr=BackCol:wr=EScopeToggle:wr=AllowSplitScreenBigMap:wr=RadarMode:class=ctx
@@ -1169,7 +1169,7 @@ TORNADO/MODEL.LST:UpdatePosn
 TORNADO/MODEL.LST:CalcSFValue:pin=si
 TORNADO/MODEL.LST:CalcEngTemp
 TORNADO/MODEL.LST:DampRate
-TORNADO/MODEL.LST:DestroyTornado:wr=Destroyed:wr=TmpDieFlag:wr=DisableInput:wr=DieFlag
+TORNADO/MODEL.LST:DestroyTornado:wr=Destroyed:wr=TmpDieFlag:wr=DisableInput:wr=DieFlag:class=ctx
 TORNADO/MODEL.LST:StartEjectSeq:wr=Ejected:wr=DisableInput:wr=DieFlag
 TORNADO/MODEL.LST:InitNewSector:wr=ModelMapIndex
 TORNADO/MODEL.lst:InitModel:wr=XSec:wr=YSec:wr=Xft:wr=Yft:wr=ZftLo:wr=ZftHi:wr=HFine:wr=PFine:wr=RFine:wr=Throttle:wr=Rpm1:wr=Rpm2:wr=Gear:wr=WheelBrakes:wr=Airborne1:wr=Airborne2:wr=StallFlag1:wr=CrntFlapPos:wr=DestFlapPos:wr=CrntFlapVal:wr=DestFlapVal:wr=Vtas:wr=Vav:wr=Mach1:wr=MachNum:wr=CrntWingPos:wr=DestWingPos:wr=CrntWingVal:wr=DestWingVal:wr=AutoVias:wr=AutoViasFine:wr=AutoThrot:wr=SSF_Engine1:wr=RedWarnings2:wr=SSF_Engine2:wr=DebugWeight:wr=FixedWeight
@@ -1197,7 +1197,7 @@ TORNADO/MODEL.lst:UpdatePosn
 TORNADO/MODEL.lst:CalcSFValue:pin=si
 TORNADO/MODEL.lst:CalcEngTemp
 TORNADO/MODEL.lst:DampRate
-TORNADO/MODEL.lst:DestroyTornado:wr=Destroyed:wr=TmpDieFlag:wr=DisableInput:wr=DieFlag
+TORNADO/MODEL.lst:DestroyTornado:wr=Destroyed:wr=TmpDieFlag:wr=DisableInput:wr=DieFlag:class=ctx
 TORNADO/MODEL.lst:StartEjectSeq:wr=Ejected:wr=DisableInput:wr=DieFlag
 TORNADO/MODEL.lst:InitNewSector:wr=ModelMapIndex
 TORNADO/MODELLIB.LST:InitCtrlDevice:idx=bx:wr=EleKbdWash:wr=AilKbdWash:wr=RudKbdWash:wr=JoyA_Fire1:wr=JoyA_Fire2:wr=JoyA_JustFired1:wr=JoyA_JustFired2:wr=JoyB_Fire1:wr=JoyB_Fire2:wr=JoyB_JustFired1:wr=JoyB_JustFired2:wr=ControlDevice:wr=ThrottleFine:wr=ReheatFine
@@ -1804,8 +1804,8 @@ VISUAL/CLOUDS.lst:ScanVertex2:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/CLOUDS.lst:ScanVertex8:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/CLOUDS.lst:ScanVertex16:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/CLOUDS.lst:RandomizeClouds:idx=di:class=array
-VISUAL/COLLIDE.LST:SurfaceCheck:pin=si:wr=Xft:wr=Yft:wr=NoMansLand:wr=MapIndex
-VISUAL/COLLIDE.LST:CloudCheck:pin=si,bp:idx=bx:wr=Xft:wr=Yft:wr=NumFaceCols
+VISUAL/COLLIDE.LST:SurfaceCheck:pin=si:wr=Xft:wr=Yft:wr=NoMansLand:wr=MapIndex:class=ctx
+VISUAL/COLLIDE.LST:CloudCheck:pin=si,bp:idx=bx:wr=Xft:wr=Yft:wr=NumFaceCols:class=ctx
 VISUAL/COLLIDE.LST:CheckRivers:idx=bx,bp
 VISUAL/COLLIDE.LST:CheckLakes:idx=bx,bp
 VISUAL/COLLIDE.LST:CheckHard:idx=bx,bp
@@ -1821,8 +1821,8 @@ VISUAL/COLLIDE.LST:MobileCollision:pin=di:idx=si,bx:wr=TmpXErr:wr=TmpYErr:wr=Tmp
 VISUAL/COLLIDE.LST:TreeCollision:idx=si,bx,bp
 VISUAL/COLLIDE.LST:ScanTrees:idx=si,bx:class=ctx
 VISUAL/COLLIDE.LST:CraterCollision:pin=di:idx=si,bx:wr=TmpXErr:wr=TmpYErr:class=ctx
-VISUAL/COLLIDE.lst:SurfaceCheck:pin=si:wr=Xft:wr=Yft:wr=NoMansLand:wr=MapIndex
-VISUAL/COLLIDE.lst:CloudCheck:pin=si,bp:idx=bx:wr=Xft:wr=Yft:wr=NumFaceCols
+VISUAL/COLLIDE.lst:SurfaceCheck:pin=si:wr=Xft:wr=Yft:wr=NoMansLand:wr=MapIndex:class=ctx
+VISUAL/COLLIDE.lst:CloudCheck:pin=si,bp:idx=bx:wr=Xft:wr=Yft:wr=NumFaceCols:class=ctx
 VISUAL/COLLIDE.lst:CheckRivers:idx=bx,bp
 VISUAL/COLLIDE.lst:CheckLakes:idx=bx,bp
 VISUAL/COLLIDE.lst:CheckHard:idx=bx,bp
