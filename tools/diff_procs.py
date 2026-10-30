@@ -1176,6 +1176,9 @@ def main():
                 if j is not None and reg not in pinmap:
                     ov[j] = pv[j] = vi * 2
             if a.auto:
+                # live set for the "explicit spec poke wins" check —
+                # the genexpr rescanned all of pp per sym (O(pokes))
+                pnames = {sn for sn, _v, _z in pp}
                 for i, n in enumerate(names):
                     s_kind, disp, is_imm, fname, idxr, osz, cadd = \
                         (so.get(n) or gsyms[n])
@@ -1188,7 +1191,7 @@ def main():
                     if s_kind != 'ds' or is_imm:
                         continue        # ss-syms + immediate bases left alone
                     ln = n.lower()
-                    if any(sn == ln for sn, _v, _z in pp):
+                    if ln in pnames:
                         continue        # explicit spec poke wins
                     if port_syms is not None and \
                             ln.split('.')[0] not in port_syms:
@@ -1286,6 +1289,7 @@ def main():
                             if _fo is not None:
                                 pln = f'{_pb}+{_fo:x}'
                         pp.append((pln, '@' + tgt.lower(), 2))
+                        pnames.add(pln)
                         # range-seed only a same-prefix target (RhsPtr->RhsX
                         # is its real array; +2k stays inside it on both
                         # layouts).  A random peer target isn't walked.
@@ -1300,6 +1304,7 @@ def main():
                                 opush((DS_SEG, tdisp + 2*k, rv, 2))
                                 pp.append((tgt.lower() + '+%x' % (2*k),
                                            rv, 2))
+                                pnames.add(tgt.lower() + '+%x' % (2*k))
                         elif recw:
                             # record-instance anchor: _FIELD[reg] walks
                             # read across the record (MOB+VIEW+AC parts
@@ -1369,6 +1374,7 @@ def main():
                                        if pdelta else lnbase,
                                        v & (0xff if wesz == 1 else 0xffff),
                                        wesz))
+                            pnames.add(pp[-1][0])
                         # idx= proc: the reg indexes this sym as an array —
                         # range-seed elements 1..15 so arr[i] reads the same
                         # seeded value on both sides (same relative offset
@@ -1384,6 +1390,7 @@ def main():
                                            rv2, esz))
                                 pp.append((lnbase + '+%x' % (pdelta + esz * k),
                                            rv2, esz))
+                                pnames.add(pp[-1][0])
                         # NOTE: no range-seeding of plain scalars — disp+N
                         # hits a different logical cell in each layout, so
                         # wild-index reads (AttrTable[screenmode]) stay a
