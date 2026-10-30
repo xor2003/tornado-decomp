@@ -160,6 +160,25 @@ def parse_lst_pattern(path, proc, maxlen=64):
                             bs[marked[0]] is not None and \
                             bs[marked[0] + 1] is not None:
                         cadd = bs[marked[0]] | (bs[marked[0] + 1] << 8)
+                    elif re.search(re.escape(name) +
+                                   r'\s*(?:\+|\[)', ops):
+                        # R-operand `Sym[const]`/`Sym[reg+const]`/
+                        # `Sym+const`: the addend is folded into the
+                        # shipped disp — mark it (-1) so the port seed
+                        # recovers it via disp - flat.  A bare `Sym` /
+                        # `Sym[reg]` keeps 0: the operand cell IS the
+                        # accessed cell (disp - declflat would invent a
+                        # bogus delta from a different decl basis).
+                        br = re.search(re.escape(name) +
+                                       r'\s*\[([^\]]*)\]', ops)
+                        if br:
+                            inside = re.sub(
+                                r'\b(?:[abcd]x|[sd]i|[sb]p|[abcd][hl])\b',
+                                '', br.group(1), flags=re.I)
+                            if re.search(r'[\w$]', inside):
+                                cadd = -1
+                        else:
+                            cadd = -1
                     if name not in syms:
                         syms[name] = (poff + marked[0], seg, is_imm,
                                       fname, idxr, osize, cadd)
@@ -840,7 +859,11 @@ def main():
         for (l2, _p2), so in symoff.items():
             for n2, t2 in so.items():
                 # store the base disp (shipped operand minus the listing's
-                # constant addend) so `Sym[$MID][si]` and `Sym[si]` agree
+                # constant addend) so `Sym[$MID][si]` and `Sym[si]` agree;
+                # ca<0 = R-operand with an addend folded into the disp —
+                # unrecoverable here, so it cannot vote a normalized base
+                if t2[6] < 0:
+                    continue
                 modsym.setdefault(
                     (l2.lower(), n2.upper()), []).append(
                         ((l2, _p2), t2[1] - t2[6]))
@@ -853,7 +876,7 @@ def main():
         _db = {}
         for _so2 in symoff.values():
             for _n2, _t2 in _so2.items():
-                if _t2[2] or _t2[0] != 'ds':
+                if _t2[2] or _t2[0] != 'ds' or _t2[6] < 0:
                     continue
                 _pf = pubs.get(_n2.split('.')[0].upper().lstrip('_'))
                 if _pf is not None:
@@ -865,8 +888,8 @@ def main():
             for h in hits:
                 score = 0
                 for n, (o, s, im, mb, ir, oz, ca) in syms.items():
-                    if im or s != 'ds' or o is None:
-                        continue
+                    if im or s != 'ds' or o is None or ca < 0:
+                        continue    # ca<0: folded addend — unpredictable disp
                     actual = int.from_bytes(
                         exe[img + h + o:img + h + o + 2], 'little')
                     mk = (lst.lower(), n.split('.')[0].upper())
@@ -1476,15 +1499,18 @@ def main():
                         if foff is None:
                             # sym+const extern refs (XSY[$MID+$8192]):
                             # the listing operand is the pure addend —
-                            # poke the same element port-side
-                            pdelta = cadd
-                            if not pdelta:
-                                # R-flagged fixups (mov moffs / modrm on
-                                # same-module syms): `Sym[const]` folds
-                                # the addend into the shipped disp, so
-                                # recover it against the decl's flat —
-                                # without this orig seeds the operand
-                                # cell while port seeds element 0
+                            # poke the same element port-side.  cadd<0
+                            # marks an R-operand whose `Sym[const]` addend
+                            # folded into the shipped disp — recover it
+                            # against the decl's flat; without this orig
+                            # seeds the operand cell while port seeds
+                            # element 0.  cadd==0 (bare `Sym`/`Sym[reg]`)
+                            # means the operand cell IS the cell — the
+                            # decl-flat fallback would invent a bogus
+                            # delta from a different decl basis.
+                            if cadd > 0:
+                                pdelta = cadd
+                            elif cadd < 0:
                                 dflat = declflat.get(ln.lower())
                                 if dflat is not None:
                                     pdelta = disp - dflat
