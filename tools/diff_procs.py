@@ -1301,8 +1301,14 @@ def main():
                               f'fname={fname} osz={osz} cadd={cadd} '
                               f'codecell={n.lower() in codecells} '
                               f'inportsyms={n.lower().split(".")[0] in (port_syms or ())}')
-                    if s_kind != 'ds' or is_imm:
-                        continue        # ss-syms + immediate bases left alone
+                    if s_kind not in ('ds', 'ss') or is_imm:
+                        continue        # immediate bases left alone; named
+                                        # ss-syms (HillLayerN[bp] etc.) are
+                                        # seeded like ds — orig pokes go to
+                                        # the SS frame, port pokes resolve
+                                        # the _seg_stack ref by name.
+                                        # var_/arg_ frame locals fail the
+                                        # port_syms check below anyway.
                     ln = n.lower()
                     if ln in pnames:
                         continue        # explicit spec poke wins
