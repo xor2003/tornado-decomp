@@ -2315,7 +2315,7 @@ VISUAL/VISLIB.LST:CalcRotateGrid2
 VISUAL/VISLIB.LST:CalcRotateGrid3
 VISUAL/VISLIB.LST:CalcObjVSubDiv:idx=si
 VISUAL/VISLIB.LST:CalcObjSubDiv:idx=di
-VISUAL/VISLIB.LST:CalcSctrOffsets:idx=si:wr=Valid1_2:wr=Valid1_4:wr=Valid1_8:wr=Valid1_16:wr=ZRel1:wr=YRel1:wr=XRel1:wr=XE01_16:wr=YE01_16:wr=ZE01_16:wr=XE01_8:wr=YE01_8:wr=ZE01_8:wr=XE01_4:wr=YE01_4:wr=ZE01_4:wr=XE01_2:wr=YE01_2:wr=ZE01_2:wr=XE01:wr=YE01:wr=ZE01:wr=ZRel2:wr=YRel2:wr=XRel2:wr=XE02:wr=YE02:wr=ZE02:wr=ZRel8:wr=YRel8:wr=XRel8:wr=XE08:wr=YE08:wr=ZE08:wr=ZRel16:wr=YRel16:wr=XRel16:wr=XE016:wr=YE016:wr=ZE016
+VISUAL/VISLIB.LST:CalcSctrOffsets:pv=ZScaled:200,600,c00,1800,4000:wr=Valid1_2:wr=Valid1_4:wr=Valid1_8:wr=Valid1_16:wr=ZRel1:wr=YRel1:wr=XRel1:wr=XE01_16:wr=YE01_16:wr=ZE01_16:wr=XE01_8:wr=YE01_8:wr=ZE01_8:wr=XE01_4:wr=YE01_4:wr=ZE01_4:wr=XE01_2:wr=YE01_2:wr=ZE01_2:wr=XE01:wr=YE01:wr=ZE01:wr=ZRel2:wr=YRel2:wr=XRel2:wr=XE02:wr=YE02:wr=ZE02:wr=ZRel8:wr=YRel8:wr=XRel8:wr=XE08:wr=YE08:wr=ZE08:wr=ZRel16:wr=YRel16:wr=XRel16:wr=XE016:wr=YE016:wr=ZE016
 VISUAL/VISLIB.LST:CalcEyePosition
 VISUAL/VISLIB.LST:RotateView:idx=bx:wr=A4:wr=A5:wr=A6:wr=A1:wr=A2:wr=A3:wr=A7:wr=A8:wr=A9
 VISUAL/VISLIB.lst:InitVisual:wr=XGrid1:wr=XGrid2:wr=XGrid8:wr=XGrid16:wr=YGrid1:wr=YGrid2:wr=YGrid8:wr=YGrid16:wr=ZScaled:wr=XGridSize:wr=YGridSize:wr=ZGridSize
@@ -2333,7 +2333,7 @@ VISUAL/VISLIB.lst:CalcRotateGrid2
 VISUAL/VISLIB.lst:CalcRotateGrid3
 VISUAL/VISLIB.lst:CalcObjVSubDiv:idx=si
 VISUAL/VISLIB.lst:CalcObjSubDiv:idx=di
-VISUAL/VISLIB.lst:CalcSctrOffsets:idx=si:wr=Valid1_2:wr=Valid1_4:wr=Valid1_8:wr=Valid1_16:wr=ZRel1:wr=YRel1:wr=XRel1:wr=XE01_16:wr=YE01_16:wr=ZE01_16:wr=XE01_8:wr=YE01_8:wr=ZE01_8:wr=XE01_4:wr=YE01_4:wr=ZE01_4:wr=XE01_2:wr=YE01_2:wr=ZE01_2:wr=XE01:wr=YE01:wr=ZE01:wr=ZRel2:wr=YRel2:wr=XRel2:wr=XE02:wr=YE02:wr=ZE02:wr=ZRel8:wr=YRel8:wr=XRel8:wr=XE08:wr=YE08:wr=ZE08:wr=ZRel16:wr=YRel16:wr=XRel16:wr=XE016:wr=YE016:wr=ZE016
+VISUAL/VISLIB.lst:CalcSctrOffsets:pv=ZScaled:200,600,c00,1800,4000:wr=Valid1_2:wr=Valid1_4:wr=Valid1_8:wr=Valid1_16:wr=ZRel1:wr=YRel1:wr=XRel1:wr=XE01_16:wr=YE01_16:wr=ZE01_16:wr=XE01_8:wr=YE01_8:wr=ZE01_8:wr=XE01_4:wr=YE01_4:wr=ZE01_4:wr=XE01_2:wr=YE01_2:wr=ZE01_2:wr=XE01:wr=YE01:wr=ZE01:wr=ZRel2:wr=YRel2:wr=XRel2:wr=XE02:wr=YE02:wr=ZE02:wr=ZRel8:wr=YRel8:wr=XRel8:wr=XE08:wr=YE08:wr=ZE08:wr=ZRel16:wr=YRel16:wr=XRel16:wr=XE016:wr=YE016:wr=ZE016
 VISUAL/VISLIB.lst:CalcEyePosition
 VISUAL/VISLIB.lst:RotateView:idx=bx:wr=A4:wr=A5:wr=A6:wr=A1:wr=A2:wr=A3:wr=A7:wr=A8:wr=A9
 VISUAL/VISUAL.LST:Visual:idx=bx:class=ctx
