@@ -1427,7 +1427,7 @@ TORNADO/SOUNDFX.LST:NormaliseSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Normalised:c
 TORNADO/SOUNDFX.LST:SuspendSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=SoundOn:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer:class=ivt
 TORNADO/SOUNDFX.LST:ResumeSound:wr=SoundOn:wr=EngSoundOn:class=ivt
 TORNADO/SOUNDFX.LST:RefreshSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Timer:wr=Ch3Priority:wr=Ch3Timer:class=ivt
-TORNADO/SOUNDFX.LST:UpdateSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=EngSoundOn:wr=Tmp1:wr=BlstFault:wr=SoundCard:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Tmp2:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
+TORNADO/SOUNDFX.LST:UpdateSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=EngSoundOn:wr=Tmp1:wr=BlstFault:wr=SoundCard:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Tmp2:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer:class=hwio
 TORNADO/SOUNDFX.LST:ExploSound1:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.LST:ExploSound2:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.LST:ExploSound3:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
@@ -1435,7 +1435,7 @@ TORNADO/SOUNDFX.LST:ScreechSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=
 TORNADO/SOUNDFX.LST:MorseDotSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.LST:MorseDashSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.LST:GearSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
-TORNADO/SOUNDFX.LST:AttentionSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
+TORNADO/SOUNDFX.LST:AttentionSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer:class=hwio
 TORNADO/SOUNDFX.LST:KillAttnSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.LST:CannonSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.LST:LaunchSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
@@ -1446,7 +1446,7 @@ TORNADO/SOUNDFX.lst:NormaliseSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Normalised:c
 TORNADO/SOUNDFX.lst:SuspendSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=SoundOn:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer:class=ivt
 TORNADO/SOUNDFX.lst:ResumeSound:wr=SoundOn:wr=EngSoundOn:class=ivt
 TORNADO/SOUNDFX.lst:RefreshSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Timer:wr=Ch3Priority:wr=Ch3Timer:class=ivt
-TORNADO/SOUNDFX.lst:UpdateSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=EngSoundOn:wr=Tmp1:wr=BlstFault:wr=SoundCard:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Tmp2:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
+TORNADO/SOUNDFX.lst:UpdateSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=EngSoundOn:wr=Tmp1:wr=BlstFault:wr=SoundCard:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Tmp2:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer:class=hwio
 TORNADO/SOUNDFX.lst:ExploSound1:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.lst:ExploSound2:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.lst:ExploSound3:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
@@ -1454,7 +1454,7 @@ TORNADO/SOUNDFX.lst:ScreechSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=
 TORNADO/SOUNDFX.lst:MorseDotSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.lst:MorseDashSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.lst:GearSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
-TORNADO/SOUNDFX.lst:AttentionSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
+TORNADO/SOUNDFX.lst:AttentionSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer:class=hwio
 TORNADO/SOUNDFX.lst:KillAttnSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.lst:CannonSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch3Priority:wr=Ch3Flags:wr=Ch3Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
 TORNADO/SOUNDFX.lst:LaunchSound:idx=bx:pv=SoundCard:0,2,4,6,8:wr=EngSoundOn:wr=Ch1Priority:wr=Ch1Flags:wr=Ch1Timer:wr=Ch2Priority:wr=Ch2Flags:wr=Ch2Timer
