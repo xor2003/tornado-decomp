@@ -418,6 +418,19 @@ def run_original(addr, vec, pokes=(), timeout=25, membox=None):
     else:
         cmd += [f'--call-far={seg:#06x}:{off:#06x}']
     cmd += [f'--call-ds={DS_SEG:#06x}', f'--call-ss={SS}']
+    # kvikdos caps each poke class at 1024; --auto seeding can emit
+    # overlapping syms that re-poke the same address — dedup last-wins
+    # (kvikdos applies in order anyway) and clamp to the hard limit
+    dp = {}
+    for s, o, v, sz in pokes:
+        dp[(s, o, sz)] = (s, o, v, sz)
+    pokes = list(dp.values())
+    nw = sum(1 for p in pokes if p[3] != 1)
+    nb = len(pokes) - nw
+    if nw > 1024 or nb > 1024:
+        w = [p for p in pokes if p[3] != 1][:1024]
+        b = [p for p in pokes if p[3] == 1][:1024]
+        pokes = w + b
     for s, o, v, sz in pokes:
         cmd.append(f'--poke-byte={s:#06x}:{o:#06x}:{v:#06x}' if sz == 1
                    else f'--poke-word={s:#06x}:{o:#06x}:{v:#06x}')
