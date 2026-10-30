@@ -1570,11 +1570,13 @@ def main():
                 run_original(t[4], t[2], t[6], timeout=30)[0], tuple)
                 for t in tries)
             if tries and not ok:
-                # transient starvation (orphan sweep processes) can
-                # timeout every sample — verify with one fresh retry
-                # before condemning the environment
-                time.sleep(5)
-                t = tries[len(tries) // 2]
+                # sampled procs can ALL legitimately fail (drivers hang,
+                # abort-prone procs NORESULT, transient starvation) —
+                # last resort: a pure-leaf canary that always returns
+                canary = [t for t in tasks
+                          if t[4] and (t[0].lower().endswith('sqrt')
+                                       or 'mathfunc' in t[8].lower())]
+                t = (canary + tries)[0]
                 ok = isinstance(
                     run_original(t[4], t[2], t[6], timeout=30)[0], tuple)
             if tries and not ok:
