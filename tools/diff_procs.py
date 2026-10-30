@@ -414,7 +414,7 @@ RESULT_RE = re.compile(r'ax=([0-9a-f]+) bx=([0-9a-f]+) cx=([0-9a-f]+) dx=([0-9a-
                        r'si=([0-9a-f]+) di=([0-9a-f]+) sp=([0-9a-f]+) bp=([0-9a-f]+) '
                        r'flags=([0-9a-f]+) ds=([0-9a-f]+) es=([0-9a-f]+) ss=([0-9a-f]+)')
 
-def run_original(addr, vec, pokes=(), timeout=25, membox=None):
+def run_original(addr, vec, pokes=(), timeout=25, membox=None, tag=''):
     seg, off, kind = addr
     cmd = [KVIKDOS, '--video=off', '--tty-in=-3', '--diag=off']
     if kind == 'near':
@@ -451,7 +451,7 @@ def run_original(addr, vec, pokes=(), timeout=25, membox=None):
                    KVIKDOS_MEM_DUMP_START='0x%lx' % membox[0],
                    KVIKDOS_MEM_DUMP_SIZE='0x%lx' % membox[1])
     if os.environ.get('DIFF_DEBUG_ORIGARGV'):
-        print('ORIGARGV ' + repr(cmd), file=sys.stderr)
+        print(f'ORIGARGV {tag} ' + repr(cmd), file=sys.stderr)
     try:
         out = subprocess.run(cmd, capture_output=True, text=True, errors='replace',
                     timeout=timeout, env=env)
@@ -839,7 +839,27 @@ def main():
         modsym = {}
         for (l2, _p2), so in symoff.items():
             for n2, t2 in so.items():
-                modsym.setdefault((l2.lower(), n2.upper()), t2[1])
+                # store the base disp (shipped operand minus the listing's
+                # constant addend) so `Sym[$MID][si]` and `Sym[si]` agree
+                modsym.setdefault(
+                    (l2.lower(), n2.upper()), []).append(
+                        ((l2, _p2), t2[1] - t2[6]))
+        # link-map truth for public data operands: map flat + one global
+        # DGROUP bias = shipped operand. Identical-opcode sibling bodies
+        # (CalcNodePos1 vs CalcCentre1: same adds, different cells) are
+        # only separable by these wildcarded operand values; the bias is
+        # the sample mode so a minority of false-located extractions
+        # cannot outvote correct ones.
+        _db = {}
+        for _so2 in symoff.values():
+            for _n2, _t2 in _so2.items():
+                if _t2[2] or _t2[0] != 'ds':
+                    continue
+                _pf = pubs.get(_n2.split('.')[0].upper().lstrip('_'))
+                if _pf is not None:
+                    _d2 = _t2[1] - _t2[6] - _pf
+                    _db[_d2] = _db.get(_d2, 0) + 1
+        dbias = max(_db, key=_db.get) if _db else None
         for (lst, proc), (hits, syms) in ambig.items():
             scored = []
             for h in hits:
@@ -847,15 +867,34 @@ def main():
                 for n, (o, s, im, mb, ir, oz, ca) in syms.items():
                     if im or s != 'ds' or o is None:
                         continue
-                    exp = modsym.get(
-                        (lst.lower(), n.split('.')[0].upper()))
-                    if exp is None:
-                        continue
                     actual = int.from_bytes(
                         exe[img + h + o:img + h + o + 2], 'little')
-                    score += 1 if actual == exp else -1
+                    mk = (lst.lower(), n.split('.')[0].upper())
+                    # the proc's own provisional extraction must not
+                    # reinforce hits[0] — vote only among other procs'
+                    # base disps (mode wins over a false-located sibling)
+                    votes = [b for s2, b in modsym.get(mk, [])
+                             if s2 != (lst, proc)]
+                    if votes:
+                        vts = {}
+                        for b in votes:
+                            vts[b] = vts.get(b, 0) + 1
+                        exp = max(vts, key=vts.get)
+                        score += 1 if actual - ca == exp else -1
+                    pexp = pubs.get(n.split('.')[0].upper().lstrip('_'))
+                    if pexp is not None and dbias is not None:
+                        score += 2 if actual == pexp + dbias + ca else -2
+                        if os.environ.get('DIFF_DEBUG_AMBIG2'):
+                            print(f'  AMBIG2 {proc} h={h+img:#x} {n} '
+                                  f'actual={actual:#x} '
+                                  f'exp={pexp + dbias + ca:#x}',
+                                  file=sys.stderr)
                 scored.append((score, h))
             scored.sort()
+            if os.environ.get('DIFF_DEBUG_AMBIG'):
+                print(f'AMBIG {lst}:{proc} dbias={dbias} '
+                      f'{[(s, hex(h + img)) for s, h in scored]}',
+                      file=sys.stderr)
             if scored and scored[-1][0] > 0 and \
                     scored[-1][1] != hits[0] and \
                     isinstance(addrs.get((lst, proc)), tuple):
@@ -900,6 +939,14 @@ def main():
     # displacements are segment-absolute, so a sym learned from one proc's
     # instruction is valid for all — lets --auto also seed globals used by
     # nested calls (e.g. CircleFill -> [FillVector] -> _PolyFill reads)
+    if os.environ.get('DIFF_DEBUG_SYMOFF'):
+        for _k, _so in symoff.items():
+            _hit = {n: t[1] for n, t in _so.items()
+                    if n.lower() in ('xe01', 'xpos1', 'xsx', 'xsy',
+                                     'xpos', 'ye01', 'ypos1', 'ze01',
+                                     'zpos1', 'xgrid1')}
+            if _hit:
+                print('SYMOFF', _k, addrs.get(_k), _hit, file=sys.stderr)
     gsyms = {}
     for so in symoff.values():
         for n, (s, disp, im, mb, ir, oz, ca) in so.items():
@@ -1404,6 +1451,11 @@ def main():
                         v = EDGE[(vi + i) % len(EDGE)]
                         if esz == 1:
                             v &= 0xff
+                        if os.environ.get('DIFF_DEBUG_POKEMAP') == proc and \
+                                (0x1ac0 <= disp <= 0x1c10 or
+                                 0x2a70 <= disp <= 0x2ab0):
+                            print(f'POKEMAP v{vi} {n} disp={disp:x} '
+                                  f'v={v:x} i={i}', file=sys.stderr)
                         opush((oseg(s_kind), disp, v, esz))
                         # struc-member reads (`mov al,Struc.Field`)
                         # encode base+fieldoff in the shipped disp while
@@ -1472,6 +1524,11 @@ def main():
                                 rv2 = EDGE[(vi + i + k) % len(EDGE)]
                                 if esz == 1:
                                     rv2 &= 0xff
+                                if os.environ.get('DIFF_DEBUG_POKEMAP') == proc and \
+                                        0x1ac0 <= disp + esz * k <= 0x1c10:
+                                    print(f'POKEMAP-R v{vi} {n} disp={disp:x} '
+                                          f'k={k} v={rv2:x} i={i} -> {disp+esz*k:x}',
+                                          file=sys.stderr)
                                 opush((oseg(s_kind), disp + esz * k,
                                            rv2, esz))
                                 pp.append((port_name(lnbase, stem_l) +
@@ -1484,6 +1541,10 @@ def main():
                         # class=array limitation rather than a seeded case
                     if len(op) > 1000:
                         break           # NUM_POKES headroom
+            if os.environ.get('DIFF_DEBUG_SO') == proc:
+                print(f'DBG-SO {proc}: '
+                      f'{ {n: v[:2] for n, v in so.items() if "pos" in n.lower() or n.lower() in ("xsx","xsy","ysx","ysy","zsx","zsy")} }',
+                      file=sys.stderr)
             if os.environ.get('DIFF_DEBUG_PROC') == proc:
                 print(f'DBG {proc} v{vi}: ov={ov} pv={pv} pinmap={pinmap} '
                       f'atpokes={[p for p in pp if str(p[1]).startswith("@")]}'
@@ -1584,10 +1645,14 @@ def main():
         if a.port_rerun:
             ro = saved_ro.get((lst, proc, vi), 'NORESULT')
         elif addr:
-            ro, box = run_original(addr, ovec, opokes, membox=membox)
+            ro, box = run_original(addr, ovec, opokes, membox=membox,
+                                   tag=f'{lst}:{proc} v{vi}')
             if box is not None and membox:
                 romem = [box[f - membox[0]:f - membox[0] + l]
                          for f, l in wro]
+                if os.environ.get('DIFF_DEBUG_BOX') == proc:
+                    print(f'DBG-BOX {proc} v{vi} membox={membox[0]:x}+{membox[1]:x} '
+                          f'wro={wro} box={box.hex()}', file=sys.stderr)
         else:
             ro = 'NOORIG'
         rp, rpmem_d = run_port(a.probe, procname, pvec, ppokes,
@@ -1819,7 +1884,8 @@ def main():
                     nmemdiff += 1
                     print(f'{lst}:{proc} v{vi} MEMDIFF rng{ri} '
                           f'+{off:x}: orig={ob[off]:02x} '
-                          f'port={pb[off]:02x} (len {len(ob):x})')
+                          f'port={pb[off]:02x} (len {len(ob):x}) '
+                          f'ob={ob.hex()} pb={pb.hex()}')
                     break
             if same:
                 npass += 1
