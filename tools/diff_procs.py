@@ -1151,7 +1151,7 @@ def main():
             if VECIDX.get(reg) is None:
                 continue
             for s in SCRATCH:
-                if s in pinmap.values():
+                if any(v[0] == s for v in pinmap.values()):
                     continue
                 if port_syms is not None and s not in port_syms:
                     continue

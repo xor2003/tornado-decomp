@@ -1405,7 +1405,7 @@ TORNADO/PREVIEW.lst:PreviewIntr100:wr=Timer50
 TORNADO/RNGBRG.LST:CalcRngBrgVP_VP:pin=si,di
 TORNADO/RNGBRG.LST:CalcRngBrgVP_WP:pin=si,di
 TORNADO/RNGBRG.LST:CalcRngBrgWP_WP:pin=si,di
-TORNADO/RNGBRG.LST:CalcRngBrgVP_AF:pin=si,di,bp
+TORNADO/RNGBRG.LST:CalcRngBrgVP_AF:pin=si,di,bp:class=ptrlayout
 TORNADO/RNGBRG.LST:CalcRngBrg:idx=si,bx
 TORNADO/RNGBRG.LST:CalcAngDiff
 TORNADO/RNGBRG.LST:CalcNMiles
@@ -1414,7 +1414,7 @@ TORNADO/RNGBRG.LST:CalcSlantRange:idx=si,di
 TORNADO/RNGBRG.lst:CalcRngBrgVP_VP:pin=si,di
 TORNADO/RNGBRG.lst:CalcRngBrgVP_WP:pin=si,di
 TORNADO/RNGBRG.lst:CalcRngBrgWP_WP:pin=si,di
-TORNADO/RNGBRG.lst:CalcRngBrgVP_AF:pin=si,di,bp
+TORNADO/RNGBRG.lst:CalcRngBrgVP_AF:pin=si,di,bp:class=ptrlayout
 TORNADO/RNGBRG.lst:CalcRngBrg:idx=si,bx
 TORNADO/RNGBRG.lst:CalcAngDiff
 TORNADO/RNGBRG.lst:CalcNMiles
