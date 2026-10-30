@@ -683,6 +683,7 @@ def main():
                 open(lf, errors='replace').read()):
             weak_owner.setdefault(wm.group(1), stem)
     addrs, symoff, lstsyms_all, ambig = {}, {}, {}, {}
+    rescue_run = {}
     csmap = real_cs_map(exe)
     calltgts = near_call_targets(exe) | set(csmap)
     # linker map: public symbol -> linked seg:off. Map segs are pre-load;
@@ -841,7 +842,10 @@ def main():
             named = [(i, b) for i, b in enumerate(full_pat) if b is not None]
             if named:
                 good = sum(1 for i, b in named if exe[img + h + i] == b)
-                if good / len(named) < 0.75:
+                if good / len(named) >= 0.75:
+                    run = len(full_pat)
+                    rescue_run[(lst, proc)] = run
+                else:
                     # the shipped build is a different source revision
                     # for some modules — real bodies drift after a long
                     # matching head.  Two rescue tests:
@@ -878,6 +882,11 @@ def main():
                             # tail can shrink the run to nothing)
                             if c != h:
                                 rescued = c
+                                run = 0
+                                for _ix, _b in named:
+                                    if exe[img + c + _ix] != _b:
+                                        break
+                                    run = _ix + 1
                                 break
                             if run >= 24:
                                 rescued = c
@@ -897,16 +906,24 @@ def main():
                               f'({good}/{len(named)} bytes match at '
                               f'{h + img:#x})', file=sys.stderr)
                         hits = []
+                    rescue_run[(lst, proc)] = run
         if len(hits) == 1:
             h = hits[0]
             flat = LOAD_FLAT + h
             seg = csmap.get(flat, flat // 16)
             addrs[(lst, proc)] = (seg, flat - seg * 16, kind)
-            # shipped displacements for the proc's data symbols
+            # operand extraction is only sound inside the verified head:
+            # a rescued body's revised tail puts unrelated instruction
+            # bytes at the listing's operand offsets — extracting disps
+            # there fabricates wrong seed cells.  Clean bodies cover the
+            # whole pattern (run = len(full_pat) set at the gate above,
+            # or maxlen when the score check was skipped)
+            vrun = rescue_run.get((lst, proc), 1 << 30)
             symoff[(lst, proc)] = {
                 n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'),
                     im, mb, ir, oz, ca)
-                for n, (o, s, im, mb, ir, oz, ca) in syms.items()}
+                for n, (o, s, im, mb, ir, oz, ca) in syms.items()
+                if o < vrun}
         else:
             addrs[(lst, proc)] = None
             print(f'{lst}:{proc}: locate failed ({len(hits)} hits)',
