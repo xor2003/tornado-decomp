@@ -919,6 +919,11 @@ def main():
     # HelicopterPtr in the port's packing)
     declsz = {}
     declall = []     # [(shipped_disp, name, extent)] sorted below
+    # declared flat per name — for R-flagged operands (mov moffs /
+    # modrm on same-module syms) the addend of `Sym[const]` is baked
+    # into the shipped disp rather than extractable as cadd, so the
+    # port-side poke needs `disp - declflat` to hit the same element
+    declflat = {}    # {name.lower(): shipped decl flat}
     for line in open(a.spec):
         line = line.strip()
         if not line or line.startswith('#'):
@@ -934,15 +939,23 @@ def main():
         # derive their shipped disps from the listing's symtab plus the
         # module's listing->shipped delta (median over shared names)
         symtab = _lst_symtab(lp0)
-        delta = sorted(gsyms_l[n.lower()][1] - d
-                       for n, (_t, d) in symtab.items()
-                       if n.lower() in gsyms_l)
+        delta = [gsyms_l[n.lower()][1] - d
+                 for n, (_t, d) in symtab.items()
+                 if n.lower() in gsyms_l]
+        # declared rows too — _lst_symtab's `DATA$` anchor skips PUBLIC
+        # syms (`Word 0202 DATA Public`), and they are exactly the names
+        # procs operand against; more samples harden the median
+        delta += [gsyms_l[dn][1] - do
+                  for do, dn, _s in _drows
+                  if dn and dn in gsyms_l]
+        delta.sort()
         if not delta:
             continue
         md = delta[len(delta) // 2]
         for doff, dnm, _esz in _drows:
             if dnm:
                 declall.append((doff + md, dnm, _dmap[dnm][1]))
+                declflat.setdefault(dnm, doff + md)
         for n, (t, d) in symtab.items():
             if n.lower() in gsyms_l or n.lower().lstrip('_') in known_labels:
                 continue
@@ -1407,10 +1420,23 @@ def main():
                             # the listing operand is the pure addend —
                             # poke the same element port-side
                             pdelta = cadd
+                            if not pdelta:
+                                # R-flagged fixups (mov moffs / modrm on
+                                # same-module syms): `Sym[const]` folds
+                                # the addend into the shipped disp, so
+                                # recover it against the decl's flat —
+                                # without this orig seeds the operand
+                                # cell while port seeds element 0
+                                dflat = declflat.get(ln.lower())
+                                if dflat is not None:
+                                    pdelta = disp - dflat
                             if pdelta >= 0x8000:
                                 pdelta -= 0x10000
                         if not -0x400 <= pdelta <= 0x400:
                             pdelta = 0
+                        if os.environ.get('DIFF_DEBUG_PROC') == proc:
+                            print(f'DBGSEED {n} disp={disp:x} cadd={cadd:x} '
+                                  f'pdelta={pdelta:x}', file=sys.stderr)
                         lnbase = ln.split('.')[0]
                         dend = declsz.get(lnbase, (0, 0x10000))[1]
                         if _d and pdelta >= dend:

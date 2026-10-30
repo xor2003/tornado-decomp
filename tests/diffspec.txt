@@ -1152,7 +1152,7 @@ TORNADO/MODEL.LST:CrossWinds:idx=bx:wr=XWindFade:wr=XWindVeff:wr=XWindDXft:wr=XW
 TORNADO/MODEL.LST:SortJoysticks:idx=bx:wr=ElePosn:wr=AilPosn:wr=RudPosn:wr=JoyA_X:wr=JoyA_Y:wr=JoyB_X:wr=JoyB_Y:wr=OldJoyA_X:wr=OldJoyA_Y:wr=OldJoyB_X:wr=OldJoyB_Y:wr=JoyA_Fire1:wr=JoyA_Fire2:wr=JoyA_JustFired1:wr=JoyA_JustFired2:wr=JoyB_Fire1:wr=JoyB_Fire2:wr=JoyB_JustFired1:wr=JoyB_JustFired2:wr=Reheat:wr=ReheatFine:wr=Throttle:wr=ThrottleFine:wr=AutoTrim:wr=AutoAltFine:wr=AutoAlt:wr=TFRideDelay:wr=TFRideIndex:wr=AutoHdgFine:wr=AutoHdg
 TORNADO/MODEL.LST:UpdateSweep:idx=bx:wr=DestWingPos:wr=DestWingVal:wr=SweepActive:wr=CrntWingPos:wr=CrntWingVal
 TORNADO/MODEL.LST:UpdateFlaps:idx=bx:wr=DestFlapPos:wr=DestFlapVal:wr=FlapsActive:wr=CrntFlapPos:wr=CrntFlapVal
-TORNADO/MODEL.LST:CalcAirDensity:idx=bx:wr=Rho:wr=SqrtRho
+TORNADO/MODEL.LST:CalcAirDensity:idx=bx:wr=Rho:wr=SqrtRho:class=array
 TORNADO/MODEL.LST:CalcAirSpeed:wr=Vias:wr=Vdiv:wr=Vkts
 TORNADO/MODEL.LST:CalcGForce:idx=bx:wr=Kfs:wr=StallFlag2:wr=StallFlag1:wr=TrueGMax:wr=GMax:wr=StartStall:wr=StallRollDir:wr=StallPitch:wr=MaxPitchDown:wr=GForce:wr=AutoTrim:wr=GCoord:wr=Alpha
 TORNADO/MODEL.LST:CalcRates:wr=GRate:wr=EleRate:wr=EleRollRate:wr=RudRate:wr=RudRollRate:wr=AilRollRate:wr=HdgRate:wr=DeltaHRate:wr=PitchRate:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:wr=SpinFlag:wr=MaxPitchDown:wr=Recovery:wr=DeltaPRate:wr=RollRate:wr=DeltaRRate
@@ -1180,7 +1180,7 @@ TORNADO/MODEL.lst:CrossWinds:idx=bx:wr=XWindFade:wr=XWindVeff:wr=XWindDXft:wr=XW
 TORNADO/MODEL.lst:SortJoysticks:idx=bx:wr=ElePosn:wr=AilPosn:wr=RudPosn:wr=JoyA_X:wr=JoyA_Y:wr=JoyB_X:wr=JoyB_Y:wr=OldJoyA_X:wr=OldJoyA_Y:wr=OldJoyB_X:wr=OldJoyB_Y:wr=JoyA_Fire1:wr=JoyA_Fire2:wr=JoyA_JustFired1:wr=JoyA_JustFired2:wr=JoyB_Fire1:wr=JoyB_Fire2:wr=JoyB_JustFired1:wr=JoyB_JustFired2:wr=Reheat:wr=ReheatFine:wr=Throttle:wr=ThrottleFine:wr=AutoTrim:wr=AutoAltFine:wr=AutoAlt:wr=TFRideDelay:wr=TFRideIndex:wr=AutoHdgFine:wr=AutoHdg
 TORNADO/MODEL.lst:UpdateSweep:idx=bx:wr=DestWingPos:wr=DestWingVal:wr=SweepActive:wr=CrntWingPos:wr=CrntWingVal
 TORNADO/MODEL.lst:UpdateFlaps:idx=bx:wr=DestFlapPos:wr=DestFlapVal:wr=FlapsActive:wr=CrntFlapPos:wr=CrntFlapVal
-TORNADO/MODEL.lst:CalcAirDensity:idx=bx:wr=Rho:wr=SqrtRho
+TORNADO/MODEL.lst:CalcAirDensity:idx=bx:wr=Rho:wr=SqrtRho:class=array
 TORNADO/MODEL.lst:CalcAirSpeed:wr=Vias:wr=Vdiv:wr=Vkts
 TORNADO/MODEL.lst:CalcGForce:idx=bx:wr=Kfs:wr=StallFlag2:wr=StallFlag1:wr=TrueGMax:wr=GMax:wr=StartStall:wr=StallRollDir:wr=StallPitch:wr=MaxPitchDown:wr=GForce:wr=AutoTrim:wr=GCoord:wr=Alpha
 TORNADO/MODEL.lst:CalcRates:wr=GRate:wr=EleRate:wr=EleRollRate:wr=RudRate:wr=RudRollRate:wr=AilRollRate:wr=HdgRate:wr=DeltaHRate:wr=PitchRate:wr=ShakePriority:wr=HShake:wr=VShake:wr=ShakeTimer:wr=SpinFlag:wr=MaxPitchDown:wr=Recovery:wr=DeltaPRate:wr=RollRate:wr=DeltaRRate
