@@ -631,16 +631,28 @@ def main():
             r'^    \{"(\w+)",\s*(\w+)(?:,\s*\(m2c::_offsets\)[^)]*)\},\s*$',
             open(pcpp).read(), re.M))
 
+    # index renamed port syms by base at every '__' boundary so
+    # port_name is a dict hit — a linear 50k scan per call made
+    # --auto prep take ~an hour
+    renamed_idx = {}
+    if port_syms is not None:
+        for s in port_syms:
+            p = s.find('__')
+            while p != -1:
+                renamed_idx.setdefault(s[:p], []).append(s[p + 2:])
+                p = s.find('__', p + 2)
+        for v in renamed_idx.values():
+            v.sort()
+
     def port_name(ln, stem):
         # module-private duplicate globals are renamed sym__stem_hash by
         # the translator; a spec's bare name must bind the stem-matching
         # private variant on the port side, not the shared base sym
         if port_syms is None:
             return ln
-        pref = ln + '__' + stem
-        hits = [s for s in port_syms if s == pref or
-                s.startswith(pref + '_')]
-        return sorted(hits)[0] if hits else ln
+        hits = [r for r in renamed_idx.get(ln, ())
+                if r == stem or r.startswith(stem + '_')]
+        return ln + '__' + hits[0] if hits else ln
     # which module owns each weak wrapper: a same-name proc in another
     # module is `static` and unreachable — testing that spec entry would
     # bind the wrong implementation (a guaranteed false DIFF)
