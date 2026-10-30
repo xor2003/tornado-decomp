@@ -2163,7 +2163,7 @@ VISUAL/RWY_TAXI.lst:DrawApprLights2:idx=si:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.lst:DrawApprLights8:wr=RwyLightCol:class=ctx
 VISUAL/RWY_TAXI.lst:CreateLights2
 VISUAL/SCANFACE.LST:ScanFace:idx=bx:class=array
-VISUAL/SCANFACE.LST:SortPrmPoly1:pin=di:wr=Cyclic
+VISUAL/SCANFACE.LST:SortPrmPoly1:pin=si,di:wr=Cyclic:class=array
 VISUAL/SCANFACE.LST:SortPrmPoly2:pin=di:idx=bx:wr=Col2:wr=Cyclic:class=array
 VISUAL/SCANFACE.LST:SortSecPoly1:pin=di:class=array
 VISUAL/SCANFACE.LST:SortSecPoly2:pin=di:idx=bx:wr=Col2:class=array
@@ -2181,7 +2181,7 @@ VISUAL/SCANFACE.LST:SelectCase:class=array
 VISUAL/SCANFACE.LST:Gosub:class=array
 VISUAL/SCANFACE.LST:Illegal
 VISUAL/SCANFACE.lst:ScanFace:idx=bx:class=array
-VISUAL/SCANFACE.lst:SortPrmPoly1:pin=di:wr=Cyclic
+VISUAL/SCANFACE.lst:SortPrmPoly1:pin=si,di:wr=Cyclic:class=array
 VISUAL/SCANFACE.lst:SortPrmPoly2:pin=di:idx=bx:wr=Col2:wr=Cyclic:class=array
 VISUAL/SCANFACE.lst:SortSecPoly1:pin=di:class=array
 VISUAL/SCANFACE.lst:SortSecPoly2:pin=di:idx=bx:wr=Col2:class=array
