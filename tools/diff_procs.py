@@ -31,9 +31,22 @@ EXE      = '/home/xor/games/Tornado/TORNADO/FLIGHT/FLIGHT.EXE'
 KVIKDOS  = os.environ.get('KVIKDOS_BIN', '/home/xor/kvikdos/kvikdos')
 ROOT     = '/home/xor/games/Tornado/TORNADO/FLIGHT'
 LOAD_FLAT = 0x1100
-HDRPARAS = 480
 DS_SEG   = 0x0110
+HDRPARAS = 480
 SS       = '0x856e:0x8870'
+
+
+def _mz_header(path):
+    """(hdrbytes, ss_seg, ss_sp, entry_cs, entry_ip) from the MZ header —
+    a rebuilt exe has different header paras/stack/entry than shipped."""
+    d = open(path, 'rb').read(0x1c)
+    if d[:2] != b'MZ':
+        return 480 * 16, 0x856e, 0x8870, 0, 0
+    import struct
+    cp = struct.unpack('<H', d[8:10])[0]
+    ss, sp = struct.unpack('<HH', d[0x0e:0x12])
+    ip, cs = struct.unpack('<HH', d[0x14:0x18])
+    return cp * 16, ss, sp, cs, ip
 
 # default input vectors (regs ax,cx,dx,bx,si,di,bp)
 VECTORS = [
@@ -56,6 +69,24 @@ REG_NAMES = {'ax','bx','cx','dx','si','di','bp','sp','cs','ds','es','ss',
              'al','ah','bl','bh','cl','ch','dl','dh','word','byte','ptr',
              'offset','seg','far','near','short','dword','qword','tbyte'}
 
+@functools.lru_cache(maxsize=None)
+def _lst_abs_externs(path):
+    """names declared `EXTRN <name>:ABS` -> combined regex, or None.
+    ABS-extern operands assemble to link-resolved constants the listing
+    prints as 0000 placeholders *without* an R/E marker, so a signature
+    that trusts the literal 00 00 misses the real body."""
+    names = set()
+    with open(path, errors='replace') as f:
+        for ln in f:
+            m = re.match(r'\s*EXTRN\s+([A-Za-z_][\w$?@]*)\s*:\s*ABS\b',
+                         ln, re.I)
+            if m:
+                names.add(m.group(1))
+    if not names:
+        return None
+    return re.compile(r'\b(?:' + '|'.join(
+        re.escape(n) for n in names) + r')\b', re.I)
+
 def parse_lst_pattern(path, proc, maxlen=64):
     """Returns (pattern, kind, syms): pattern is the first <=64 encoded bytes
     with relocated/relative operands wildcarded (None); kind is 'near'/'far';
@@ -64,6 +95,7 @@ def parse_lst_pattern(path, proc, maxlen=64):
     if not entry:
         return [], 'far', {}
     kind, plines = entry
+    absre = _lst_abs_externs(path)
     out, syms, poff = [], {}, 0
     for ln in plines:
         m = re.match(r'\s*([0-9A-Fa-f]{4})\s+(.*?)\s{2,}(.*)$', ln)
@@ -74,7 +106,7 @@ def parse_lst_pattern(path, proc, maxlen=64):
             continue
         toks = enc.split()
         has_R = any(t in ('R', 'E') for t in toks)
-        bs, marked = [], []
+        bs, marked, zeros = [], [], []
         for t in toks:
             if t in ('R', 'E'):
                 # reloc marker follows the field it annotates: wildcard the
@@ -87,7 +119,7 @@ def parse_lst_pattern(path, proc, maxlen=64):
                         marked += [wstart, wstart + 1]
                         break
                 continue
-            t = t.rstrip(':')
+            t = t.rstrip(':/')
             if re.fullmatch(r'-+', t):
                 # unlinked placeholder field ('----' = word) — occupies real
                 # bytes in the encoding; emit wildcards or the pattern
@@ -96,13 +128,23 @@ def parse_lst_pattern(path, proc, maxlen=64):
             elif re.fullmatch(r'[0-9A-Fa-f]+', t):
                 if len(t) == 4:
                     bs += [int(t[2:4], 16), int(t[0:2], 16)]
+                    if t == '0000':
+                        zeros.append((len(bs) - 2, 2))
                 elif len(t) == 2:
                     bs.append(int(t, 16))
+                    if t == '00':
+                        zeros.append((len(bs) - 1, 1))
                 elif len(t) % 2 == 0:
                     for i in range(0, len(t), 2):
                         bs.append(int(t[i:i+2], 16))
         if not bs:
             continue
+        if zeros and absre is not None and absre.search(asm):
+            # the insn text names an EXTRN:ABS symbol — its 00/0000 field
+            # is a link-resolved placeholder, not a literal zero
+            for s, l in zeros:
+                for i in range(s, s + l):
+                    bs[i] = None
         if has_R and marked:
             # record the data symbol for later shipped-displacement reads:
             # first identifier in the operand text that isn't a register/keyword
@@ -277,19 +319,21 @@ def _lst_segsym(path):
     return out
 
 _INSN = re.compile(
-    r'^\s*([0-9A-Fa-f]{1,6})\s+((?:(?:[0-9A-Fa-f]{2,4}|-+|[RE])\s+)+)'
+    r'^\s*([0-9A-Fa-f]{1,6})\s+((?:(?:[0-9A-Fa-f]{2,4}/?|-+|[RE])\s+)+)'
     r'\s*(.*)$')
 
-def _insn_bytes(ln):
+def _insn_bytes(ln, absre=None):
     """emitted bytes of a listing instruction/data line ->
     (offset, [bytes|None...], operand_flat_pos) or None.  `R`/`E` tokens
     mark the *most recent* group's bytes as relocatable (wildcarded);
     `----` unlinked placeholders emit None (they occupy real bytes);
-    4-digit groups are word values stored little-endian."""
+    4-digit groups are word values stored little-endian.  `absre` (from
+    _lst_abs_externs) wildcard-marks 00/0000 fields of instructions that
+    reference an EXTRN:ABS symbol (link-resolved, no R/E marker)."""
     m = _INSN.match(ln)
     if not m:
         return None
-    bs, omark, last_grp, marked = [], None, None, []
+    bs, omark, last_grp, marked, zeros = [], None, None, [], []
     for g in m.group(2).split():
         if g in ('R', 'E'):
             # annotate the most recently emitted group — for `B8 ---- R`
@@ -298,6 +342,7 @@ def _insn_bytes(ln):
                 omark = last_grp[0]
                 marked.append(last_grp)
             continue
+        g = g.rstrip(':/')
         if set(g) == {'-'}:
             seg = [None] * (len(g) // 2)
         elif len(g) & 1 or not all(
@@ -305,8 +350,12 @@ def _insn_bytes(ln):
             return None
         elif len(g) == 4:
             seg = [int(g[2:4], 16), int(g[0:2], 16)]  # word: little-endian
+            if g == '0000':
+                zeros.append((len(bs), 2))
         else:
             seg = [int(g[i:i + 2], 16) for i in range(0, len(g), 2)]
+            if g == '00':
+                zeros.append((len(bs), 1))
         last_grp = (len(bs), len(seg))
         bs += seg
     if not bs:
@@ -314,6 +363,10 @@ def _insn_bytes(ln):
     for s, l in marked:
         for i in range(s, s + l):
             bs[i] = None
+    if zeros and absre is not None and absre.search(m.group(3)):
+        for s, l in zeros:
+            for i in range(s, s + l):
+                bs[i] = None
     return int(m.group(1), 16), bs, omark
 
 @functools.lru_cache(maxsize=None)
@@ -356,9 +409,10 @@ def _lst_table_calls(path):
     relocatable operand groups wildcarded; the operand word (table's
     offset inside its segment) is read from the located instruction."""
     lines = open(path, errors='replace').read().splitlines()
+    absre = _lst_abs_externs(path)
     insns = []
     for ln in lines:
-        ib = _insn_bytes(ln)
+        ib = _insn_bytes(ln, absre)
         insns.append(ib)
     out = []
     for i, ib in enumerate(insns):
@@ -553,6 +607,8 @@ def _pat_regex(pat):
     return re.compile(b''.join(out), re.DOTALL)
 
 def locate(exe, pat):
+    if not pat:
+        return []
     base = HDRPARAS * 16
     return [m.start() - base for m in
             _pat_regex(tuple(pat)).finditer(exe, base)]
@@ -783,6 +839,10 @@ def main():
     ap.add_argument('spec')
     ap.add_argument('--probe', default='./test_probe_all')
     ap.add_argument('--exe', default=EXE)
+    ap.add_argument('--root', default=ROOT,
+                    help='game data dir for the kvikdos side '
+                         '(default: shipped FLIGHT dir; use the rebuilt '
+                         'tree when --exe is the MASM-rebuilt exe)')
     ap.add_argument('-j', '--jobs', type=int, default=4)
     ap.add_argument('--replay', help='reclassify a saved results file, no calls')
     ap.add_argument('--port-rerun', metavar='RAW',
@@ -794,6 +854,13 @@ def main():
                          'per-vector edge values; *ptr syms get @<peer> pokes')
     a = ap.parse_args()
     exe = open(a.exe, 'rb').read()
+    # adapt to the exe actually loaded: a MASM-rebuilt FLIGHT.EXE has a
+    # different header size and relocated stack than the shipped one
+    hdrb, ssv, spv, _ecs, _eip = _mz_header(a.exe)
+    globals()['HDRPARAS'] = hdrb // 16
+    globals()['SS'] = '0x%04x:0x%04x' % (
+        (ssv + LOAD_FLAT // 16) & 0xffff, spv)
+    globals()['ROOT'] = a.root
     # port-side valid poke symbols (from the generated probe's SYMS table)
     port_syms = None
     pcpp = os.path.join(os.path.dirname(a.spec) or '.', 'probe_all.cpp')
@@ -931,17 +998,23 @@ def main():
             continue
         lst, proc, pat_ov, kind_ov = parse_spec_line(line)[:4]
         syms = {}
+        lp = lst if os.path.isabs(lst) else os.path.join(
+            '/home/xor/inertia_player/examples/Tornado', lst)
+        lpat, lkind, lsyms = parse_lst_pattern(lp, proc)
         if pat_ov is not None:
-            pat, kind = pat_ov, kind_ov or 'far'
-        else:
-            lp = lst if os.path.isabs(lst) else os.path.join(
-                '/home/xor/inertia_player/examples/Tornado', lst)
-            pat, kind, syms = parse_lst_pattern(lp, proc)
-            if kind_ov: kind = kind_ov
+            hits = locate(exe, pat_ov)
+            if hits:
+                pat, kind = pat_ov, kind_ov or 'far'
+            else:
+                # stale @@ signature (mined from a different build):
+                # fall back to the listing-derived pattern
+                pat_ov = None
+        if pat_ov is None:
+            pat, kind, syms = lpat, kind_ov or lkind, lsyms
             for n, (o, s, im, mb, ir, oz, ca) in list(syms.items()):
                 if not im and n.lower().lstrip('_') in known_labels:
                     syms[n] = (o, s, True, mb, ir, oz, ca)
-        hits = locate(exe, pat) if pat else []
+            hits = locate(exe, pat) if pat else []
         if not hits and pat and pat_ov is None:
             # mid-pattern divergence (encoder/linker variant): fall back
             # to progressively shorter prefixes — the call-target and
