@@ -26,13 +26,23 @@
        @@ override → listing fallback. Текущий статус: located≈1067,
        failed≈187, из них ~159 — stub-драйверы и не-линкованные
        библиотеки (DIALOG/MOUSE/VGATOOLS/PHOTO), WriteSprite чинится.
-4. [ ] Дифф-тесты через kvikdos + test_probe: прогнать все in-scope
+4. [~] Дифф-тесты через kvikdos + test_probe: прогнать все in-scope
        процедуры (VGA + TORNADO/VISUAL/LIB8086-linked), классифицировать
        pass/diff/xdiff/timeout/crash/memdiff. Это safety net.
-5. [ ] masm2c: добиться рабочего транслированного бинарника —
+       Smoke: pass=68 diff=0 dispmiss=0 (xdiff = rtc/hwio — ожидаемо).
+       Полный прогон tests/diffspec.txt (2461 строка) против rebuilt exe.
+5. [x] masm2c: добиться рабочего транслированного бинарника —
        исправить DISPMISS-падение в boot, исправить найденные баги
        транслятора. CI masm2c должен быть зелёным перед каждым
        коммитом.
+       DONE c9dc966: implicit CALL push делал return word = normalized eip
+       (всегда 6) → value-marks алиасились, loop-counter push'и воровали
+       marks через carry-допуск ±4 → ret попадал на чужой slot →
+       replay → DISPMISS(6). Фикс: уникальный тег 0x8000|id для КАЖДОГО
+       implicit push (sentinel-механизм распространён). tornado_lifted
+       доходит до Graceful exit; randx вызывается ровно 2 раза —
+       как в .ASM. Остаток: disp=3 = int33 mouse stub (IVT не засеян),
+       нефатально.
 6. [ ] Тесты транслированного C: unit/diff-тесты на каждую функцию —
        нормальный путь + значимые edge cases (векторы регистров,
        flags-проверки, память).
