@@ -896,6 +896,29 @@ def main():
                             run >= 48 or
                             (run >= 24 and good / len(named) >= 0.30)):
                         rescued = h
+                    if rescued is None:
+                        # (c) call-target confirmation: a signature hit
+                        # that is itself the entry point of a real call
+                        # site can't be a junk twin — the shipped head
+                        # was revised but the proc entry survives.  Keep
+                        # a modest run bar so prefix collisions at call
+                        # targets still lose.
+                        cands = [h] + [c for c in ambig.get(
+                            (lst, proc), ([], {}))[0] if c != h]
+                        for c in cands:
+                            if c not in calltgts:
+                                continue
+                            crun = 0
+                            for _ix, _b in named:
+                                if exe[img + c + _ix] != _b:
+                                    break
+                                crun = _ix + 1
+                            if c == h and crun < 8:
+                                continue   # hits[0]: measured run stands
+                            if c == h or crun >= 8:
+                                rescued = c
+                                run = max(run, crun)
+                                break
                     if rescued is not None:
                         print(f'{lst}:{proc}: locate accepted '
                               f'({good}/{len(named)} bytes, run={run} '
