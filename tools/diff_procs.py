@@ -1124,12 +1124,18 @@ def main():
     # the decoded slots by signature score — slot order is NOT trusted
     # (the shipped build remapped/merged modes).
     segtab = {}
+    seglen = {}
     if mapf:
         for mline in open(mapf[0], errors='replace'):
             mm = re.match(r'\s*([0-9A-Fa-f]{5,6})H\s+[0-9A-Fa-f]{5,6}H\s+'
-                          r'[0-9A-Fa-f]{5,6}H\s+(\w+)', mline)
+                          r'([0-9A-Fa-f]{5,6})H\s+(\w+)', mline)
             if mm:
-                segtab[mm.group(2).upper()] = int(mm.group(1), 16)
+                segtab[mm.group(3).upper()] = int(mm.group(1), 16)
+                seglen[mm.group(3).upper()] = int(mm.group(2), 16)
+    # DATA lives at image offset 0 (call-site operands proved it); its
+    # byte length bounds the word-diff table scan
+    data_len = max(0, min(len(exe) - img,
+                          seglen.get('DATA', len(exe) - img))) & ~1
     seg_of = {}
     dwtabs = {}
     spec_lsts = set()
@@ -1201,6 +1207,33 @@ def main():
                     tf = tbase + w
                     if tf not in table_fp.setdefault(lbl, []):
                         table_fp[lbl].append(tf)
+    def _scan_table_pos(anchors, nslots):
+        """Word-diff scan of the DATA image for tables whose call site
+        didn't locate.  A table entry is a code-segment offset, so for
+        anchors a,b (located procs named in the table) the shipped words
+        satisfy w_b - w_a = fp_b - fp_a regardless of the segment base.
+        Positions whose nslots-window contains such a word pair are
+        candidates; the vote/decode below does the rest."""
+        import numpy as np
+        fps = sorted(set(anchors))
+        if len(fps) < 2 or data_len < 2 * (nslots + 1):
+            return []
+        wv = np.frombuffer(exe[img:img + data_len],
+                           dtype='<u2').astype(np.int32)
+        n = len(wv) - nslots - 1
+        cand = np.zeros(n, dtype=bool)
+        for x in range(len(fps)):
+            for y in range(x):
+                d = fps[y] - fps[x]
+                m = np.zeros(n, dtype=bool)
+                for i in range(nslots):
+                    wi = wv[i:i + n]
+                    for j in range(nslots):
+                        if i != j:
+                            m |= wv[j:j + n] - wi == d
+                cand |= m
+        return [img + 2 * p for p in np.nonzero(cand)[0]]
+
     def _table_words(tf, maxn):
         """u16 run at a candidate table position: entries until a zero
         slot or well past the listing count."""
@@ -1271,7 +1304,14 @@ def main():
                        if a2 is None and proc.upper() in ents_names]
             if not missing:
                 continue
-            for tf in table_fp.get(lbl, []):
+            tfs = table_fp.get(lbl, [])
+            if not tfs:
+                # no call-site hits — fall back to a word-diff scan over
+                # the DATA image driven by the table's located members
+                anch = [fp for nm in ents_names if nm != 'NULL'
+                        for fp in proc_fp.get(nm, ())]
+                tfs = _scan_table_pos(anch, len(ents) + 4)
+            for tf in tfs:
                 words = _table_words(tf, 2 * len(ents) + 8)
                 if len(words) < 3:
                     continue
