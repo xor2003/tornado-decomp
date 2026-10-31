@@ -689,7 +689,7 @@ TORNADO/AVIONICS.LST:CalcTurnDist:wr=ThetaAB:wr=ThetaBC:wr=ThetaABC:wr=RTurn:wr=
 TORNADO/AVIONICS.LST:SortWPAlt:pin=si:wr=TFAuto:wr=AltMode:wr=AAFlag:wr=AutoAlt:wr=AutoAltFine:class=ctx
 TORNADO/AVIONICS.LST:ScanAirfields:pin=di:class=array
 TORNADO/AVIONICS.LST:UpdateILS:pin=si:wr=ILSActive:class=array
-TORNADO/AVIONICS.LST:CheckILS:pin=si,di:wr=ILSApproach:wr=ILSRangeLo:wr=ILSRangeHi:wr=ILSErrorLo:wr=ILSErrorHi:wr=ILSMaxError:wr=ILSLocalError:wr=ILSLocalPos:wr=ILSGlideError:wr=ILSGlidePos:wr=ILSRng:wr=ILSBrg:wr=ILSETA:wr=ILSActive
+TORNADO/AVIONICS.LST:CheckILS:pin=si,di:wr=ILSApproach:wr=ILSRangeLo:wr=ILSRangeHi:wr=ILSErrorLo:wr=ILSErrorHi:wr=ILSMaxError:wr=ILSLocalError:wr=ILSLocalPos:wr=ILSGlideError:wr=ILSGlidePos:wr=ILSRng:wr=ILSBrg:wr=ILSETA:wr=ILSActive:class=ctx
 TORNADO/AVIONICS.LST:AutoApproach:idx=bx:wr=AppHFine:wr=AppError:wr=AutoVias:wr=AutoViasFine:class=ctx
 TORNADO/AVIONICS.LST:UpdateRadar:wr=RadarMode
 TORNADO/AVIONICS.LST:UpdateAppProg:wr=AppProgSeq:wr=AppProgTimer:class=ctx
@@ -731,7 +731,7 @@ TORNADO/AVIONICS.lst:CalcTurnDist:wr=ThetaAB:wr=ThetaBC:wr=ThetaABC:wr=RTurn:wr=
 TORNADO/AVIONICS.lst:SortWPAlt:pin=si:wr=TFAuto:wr=AltMode:wr=AAFlag:wr=AutoAlt:wr=AutoAltFine:class=ctx
 TORNADO/AVIONICS.lst:ScanAirfields:pin=di:class=array
 TORNADO/AVIONICS.lst:UpdateILS:pin=si:wr=ILSActive:class=array
-TORNADO/AVIONICS.lst:CheckILS:pin=si,di:wr=ILSApproach:wr=ILSRangeLo:wr=ILSRangeHi:wr=ILSErrorLo:wr=ILSErrorHi:wr=ILSMaxError:wr=ILSLocalError:wr=ILSLocalPos:wr=ILSGlideError:wr=ILSGlidePos:wr=ILSRng:wr=ILSBrg:wr=ILSETA:wr=ILSActive
+TORNADO/AVIONICS.lst:CheckILS:pin=si,di:wr=ILSApproach:wr=ILSRangeLo:wr=ILSRangeHi:wr=ILSErrorLo:wr=ILSErrorHi:wr=ILSMaxError:wr=ILSLocalError:wr=ILSLocalPos:wr=ILSGlideError:wr=ILSGlidePos:wr=ILSRng:wr=ILSBrg:wr=ILSETA:wr=ILSActive:class=ctx
 TORNADO/AVIONICS.lst:AutoApproach:idx=bx:wr=AppHFine:wr=AppError:wr=AutoVias:wr=AutoViasFine:class=ctx
 TORNADO/AVIONICS.lst:UpdateRadar:wr=RadarMode
 TORNADO/AVIONICS.lst:UpdateAppProg:wr=AppProgSeq:wr=AppProgTimer:class=ctx

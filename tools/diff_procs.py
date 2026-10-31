@@ -1360,7 +1360,16 @@ def main():
         wro, wrp, wmiss = [], [], []
         for wn, woff, wlen in wrs:
             hit = sol.get(wn.lower()) or gsyms_l.get(wn.lower())
-            if hit is None or hit[0] != 'ds':
+            if hit is None or hit[0] not in ('ds', 'ss'):
+                # linker-map fallback: data publics' seg:off is already
+                # DGROUP-relative (seg 0000 = data-image base), same as
+                # the poke/dump paths use
+                mf = pubs.get(wn.upper())
+                hit = ('ds', mf, True) if mf is not None else None
+                if os.environ.get('DIFF_DEBUG_WRMISS'):
+                    print(f'WRMISS {proc} {wn} hit={hit} mf={mf}',
+                          file=sys.stderr)
+            if hit is None:
                 wmiss.append(wn)
                 continue
             ln = wn.lower()
@@ -1372,7 +1381,8 @@ def main():
             # different logical cell in each layout (see Exit3DFlag+1)
             wlen2 = wlen or port_esz.get(pln) or \
                 (hit[5] if len(hit) > 5 else 2) or 2
-            wro.append((DS_SEG * 16 + hit[1] + woff, wlen2))
+            wseg = DS_SEG if hit[0] == 'ds' else int(SS.split(':')[0], 16)
+            wro.append((wseg * 16 + hit[1] + woff, wlen2))
             wrp.append((pln + ('+%x' % woff if woff else ''), wlen2))
         if wmiss:
             print(f'{proc}: wr ranges dropped, syms unknown: {wmiss}',
