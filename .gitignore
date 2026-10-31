@@ -1,5 +1,5 @@
 obj/
-obj_test/
+obj_test
 tornado_lifted
 test_procs
 *.o
@@ -13,4 +13,7 @@ tests/diffspec.txt.raw
 tests/*.raw
 tests/diffspec.log
 tests/diffspec.err
+tests/diffspec_run*.log
+tests/diffspec_run*.err
+tests/diffspec_run*.bak
 *.LBM
