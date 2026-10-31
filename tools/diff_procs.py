@@ -255,6 +255,165 @@ def _lst_symtab(path):
     return out
 
 @functools.lru_cache(maxsize=None)
+def _lst_segsym(path):
+    """listing tail symbol table: NAME -> (segment name, offset, kind).
+    kind is 'near'/'far' for `P Near`/`P Far`/`L Near`/`L Far` entries and
+    'data' for Word/Byte/DWord cells.  Covers every segment, not just DATA
+    (unlike _lst_symtab)."""
+    out = {}
+    mre = re.compile(
+        r'^\s*([\w$]+)\s+(?:\.\s+)+(?:(P|L)\s+)?'
+        r'(Near|Far|Word|Byte|DWord|Proc|Abs)\s+'
+        r'([0-9A-Fa-f]{1,6})\s+([A-Za-z_?][\w?]*)(?:\s|$)')
+    for ln in open(path, errors='replace').read().splitlines():
+        m = mre.match(ln)
+        if not m:
+            continue
+        t = m.group(3)
+        kind = ('near' if t == 'Near' else
+                'far' if t == 'Far' else 'data')
+        out.setdefault(m.group(1).upper(),
+                       (m.group(5).upper(), int(m.group(4), 16), kind))
+    return out
+
+_INSN = re.compile(
+    r'^\s*([0-9A-Fa-f]{1,6})\s+((?:(?:[0-9A-Fa-f]{2,4}|-+|[RE])\s+)+)'
+    r'\s*(.*)$')
+
+def _insn_bytes(ln):
+    """emitted bytes of a listing instruction/data line ->
+    (offset, [bytes|None...], operand_flat_pos) or None.  `R`/`E` tokens
+    mark the *most recent* group's bytes as relocatable (wildcarded);
+    `----` unlinked placeholders emit None (they occupy real bytes);
+    4-digit groups are word values stored little-endian."""
+    m = _INSN.match(ln)
+    if not m:
+        return None
+    bs, omark, last_grp, marked = [], None, None, []
+    for g in m.group(2).split():
+        if g in ('R', 'E'):
+            # annotate the most recently emitted group — for `B8 ---- R`
+            # that is the ---- placeholder, not B8
+            if last_grp:
+                omark = last_grp[0]
+                marked.append(last_grp)
+            continue
+        if set(g) == {'-'}:
+            seg = [None] * (len(g) // 2)
+        elif len(g) & 1 or not all(
+                c in '0123456789abcdefABCDEF' for c in g):
+            return None
+        elif len(g) == 4:
+            seg = [int(g[2:4], 16), int(g[0:2], 16)]  # word: little-endian
+        else:
+            seg = [int(g[i:i + 2], 16) for i in range(0, len(g), 2)]
+        last_grp = (len(bs), len(seg))
+        bs += seg
+    if not bs:
+        return None
+    for s, l in marked:
+        for i in range(s, s + l):
+            bs[i] = None
+    return int(m.group(1), 16), bs, omark
+
+@functools.lru_cache(maxsize=None)
+def _lst_dw_tables(path):
+    """`DW <ident>` data lines grouped into offset-contiguous tables ->
+    list of (label|None, [(lst_off, NAME|None)]).  Dispatch tables
+    (DispSwitch, ScanVertexList, _InitPanels) hold each target's offset
+    inside the segment the table is called under."""
+    ents, out, label = [], [], None
+    mre = re.compile(r'^\s*([0-9A-Fa-f]{1,6})\s+[0-9A-Fa-f]{2,8}\s+[RE]\s+'
+                     r'(?:(\w+)\s+)?DW\s+(.+?)\s*(?:;.*)?$', re.I)
+    oid = re.compile(r'(?i)offset\s+([_?@a-z][\w?@$]*)|'
+                     r'^([_?@a-z][\w?@$]*)')
+    for ln in open(path, errors='replace').read().splitlines():
+        m = mre.match(ln)
+        if not m:
+            continue
+        off = int(m.group(1), 16)
+        om = oid.match(m.group(3).strip())
+        name = (om.group(1) or om.group(2)).upper() if om else None
+        lbl = m.group(2)
+        # a fresh label on a contiguous run starts a new table — adjacent
+        # tables share no gap (SelectSwitch ends 0x120, DispSwitch 0x122)
+        if ents and (off != ents[-1][0] + 2 or (lbl and lbl != label)):
+            if len(ents) >= 3 and any(e[1] for e in ents):
+                out.append((label, ents))
+            ents, label = [], None
+        if not ents:
+            label = lbl
+        ents.append((off, name))
+    if len(ents) >= 3 and any(e[1] for e in ents):
+        out.append((label, ents))
+    return out
+
+@functools.lru_cache(maxsize=None)
+def _lst_table_calls(path):
+    """call sites of a labeled DW table (`call <label>[reg]`):
+    -> [(label, window_pattern, insn_off_in_pat, operand_pos_in_pat)].
+    The window pattern is ~4 instruction lines around the call with
+    relocatable operand groups wildcarded; the operand word (table's
+    offset inside its segment) is read from the located instruction."""
+    lines = open(path, errors='replace').read().splitlines()
+    insns = []
+    for ln in lines:
+        ib = _insn_bytes(ln)
+        insns.append(ib)
+    out = []
+    for i, ib in enumerate(insns):
+        if not ib:
+            continue
+        _off, bs, omark = ib
+        txt = _INSN.match(lines[i]).group(3)
+        cm = re.search(
+            r'\b(?:call|jmp)\s+(?:\w+\s+ptr\s+)?([\w$?@]+)\s*\[',
+            txt, re.I)
+        if not cm:
+            continue          # table dispatch is always `call T[reg]`
+        # window of 3 insn lines before + call + 2 after — comments and
+        # label-only lines emit nothing and must not eat the budget
+        before, after = [], []
+        j = i - 1
+        while j >= 0 and len(before) < 3:
+            if insns[j]:
+                before.append(j)
+            j -= 1
+        j = i + 1
+        while j < len(insns) and len(after) < 2:
+            if insns[j]:
+                after.append(j)
+            j += 1
+        pat, pops = [], None
+        for j in before[::-1] + [i] + after:
+            b2, om2 = insns[j][1], insns[j][2]
+            emit = list(b2)
+            # branch rel operands are code-relative and drift between
+            # builds — wildcard them in context lines or the call-site
+            # signature never matches the shipped binary
+            op0 = b2[0] if b2[0] is not None else -1
+            op1 = b2[1] if len(b2) > 1 and b2[1] is not None else -1
+            if op0 in (0xE8, 0xE9):
+                rel = 2
+            elif op0 == 0x0F and 0x80 <= op1 <= 0x8F:
+                rel = 2
+            elif op0 == 0xEB or 0x70 <= op0 <= 0x7F or \
+                    0xE0 <= op0 <= 0xE3:
+                rel = 1
+            else:
+                rel = 0
+            for k in range(rel):
+                emit[len(emit) - 1 - k] = None
+            if j == i:
+                om = omark if omark is not None else len(bs) - 2
+                pops = (len(pat), len(pat) + om)
+            pat.extend(emit)
+        if pops:
+            out.append((cm.group(1).upper(), tuple(pat),
+                        pops[0], pops[1]))
+    return out
+
+@functools.lru_cache(maxsize=None)
 def _lst_fields(path):
     """{STRUC.FIELD -> offset} parsed from STRUC..ENDS declaration blocks
     (e.g. `VIEWPORT STRUCT` .. `V_SCALE_UP DB 0` -> 8)."""
@@ -951,6 +1110,221 @@ def main():
             addrs[(lst, proc)] = None
             print(f'{lst}:{proc}: locate failed ({len(hits)} hits)',
                   file=sys.stderr)
+
+    # DW dispatch-table rescue: procs reached only through near-indirect
+    # `call Table[bx]` are never call targets, so signature locates fail
+    # them even when the body is present and unchanged.  The call site
+    # itself locates by byte signature (window context, operand
+    # wildcarded); its operand word is the table's shipped offset inside
+    # its own segment — exact, no layout assumptions.  Each slot word is
+    # the target's offset inside the segment the table is called under;
+    # the segment's shipped base comes from (anchor, slot) voting:
+    # base = filepos(anchor) - word(slot) must repeat >=2x over located
+    # procs.  A spec proc named in the table then picks its body among
+    # the decoded slots by signature score — slot order is NOT trusted
+    # (the shipped build remapped/merged modes).
+    segtab = {}
+    if mapf:
+        for mline in open(mapf[0], errors='replace'):
+            mm = re.match(r'\s*([0-9A-Fa-f]{5,6})H\s+[0-9A-Fa-f]{5,6}H\s+'
+                          r'[0-9A-Fa-f]{5,6}H\s+(\w+)', mline)
+            if mm:
+                segtab[mm.group(2).upper()] = int(mm.group(1), 16)
+    seg_of = {}
+    dwtabs = {}
+    spec_lsts = set()
+    for line in open(a.spec):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        lst0 = parse_spec_line(line)[0]
+        lp0 = lst0 if os.path.isabs(lst0) else os.path.join(
+            '/home/xor/inertia_player/examples/Tornado', lst0)
+        if lp0 in spec_lsts:
+            continue
+        spec_lsts.add(lp0)
+        for n0, v0 in _lst_segsym(lp0).items():
+            seg_of.setdefault(n0, v0)
+        for lbl, ents in _lst_dw_tables(lp0):
+            if lbl:
+                # same table name can be defined per module (ScanVertexList
+                # exists in CLOUDS/FEATURES/RWY_TAXI/TOWNS at different
+                # DATA offsets) — keep every variant; the signature score
+                # picks each proc's own decode
+                dwtabs.setdefault(lbl.upper(), []).append((lp0, ents))
+    proc_fp = {}
+    for (l2, p2), a2 in addrs.items():
+        if isinstance(a2, tuple):
+            proc_fp.setdefault(p2.upper(), []).append(
+                (a2[0] * 16 + a2[1]) - LOAD_FLAT + img)
+    sym_cache = {}
+
+    def _syms(path):
+        if path not in sym_cache:
+            sym_cache[path] = _lst_segsym(path)
+        return sym_cache[path]
+
+    table_fp = {}
+    seen_lp = set()
+    for line in open(a.spec):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        lst0 = parse_spec_line(line)[0]
+        lp0 = lst0 if os.path.isabs(lst0) else os.path.join(
+            '/home/xor/inertia_player/examples/Tornado', lst0)
+        if lp0 in seen_lp:
+            continue
+        seen_lp.add(lp0)
+        for lbl, pat, ioff, opos in _lst_table_calls(lp0):
+            if lbl not in dwtabs:
+                continue
+            hits = locate(exe, list(pat))
+            if not hits:
+                continue
+            # the operand is the table's offset inside the segment where
+            # the label lives IN ITS OWN MODULE — a global name->seg map
+            # collides across modules (LoadPanel is DATA in VGAPANEL but
+            # a same-named proc segment elsewhere)
+            for dlp, _e in dwtabs[lbl]:
+                seg_n = _syms(dlp).get(lbl, (None,))[0]
+                if seg_n == 'DATA':
+                    tbase = img           # DATA starts at the image
+                else:
+                    st = segtab.get(seg_n)
+                    if st is None:
+                        continue
+                    tbase = st + loadbias
+                for hit in hits:
+                    w = int.from_bytes(exe[img + hit + opos:
+                                           img + hit + opos + 2], 'little')
+                    tf = tbase + w
+                    if tf not in table_fp.setdefault(lbl, []):
+                        table_fp[lbl].append(tf)
+    def _table_words(tf, maxn):
+        """u16 run at a candidate table position: entries until a zero
+        slot or well past the listing count."""
+        words = []
+        for i in range(maxn):
+            w = int.from_bytes(exe[tf + 2 * i:tf + 2 * i + 2], 'little')
+            if w == 0:
+                break
+            words.append(w)
+        return words
+
+    def _rescue_named(missing, bodies, minrun):
+        """score each unlocated spec proc against the decoded slot
+        bodies; accept the best candidate when its own signature
+        confirms it (score>=0.75 or leading run>=minrun)."""
+        n = 0
+        for (lst, proc) in missing:
+            if addrs.get((lst, proc)) is not None:
+                continue          # earlier table already claimed it
+            lp = lst if os.path.isabs(lst) else os.path.join(
+                '/home/xor/inertia_player/examples/Tornado', lst)
+            full_pat, _k3, _s3 = parse_lst_pattern(
+                lp, proc, maxlen=256)
+            named = [(i, b) for i, b in enumerate(full_pat)
+                     if b is not None]
+            if not named:
+                continue
+            bsc, mrun, h_sc, h_run = -1.0, 0, None, None
+            for h in bodies:
+                run = 0
+                for ix, b in named:
+                    if exe[img + h + ix] != b:
+                        break
+                    run = ix + 1
+                good = sum(1 for i, b in named
+                           if exe[img + h + i] == b)
+                sc = good / len(named)
+                if sc > bsc:
+                    bsc, h_sc = sc, h
+                if run > mrun:
+                    mrun, h_run = run, h
+            if bsc >= 0.75:
+                bh, brun = h_sc, 0
+            elif mrun >= minrun:
+                bh, brun = h_run, mrun
+            else:
+                continue
+            flat = LOAD_FLAT + bh
+            seg = csmap.get(flat, flat // 16)
+            kind = seg_of.get(proc.upper(), (None, 0, 'near'))[2]
+            addrs[(lst, proc)] = (seg, flat - seg * 16,
+                                  kind if kind in ('near', 'far')
+                                  else 'near')
+            symoff[(lst, proc)] = {}
+            rescue_run[(lst, proc)] = brun
+            rescued.setdefault((lst, proc), (bh, bsc, brun))
+            n += 1
+        return n
+
+    rescued = {}
+    known_bases = set()
+    # pass 1: tables with located anchors — base from (anchor, slot)
+    # votes; a confirmed base then proves the code segment's placement
+    for lbl, variants in dwtabs.items():
+        for dlp, ents in variants:
+            ents_names = {nm for _t, nm in ents if nm}
+            missing = [(lst, proc) for (lst, proc), a2 in addrs.items()
+                       if a2 is None and proc.upper() in ents_names]
+            if not missing:
+                continue
+            for tf in table_fp.get(lbl, []):
+                words = _table_words(tf, 2 * len(ents) + 8)
+                if len(words) < 3:
+                    continue
+                votes = {}
+                for w in words:
+                    for nm in ents_names:
+                        for fp in proc_fp.get(nm, ()):
+                            b = fp - w
+                            if b > 0:
+                                votes[b] = votes.get(b, 0) + 1
+                top = sorted(votes.items(), key=lambda x: -x[1])[:2]
+                if not top or top[0][1] < 2 or \
+                        (len(top) > 1 and top[1][1] == top[0][1]):
+                    if os.environ.get('DIFF_DEBUG_DWTAB') and votes:
+                        print(f'DWTAB {lbl} @{tf:#x} bases='
+                              f'{sorted(votes.items(), key=lambda x: -x[1])[:4]}',
+                              file=sys.stderr)
+                    continue
+                sb = top[0][0]
+                known_bases.add(sb)   # >=2 anchor votes confirm it —
+                # valid even when this table's missing procs are absent
+                bodies = [w + sb - img for w in words
+                          if 0 <= w + sb - img < len(exe) - img]
+                _rescue_named(missing, bodies, 24)
+    # pass 2: anchorless tables (every entry is indirect-only) — reuse
+    # bases confirmed elsewhere; stricter run gate since the base is
+    # borrowed, not proven by this table's own anchors
+    if os.environ.get('DIFF_DEBUG_DWTAB'):
+        print(f'DWTAB known_bases={[hex(b) for b in known_bases]}',
+              file=sys.stderr)
+    for lbl, variants in dwtabs.items():
+        for dlp, ents in variants:
+            ents_names = {nm for _t, nm in ents if nm}
+            missing = [(lst, proc) for (lst, proc), a2 in addrs.items()
+                       if a2 is None and proc.upper() in ents_names]
+            if not missing:
+                continue
+            for tf in table_fp.get(lbl, []):
+                words = _table_words(tf, 2 * len(ents) + 8)
+                if len(words) < 3:
+                    continue
+                for sb in known_bases:
+                    bodies = [w + sb - img for w in words
+                              if 0 <= w + sb - img < len(exe) - img]
+                    if os.environ.get('DIFF_DEBUG_DWTAB') and \
+                            any('LOAD' in p.upper() for _l, p in missing):
+                        print(f'DWTAB2 {lbl} @{tf:#x} sb={sb:#x} '
+                              f'missing={[p for _l, p in missing][:6]}',
+                              file=sys.stderr)
+                    _rescue_named(missing, bodies, 32)
+    for (lst, proc), (h_p, sc, run) in sorted(rescued.items()):
+        print(f'{lst}:{proc}: locate accepted (dw-table {sc * 100:.0f}%'
+              f' run={run} at {h_p + img:#x})', file=sys.stderr)
 
     # operand-value disambiguation: parallel module variants share one
     # wildcarded signature (AIRCRAFT/HELICOPS GroundCheck differ only in
