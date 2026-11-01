@@ -147,3 +147,65 @@ cycleok:
     airtgtptr = di;
     return m2c::RETN_(0, _state);
 }
+
+/* UpdateTgtWP — when the floating waypoint is selected (WPPtr = FloatWP)
+ * refresh WP range/bearing data and release the track lock.
+ * kill: assume all */
+bool updatetgtwp(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    CMP(wpptr, m2c::near_offset_external(floatwp));
+    if (!ZF) return m2c::RETF_(0, _state);     /* jne ExitUpdateWP */
+    CALL(updatewpdata, 0);
+    tracklocked = 0;
+    return m2c::RETF_(0, _state);
+}
+
+/* CancelTgtWP — always invalidate the floating waypoint; when it is the
+ * selected target also restore OldWPPtr, refresh WP data, release lock.
+ * This is the only routine which may cancel the floating waypoint.
+ * kill: assume all */
+bool canceltgtwp(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    AND(floatwp.wp_attr, ~0x80);               /* NOT WP_VALID */
+    CMP(wpptr, m2c::near_offset_external(floatwp));
+    if ((dw)wpptr != (dw)(m2c::near_offset_external(floatwp)))
+        return m2c::RETF_(0, _state);          /* jne ExitCancelWP */
+    ax = oldwpptr;
+    wpptr = ax;
+    CALL(updatewpdata, 0);
+    tracklocked = 0;
+    return m2c::RETF_(0, _state);
+}
+
+/* UpdateRadar — radar mode switching: NUL when SSF_Radar damaged or
+ * KF_RadarOff pressed; AIR on KF_AirRadar (SelectRadarMFD); GND on
+ * KF_GndRadar only for non-ADV variants (SelectRadarMFD).
+ * kill: assume all */
+bool updateradar(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    TEST(ssf_radar, 1);                        /* radar damaged? */
+    if ((ssf_radar & 1)) goto nul;
+    al = *((&kf_radaroff) + k_status);
+    TEST(al, al);                              /* switch radar off? */
+    if ((al & al) != 0) goto nul;
+    al = *((&kf_airradar) + k_status);
+    TEST(al, al);                              /* select air radar? */
+    if ((al & al) != 0) {
+        radarmode = 4;                         /* AIR_RADAR */
+        CALLF(selectradarmfd, 0);
+        return m2c::RETN_(0, _state);
+    }
+    CMP(tornadotype, 2);                       /* ADV variant? */
+    if ((dw)tornadotype == 2)
+        return m2c::RETN_(0, _state);          /* RadarOk */
+    al = *((&kf_gndradar) + k_status);
+    TEST(al, al);                              /* select ground radar? */
+    if ((al & al) == 0)
+        return m2c::RETN_(0, _state);          /* RadarOk */
+    radarmode = 2;                             /* GND_RADAR */
+    CALLF(selectradarmfd, 0);
+    return m2c::RETN_(0, _state);
+nul:
+    radarmode = 0;                             /* NUL_RADAR */
+    return m2c::RETN_(0, _state);
+}
