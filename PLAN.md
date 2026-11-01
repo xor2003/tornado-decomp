@@ -60,3 +60,32 @@
 - Остаток после исключения stub/нелинкованных модулей: ~28 уникальных,
   все вне линка (DIALOG, MOUSE(старая), VGATOOLS, EGAPHOTO, VGAPHOTO)
   + WriteSprite — лечится @@ fallback.
+
+## Полный sweep diffspec.txt (2461 спека) — итог
+
+`pass=1406 diff=50 xdiff=1681 timeout=1965 skip=1367 portok=129
+porthang=166 noresult=0 dispmiss=37 crash=1 memdiff=22`
+
+xdiff-классы: aborteequiv=1033 ctx=295 array=226 hwio=47 ivt=28
+ptrlayout=25 variant=20 rtc=7 — ожидаемые расхождения окружения.
+
+diff=50 триаж: большинство — процедуры на неинициализированных данных
+(SortAlt$ jmp AltSwitch[bx] по мусорному AltMode; VSetViewport si→не-
+засеянный буфер; CurrentDroneOk pin-указатели по другому layout'у;
+JOYSTICK — железо). Валидные кандидаты под посев контекста:
+CheckRadarTgt (wr=RadarFlag 01 vs 00), InitMovingMap (rng3 ff vs 17),
+WEAPONS-кластер, EXT_CircleCRT, DrawNode, ClearNavigPanel.
+
+## Чистый C (decomp_*.cpp) — прогресс
+
+- decomp_random.cpp: randx/fastrandx/reseed — pass=10 diff=0 (58d522f)
+- decomp_mathfunc.cpp: calcdeltatime/calcdeltaxy/sqrt/sqrt32 —
+  pass=20 diff=0 (858280a)
+- decomp_trig.cpp: tangent/fastarctan/arctan/fastarctan2/arctan2/
+  fastarcsin/fastarccos/arctan360 — pass=40 diff=0 (1e1050b)
+- decomp_misclib.cpp: calcbitfieldval/testbitstatus — pass=10 diff=0
+  (1eff6c3)
+
+Паттерн: strong symbol поверх weak lifted, X86_REGREF, реальные
+flag-макросы для результата и последнего flag-op'а, RETF_(0) в конце,
+CALLF для proc→proc вызовов.
