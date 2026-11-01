@@ -1660,10 +1660,10 @@ TORNADO/WEAPONS.LST:InitWeapons:pin=si:wr=ChaffCntr:wr=FlareCntr:wr=ECMFitted:cl
 TORNADO/WEAPONS.LST:CalcStoresWt:wr=StoresWt
 TORNADO/WEAPONS.LST:UpdateWeapons:pin=si:idx=bx:wr=ShellKillZone:class=ctx
 TORNADO/WEAPONS.LST:UpdateGPB:class=ctx
-TORNADO/WEAPONS.LST:UpdateRET
+TORNADO/WEAPONS.LST:UpdateRET:class=ctx
 TORNADO/WEAPONS.LST:UpdateLGB:class=ctx
 TORNADO/WEAPONS.LST:UpdateBL755:class=ctx
-TORNADO/WEAPONS.LST:UpdateJP233
+TORNADO/WEAPONS.LST:UpdateJP233:class=ctx
 TORNADO/WEAPONS.LST:UpdateAlarm:idx=bx:wr=WpnCamBrg:wr=WpnCamBrgFine:class=variant
 TORNADO/WEAPONS.LST:UpdateCannon:class=ctx
 TORNADO/WEAPONS.LST:UpdateMissile:idx=bx:class=array
@@ -1673,7 +1673,7 @@ TORNADO/WEAPONS.LST:LGBGuidance:idx=bx:class=ctx
 TORNADO/WEAPONS.LST:ShellBallistics:pin=si:idx=bx:class=ctx
 TORNADO/WEAPONS.LST:CheckAlarmTimer:idx=bx:class=ctx
 TORNADO/WEAPONS.LST:AlarmGuidance:class=ctx
-TORNADO/WEAPONS.LST:AlarmGuideAbove:idx=bx
+TORNADO/WEAPONS.LST:AlarmGuideAbove:idx=bx:class=ctx
 TORNADO/WEAPONS.LST:AlarmGuideBelow:class=ctx
 TORNADO/WEAPONS.LST:AlarmMovement:idx=bx:class=ctx
 TORNADO/WEAPONS.LST:AlarmRadarScan:pin=si:idx=bx,bp:wr=RadarFlag:class=array
@@ -1716,10 +1716,10 @@ TORNADO/WEAPONS.lst:InitWeapons:pin=si:wr=ChaffCntr:wr=FlareCntr:wr=ECMFitted:cl
 TORNADO/WEAPONS.lst:CalcStoresWt:wr=StoresWt
 TORNADO/WEAPONS.lst:UpdateWeapons:pin=si:idx=bx:wr=ShellKillZone:class=ctx
 TORNADO/WEAPONS.lst:UpdateGPB:class=ctx
-TORNADO/WEAPONS.lst:UpdateRET
+TORNADO/WEAPONS.lst:UpdateRET:class=ctx
 TORNADO/WEAPONS.lst:UpdateLGB:class=ctx
 TORNADO/WEAPONS.lst:UpdateBL755:class=ctx
-TORNADO/WEAPONS.lst:UpdateJP233
+TORNADO/WEAPONS.lst:UpdateJP233:class=ctx
 TORNADO/WEAPONS.lst:UpdateAlarm:idx=bx:wr=WpnCamBrg:wr=WpnCamBrgFine:class=variant
 TORNADO/WEAPONS.lst:UpdateCannon:class=ctx
 TORNADO/WEAPONS.lst:UpdateMissile:idx=bx:class=array
@@ -1729,7 +1729,7 @@ TORNADO/WEAPONS.lst:LGBGuidance:idx=bx:class=ctx
 TORNADO/WEAPONS.lst:ShellBallistics:pin=si:idx=bx:class=ctx
 TORNADO/WEAPONS.lst:CheckAlarmTimer:idx=bx:class=ctx
 TORNADO/WEAPONS.lst:AlarmGuidance:class=ctx
-TORNADO/WEAPONS.lst:AlarmGuideAbove:idx=bx
+TORNADO/WEAPONS.lst:AlarmGuideAbove:idx=bx:class=ctx
 TORNADO/WEAPONS.lst:AlarmGuideBelow:class=ctx
 TORNADO/WEAPONS.lst:AlarmMovement:idx=bx:class=ctx
 TORNADO/WEAPONS.lst:AlarmRadarScan:pin=si:idx=bx,bp:wr=RadarFlag:class=array
