@@ -209,3 +209,52 @@ nul:
     radarmode = 0;                             /* NUL_RADAR */
     return m2c::RETN_(0, _state);
 }
+
+/* AircraftRadar — enter the mobile's viewpoint into the RWR threat
+ * buffer (range/bearing via CalcRngBrgVP_VP, angular difference via
+ * CalcAngDiff, then the threat record + index/flag updates).
+ * pass: si -> MOBILE <> + VIEWPOINT <>;  kill: assume all */
+bool aircraftradar(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    CMP(numrwrthreats, 16);                    /* NUM_RWR_THREATS */
+    if ((dw)numrwrthreats == 16)
+        return m2c::RETN_(0, _state);          /* ExitACRadar */
+
+    /* calc range and bearing */
+    PUSH(si);
+    di = si;
+    si = m2c::near_offset_external(m_view);
+    ADD(di, 6);                                /* MOB_REC_SIZE */
+    CALLF(calcrngbrgvp_vp, 0);
+    POP(si);
+
+    /* enter aircraft into RWR threat buffer */
+    bp = rwrthreatindex;
+    m2c::setdata(&(*((dw*)((db*)&((rwr*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp))->rwr_threat))), m2c::getdata(6)); /* THREAT_AC */
+    m2c::setdata(&(*((dw*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp+rwr_rng_lo))), m2c::getdata(ax));
+    m2c::setdata(&(*((dw*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp+rwr_rng_hi))), m2c::getdata(dx));
+
+    /* calc angular difference */
+    ax = hdg;
+    dx = bx;
+    CALLF(calcangdiff, 0);
+    XOR(ax, dx);
+    SUB(ax, dx);
+    AND(ax, 511);
+    m2c::setdata(&(*((dw*)((db*)&((rwr*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp))->rwr_dir))), m2c::getdata(ax));
+
+    ax = m2c::getdata(*((dw*)((db*)&((viewpoint*)raddr(ds, si))->vp_xsec)));
+    m2c::setdata(&(*((dw*)((db*)&((rwr*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp))->rwr_xsec))), m2c::getdata(ax));
+    ax = m2c::getdata(*((dw*)((db*)&((viewpoint*)raddr(ds, si))->vp_ysec)));
+    m2c::setdata(&(*((dw*)((db*)&((rwr*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp))->rwr_ysec))), m2c::getdata(ax));
+    ax = m2c::getdata(*((dw*)((db*)&((viewpoint*)raddr(ds, si))->vp_xft)));
+    m2c::setdata(&(*((dw*)((db*)&((rwr*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp))->rwr_xft))), m2c::getdata(ax));
+    ax = m2c::getdata(*((dw*)((db*)&((viewpoint*)raddr(ds, si))->vp_yft)));
+    m2c::setdata(&(*((dw*)((db*)&((rwr*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp))->rwr_yft))), m2c::getdata(ax));
+    m2c::setdata(&(*((dw*)((db*)&((rwr*)raddr(ss, m2c::near_offset_external(rwrthreats)+bp))->rwr_ptr))), m2c::getdata(-1));
+
+    INC(numrwrthreats);
+    ADD(rwrthreatindex, sizeof(rwr));          /* RWR_REC_SIZE */
+    OR(rwrthreatflags, 0x2);                   /* RWR_AC */
+    return m2c::RETN_(0, _state);
+}
