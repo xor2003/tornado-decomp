@@ -21,6 +21,11 @@ usage: tools/diff_procs.py <specfile> [--probe ./test_probe] [--exe FLIGHT.EXE]
     skip=<regs>    comma list of regs excluded from compare (known table-pointer
                    outputs whose base differs between linked builds)
     vec<N>=<a,c,d,b,s,i,p>   hex words overriding input vector N
+    pin=<regs>     struct-pointer args: scratch array seeded on both sides
+    idx=<regs>     small integer index seeds (reg = vector*2)
+    pv=<sym>=<v0,v1,...>   per-vector hex values poked into a global
+    wr=<sym>[+off][,len]   post-call memory range compared between sides
+    class=<tag>    expected-diff class (ctx/codeptr/ptrlayout)
     manual         proc needs setup this harness can't provide; count as skip
 """
 import argparse, bisect, functools, glob, hashlib, os, re, subprocess, \
@@ -814,11 +819,14 @@ def parse_spec_line(line):
         elif o.startswith('idx='):
             idx = o[4:].split(',')
         elif o.startswith('pv='):
-            # pv=sym:v0,v1,... — per-vector poke values (bounded seeds
-            # like grid sizes that must stay inside a dispatch table)
+            # pv=sym=v0,v1,... — per-vector poke values (bounded seeds
+            # like grid sizes that must stay inside a dispatch table).
+            # Single ':'-field: the line is split on ':' so the value
+            # list must be '='-separated, not ':'-separated.
             body = o[3:]
-            sn, sv = body.rsplit(':', 1) if ':' in body else (body, '0')
-            pvlist.append((sn, [int(t, 16) for t in sv.split(',')]))
+            sn, _, sv = body.partition('=')
+            pvlist.append((sn, [int(t, 16) for t in sv.split(',')]
+                            if sv else [0]))
         elif o.startswith('wr='):
             # wr=Sym[+hexoff][,hexlen] — post-call memory range to compare
             body = o[3:]
@@ -912,6 +920,20 @@ def main():
     rescue_run = {}
     csmap = real_cs_map(exe)
     calltgts = near_call_targets(exe) | set(csmap)
+    # confirmed code-seg bases (runtime flats): every far-call target's cs
+    # is one; dispatch-table rescues add more below.  A located proc that
+    # is never a far-call target must still be entered at its real code
+    # segment — near-indirect dispatch (`jmp Table[si]`) is cs-relative,
+    # and flat//16 anchors land in unrelated code.  Module code is
+    # contiguous, so the newest confirmed base at-or-below a flat owns it.
+    seg_bases = {s * 16 for s in csmap.values()}
+
+    def seg_for(flat):
+        cs = csmap.get(flat)
+        if cs is not None:
+            return cs
+        c = [b for b in seg_bases if b <= flat < b + 0x10000]
+        return (max(c) >> 4) if c else flat // 16
     # linker map: public symbol -> linked seg:off. Map segs are pre-load;
     # real flat = seg*16 + off + LOADBIAS where LOADBIAS is a per-image
     # constant resolved below from unambiguous signature hits
@@ -1165,7 +1187,7 @@ def main():
         if len(hits) == 1:
             h = hits[0]
             flat = LOAD_FLAT + h
-            seg = csmap.get(flat, flat // 16)
+            seg = seg_for(flat)
             addrs[(lst, proc)] = (seg, flat - seg * 16, kind)
             # operand extraction is only sound inside the verified head:
             # a rescued body's revised tail puts unrelated instruction
@@ -1355,7 +1377,7 @@ def main():
             else:
                 continue
             flat = LOAD_FLAT + bh
-            seg = csmap.get(flat, flat // 16)
+            seg = seg_for(flat)
             kind = seg_of.get(proc.upper(), (None, 0, 'near'))[2]
             addrs[(lst, proc)] = (seg, flat - seg * 16,
                                   kind if kind in ('near', 'far')
@@ -1405,6 +1427,7 @@ def main():
                     continue
                 sb = top[0][0]
                 known_bases.add(sb)   # >=2 anchor votes confirm it —
+                seg_bases.add(sb - img + LOAD_FLAT)
                 # valid even when this table's missing procs are absent
                 bodies = [w + sb - img for w in words
                           if 0 <= w + sb - img < len(exe) - img]
@@ -1551,7 +1574,7 @@ def main():
                       f'{h + img:#x} (score {scored[-1][0]})',
                       file=sys.stderr)
                 flat = LOAD_FLAT + h
-                seg = csmap.get(flat, flat // 16)
+                seg = seg_for(flat)
                 addrs[(lst, proc)] = (seg, flat - seg * 16,
                                       addrs[(lst, proc)][2])
                 symoff[(lst, proc)] = {
@@ -1559,6 +1582,113 @@ def main():
                                           'little'),
                         im, mb, ir, oz, ca)
                     for n, (o, s, im, mb, ir, oz, ca) in syms.items()}
+
+    # near-dispatch anchor solver: a proc entered via `jmp Tbl[reg]`
+    # runs at the segment the linker assigned — the shipped table cells
+    # hold final near offsets.  Pairing shipped cell[k] with the lst's
+    # stored label offset L_e[k] pins cs*16 = flat - L_p - tab[k] +
+    # L_e[k] (L_p = proc's lst offset).  Without this, `seg_for`'s
+    # largest-base heuristic can pick a coincidental 9a/ea byte-decoded
+    # "segment" sitting between the real module base and the proc —
+    # e.g. RotateView flat 0x6180d: heuristic 0x6174, real 0x5fda.
+    _lst_procs_cache = {}
+    _decl_cache = {}
+    def _tbl_seg_solve(lst, proc, flat):
+        lp = _lst_procs_cache.get(lst)
+        if lp is None:
+            lp = _lst_procs(lst)
+            _lst_procs_cache[lst] = lp
+        ent = lp.get(proc.lower())
+        if not ent:
+            return None
+        _kind, plines = ent
+        L_p = jm = None
+        for bl in plines:
+            mm = re.match(r'^\s*([0-9A-Fa-f]{4,6})\s', bl)
+            if mm and L_p is None:
+                L_p = int(mm.group(1), 16)
+            mt = re.match(
+                r'^\s*([0-9A-Fa-f]{4,6})\s+FF\s+[9A][0-7]'
+                r'\s+[0-9A-Fa-f]{4}\s+R\s+(?:jmp|call)\s+'
+                r'([A-Za-z_][\w.]*)\s*\[', bl, re.I)
+            if mt:
+                jm = mt
+                break
+        if L_p is None or jm is None:
+            return None
+        L_j, tbl = int(jm.group(1), 16), jm.group(2)
+        # shipped disp16 = instruction bytes 2-3 at flat + (L_j - L_p)
+        fo = flat + (L_j - L_p) + HDRPARAS * 16 - LOAD_FLAT + 2
+        if not (0 <= fo + 2 <= len(exe)):
+            return None
+        disp = int.from_bytes(exe[fo:fo + 2], 'little')
+        # table decl in the same listing: `<Tbl> DW <l0>` followed by
+        # continuation `DW <lk>` rows — the stored word column is each
+        # entry's pre-link (lst-segment) offset
+        decls = _decl_cache.get(lst)
+        if decls is None:
+            decls = {}
+            lines = open(lst, errors='replace').read().splitlines()
+            cur = None
+            for ln in lines:
+                mh = re.match(r'^\s*([0-9A-Fa-f]{4,6})\s+'
+                              r'([0-9A-Fa-f]{4})(?:\s+R)?\s+'
+                              r'([A-Za-z_][\w.]*)?\s*DW\b', ln)
+                if mh:
+                    off, val, nm = int(mh.group(1), 16), \
+                        int(mh.group(2), 16), mh.group(3)
+                    if nm and cur != nm:
+                        decls.setdefault(nm, [])
+                        cur = nm
+                    if cur:
+                        decls[cur].append((off, val))
+                    continue
+                if not re.match(r'^\s*$|^\s*;', ln):
+                    cur = None
+            _decl_cache[lst] = decls
+        stored = decls.get(tbl)
+        if not stored:
+            return None
+        # disp is a DS-relative offset (DS base = image base para) —
+        # its file position is disp + header size, no LOAD_FLAT bias
+        tfo = disp + HDRPARAS * 16
+        votes = []
+        for k, (_off, lv) in enumerate(stored):
+            fo_k = tfo + 2 * k
+            if not (0 <= fo_k + 2 <= len(exe)):
+                break
+            tv = int.from_bytes(exe[fo_k:fo_k + 2], 'little')
+            if not tv or not lv:
+                continue
+            cs16 = flat - L_p - tv + lv
+            if cs16 % 16 == 0 and 0 < cs16 // 16 < 0x10000:
+                votes.append(cs16 // 16)
+        if len(votes) < 2:
+            return None
+        seg, _cnt = max(((v, votes.count(v)) for v in set(votes)),
+                        key=lambda t: t[1])
+        return seg if votes.count(seg) * 2 > len(votes) else None
+
+    # re-anchor pass: procs located before the dispatch-table bases were
+    # known may still sit on flat//16 — recompute every near anchor now
+    # that seg_bases is complete
+    for key, ad in list(addrs.items()):
+        if isinstance(ad, tuple) and ad[2] == 'near':
+            flat = ad[0] * 16 + ad[1]
+            seg = seg_for(flat)
+            # authoritative for table-dispatched procs: solve the real
+            # cs from the shipped cells (a false 9a/ea base can beat the
+            # real module base in the largest-below heuristic)
+            lst_p = key[0] if os.path.isabs(key[0]) else os.path.join(
+                '/home/xor/inertia_player/examples/Tornado', key[0])
+            ts = _tbl_seg_solve(lst_p, key[1], flat)
+            if ts is not None:
+                seg = ts
+            if seg != ad[0]:
+                if os.environ.get('DIFF_DEBUG_ADDRS'):
+                    print(f'ADDR reanchor {key} {ad[0]:#x}:{ad[1]:#x} -> '
+                          f'{seg:#x}:{flat - seg * 16:#x}', file=sys.stderr)
+                addrs[key] = (seg, flat - seg * 16, ad[2])
 
     # .lst/.LST pairs and alias spec lines often resolve to the same
     # shipped address — run the vectors once, mark the rest as 'dup'.
@@ -1806,12 +1936,32 @@ def main():
             lp_t = lst if os.path.isabs(lst) else os.path.join(
                 '/home/xor/inertia_player/examples/Tornado', lst)
             codecells = _lst_codecells(lp_t) | _lst_dataptrs(lp_t)
+            # protected disp spans for code-ptr/data-ptr tables — a
+            # ptr-target seed window must never bleed into them even
+            # when the anchor itself is legal.  Tables are LABEL WORD
+            # runs: a span reaches at least to the next table's disp
+            # (contiguous dispatch arrays share a region)
+            _ccd = sorted({(so.get(_c) or gsyms_l.get(_c))[1]
+                           for _c in codecells
+                           if so.get(_c) or gsyms_l.get(_c)})
+            cc_ranges = []
+            for _c in codecells:
+                _h = so.get(_c) or gsyms_l.get(_c)
+                if not _h:
+                    continue
+                _d0 = _h[1]
+                _d1 = _d0 + declsz.get(_c, (0, 2))[1]
+                _nx = next((_x for _x in _ccd if _x > _d0), None)
+                if _nx is not None:
+                    _d1 = max(_d1, _nx)
+                cc_ranges.append((_d0, _d1))
             # ptr-redirection candidates indexed once per proc: sorted
             # (lower, orig) pairs so each *ptr sym's same-prefix target is
             # a bisect probe, not a full scan of the union
             cidx = sorted(
                 (t.lower(), t) for t in names
                 if not CODEPTRRE.search(t) and
+                t.lower() not in codecells and
                 t.lower().lstrip('_') not in known_labels and
                 (port_syms is None or t.lower() in port_syms))
 
@@ -1959,6 +2109,15 @@ def main():
                               f'fname={fname} osz={osz} cadd={cadd} '
                               f'codecell={n.lower() in codecells} '
                               f'inportsyms={n.lower().split(".")[0] in (port_syms or ())}')
+                    _sd = os.environ.get('DIFF_DEBUG_SEED')
+                    if _sd and s_kind in ('ds', 'ss') and not is_imm:
+                        _sr = _sd.split('-')
+                        if len(_sr) != 2 or \
+                                int(_sr[0], 16) <= disp <= int(_sr[1], 16):
+                            print(f'SEED {proc} {n} disp={disp:#x} '
+                                  f'codecell={n.lower() in codecells} '
+                                  f'codeptr={bool(CODEPTRRE.search(n))}',
+                                  file=sys.stderr)
                     if s_kind not in ('ds', 'ss') or is_imm:
                         continue        # immediate bases left alone; named
                                         # ss-syms (HillLayerN[bp] etc.) are
@@ -2003,7 +2162,7 @@ def main():
                             # (record start: MOBILE < VIEW < DATA) so the
                             # seeded window covers every walked field
                             recs = [itynames[l] for l in itynames
-                                    if l != ln and
+                                    if l != ln and l not in codecells and
                                     (port_syms is None or l in port_syms)
                                     and l in gsyms_l]
                             if recs:
@@ -2078,6 +2237,9 @@ def main():
                             for k in range(1, 8):
                                 if 2*k + 2 > dend:
                                     break   # scalar target — don't bleed
+                                if any(_a <= tdisp + 2*k < _b
+                                       for _a, _b in cc_ranges):
+                                    continue   # code-ptr table cell
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
                                 opush((oseg((so.get(tgt) or gsyms.get(tgt)
                                              or gsyms_l[tgt.lower()])[0]),
@@ -2093,7 +2255,14 @@ def main():
                             # side see identical bytes
                             tdisp = (so.get(tgt) or gsyms.get(tgt)
                                      or gsyms_l[tgt.lower()])[1]
+                            if os.environ.get('DIFF_DEBUG_PROC') == proc:
+                                print(f'DBG-RECW {proc} ptr={n} '
+                                      f'tgt={tgt} tdisp={tdisp:#x}',
+                                      file=sys.stderr)
                             for k in range(0x40):
+                                if any(_a <= tdisp + 2*k < _b
+                                       for _a, _b in cc_ranges):
+                                    continue   # code-ptr table cell
                                 rv = EDGE[(vi + i + k) % len(EDGE)]
                                 winop.append((oseg((so.get(tgt) or
                                                     gsyms.get(tgt) or
@@ -2188,6 +2357,9 @@ def main():
                             for k in range(1, 16):
                                 if pdelta + esz * (k + 1) > dend:
                                     break   # past the decl — other cell
+                                if any(_a <= disp + esz * k < _b
+                                       for _a, _b in cc_ranges):
+                                    continue   # code-ptr table cell
                                 rv2 = EDGE[(vi + i + k) % len(EDGE)]
                                 if esz == 1:
                                     rv2 &= 0xff
@@ -2228,6 +2400,9 @@ def main():
                 if os.environ.get('DIFF_DEBUG_OPADDR'):
                     _oa = int(os.environ['DIFF_DEBUG_OPADDR'], 16)
                     _lo, _hi = _oa - 1, _oa + 1
+                if os.environ.get('DIFF_DEBUG_OPSPAN'):
+                    _lo, _hi = [int(x, 16) for x in
+                                os.environ['DIFF_DEBUG_OPSPAN'].split('-')]
                 print(f'FINALOP {proc} v{vi} '
                       f'{[(i, o) for i, o in enumerate(winop + op) if o[0]==DS_SEG and _lo<=o[1]<=_hi]}',
                       file=sys.stderr)
@@ -2514,6 +2689,11 @@ def main():
                     ncrash += 1
                 else:
                     nto += 1
+                continue
+            if not (isinstance(ro, tuple) and isinstance(rp, tuple)):
+                # uncomparable residue on one side (e.g. NOORIG port rows)
+                print(f'{lst}:{proc} v{vi}: original={ro} port={rp}')
+                nto += 1
                 continue
             # compare functional fields: ax..bp, flags; skip sp/ss/ds/es
             # (harness-specific segs). Flag masks: IF=0x200 (kvikdos sets it,
