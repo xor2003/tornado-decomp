@@ -548,3 +548,186 @@ setflapval:
 flapsexit:
     return m2c::RETN_(0, _state);
 }
+
+/* FRACADJ ax / dx / bp — shared fixed-point product rounding */
+#define FRACADJ_AX() do {                                           \
+        SHL(ax, 1); RCL(dx, 1);                                     \
+        SHL(ax, 1); ADC(dx, 0);                                     \
+        ax = dx;                                                    \
+    } while (0)
+#define FRACADJ_DX() do {                                           \
+        SHL(ax, 1); RCL(dx, 1);                                     \
+        SHL(ax, 1); ADC(dx, 0);                                     \
+    } while (0)
+#define FRACADJ_BP() do {                                           \
+        SHL(ax, 1); RCL(dx, 1);                                     \
+        SHL(ax, 1); ADC(dx, 0);                                     \
+        bp = dx;                                                    \
+    } while (0)
+
+/* ABSV ax — ax = abs(ax), dx = sign(ax): cwd / xor ax,dx / sub ax,dx */
+#define ABSV_AX() do {                                              \
+        CWD; XOR(ax, dx); SUB(ax, dx);                              \
+    } while (0)
+
+/* SAR32x7 — sar dx,1 / rcr ax,1 x7 (signed 32-bit >> 7) */
+#define SAR32X7() do {                                              \
+        SAR(dx, 1); RCR(ax, 1); SAR(dx, 1); RCR(ax, 1);             \
+        SAR(dx, 1); RCR(ax, 1); SAR(dx, 1); RCR(ax, 1);             \
+        SAR(dx, 1); RCR(ax, 1); SAR(dx, 1); RCR(ax, 1);             \
+        SAR(dx, 1); RCR(ax, 1);                                     \
+    } while (0)
+
+/* CrossWinds — update crosswinds.
+ * pass/ret: nothing.  kill: assume all */
+bool crosswinds(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    CMP(xwindvmax, 0);                          /* crosswinds enabled? */
+    if ((dw)xwindvmax == (dw)0) goto exitwinds;
+    /* attenuate wind with aircraft speed (cancels wind effect for
+     * auto-pilot) — start fade at 150kts, fully faded by 225kts */
+    ax = vtas;
+    CMP(ax, 2048);                              /* UBOUND ax,2048,3071 */
+    if ((dw)ax < (dw)2048) ax = 2048;
+    else if ((dw)ax > (dw)3071) ax = 3071;
+    SUB(ax, 2048);
+    dx = 1023;
+    SUB(dx, ax);
+    cl = 5;
+    SHL(dx, cl);
+    xwindfade = dx;
+    if (dx != 0) goto faded;
+    /* fully faded, clear variables */
+    XOR(ax, ax);
+    xwindveff = ax;
+    xwinddxft = ax;
+    xwinddxfine = ax;
+    xwinddyft = ax;
+    xwinddyfine = ax;
+    goto exitwinds;
+faded:
+    /* change wind direction */
+    ax = xwinddirtimer;
+    SUB(ax, lastframe);
+    if (!CF) goto nochgdir;
+    /* calc random number -2 .. 2 */
+    CALLF(randx, 0);
+    SHL(ax, 1);                                 /* ah =  0 .. 1 */
+    SHL(ax, 1);                                 /* ah =  0 .. 3 */
+    SHL(al, 1);
+    ADC(ah, 0);                                 /* ah =  0 .. 4 */
+    SUB(ah, 2);                                 /* ah = -2 .. 2 */
+    al = ah;
+    CBW;
+    ADD(xwinddir, ax);
+    AND(xwinddir, 511);
+    ax = xwind_dir_int;
+nochgdir:
+    xwinddirtimer = ax;
+    /* change windspeed — check if reached aiming windspeed */
+    ax = xwindvtas;
+    CMP(ax, xwindvaim);
+    if ((dw)ax != (dw)xwindvaim) goto contwindspeed;
+    /* calc new aiming windspeed:
+     * XWindVaim = max(XWindVmax * random(0 .. 1), XWindVmax / 16) */
+    CALLF(randx, 0);
+    XCHG(al, ah);
+    SHR(ax, 1);                                 /* 0 .. 32767 */
+    bp = xwindvmax;
+    IMUL1_2(bp);
+    FRACADJ_AX();
+    SHR(bp, 1); SHR(bp, 1); SHR(bp, 1); SHR(bp, 1);     /* /16 */
+    CMP(ax, bp);
+    if ((dw)ax < (dw)bp) ax = bp;
+    xwindvaim = ax;
+    /* calc new gust acceleration:
+     * XWindGust = max(XWindVmax / 4 * random(0 .. 1), XWindVmax / 16) */
+    CALLF(randx, 0);
+    XCHG(al, ah);
+    SHR(ax, 1);                                 /* 0 .. 32767 */
+    bp = xwindvmax;
+    SHR(bp, 1); SHR(bp, 1);                     /* /4 */
+    IMUL1_2(bp);
+    FRACADJ_AX();
+    SHR(bp, 1); SHR(bp, 1);                     /* /4 */
+    CMP(ax, bp);
+    if ((dw)ax < (dw)bp) ax = bp;
+    xwindgust = ax;
+contwindspeed:
+    /* calc new windspeed */
+    ax = xwindgust;
+    dx = deltatime;
+    IMUL1_2(dx);
+    FRACADJ_BP();
+    if (bp != 0) goto gustok;
+    INC(bp);
+gustok:
+    ax = xwindvaim;
+    SUB(ax, xwindvtas);
+    ABSV_AX();
+    CMP(ax, bp);                                /* error < change? */
+    if ((dw)ax < (dw)bp) bp = ax;               /* yes -> change = error */
+    XOR(bp, dx);
+    SUB(bp, dx);
+    ADD(xwindvtas, bp);
+    /* fade windspeed */
+    ax = xwindvtas;
+    dx = xwindfade;
+    IMUL1_2(dx);
+    FRACADJ_DX();
+    xwindvfix = dx;
+    /* calc effective vtas:
+     * XWindVeff = max(cos((hdg - XWindDir) and 511), 0)
+     *             * cos(pitch) * XWindVfix */
+    bx = hdg;
+    SUB(bx, xwinddir);
+    AND(bx, 511);
+    AND(bx, 0x001ff); SHL(bx, 1);               /* COSINE ax,bx */
+    ax = *(dw*)(((db*)&costable) + bx);
+    TEST(ax, ax);
+    if ((short)(ax & ax) < 0) XOR(ax, ax);
+    dx = m_cosp;
+    IMUL1_2(dx);
+    FRACADJ_DX();
+    ax = xwindvfix;
+    IMUL1_2(dx);
+    FRACADJ_DX();
+    xwindveff = dx;
+    /* calc delta xft and delta yft (wrt windspeed and direction):
+     * sin(wind dir + 180), cos(wind dir + 180) — SINCOS si,di,bx */
+    bx = xwinddir;
+    ADD(bx, 256);
+    AND(bx, 511);
+    AND(bx, 0x001ff); SHL(bx, 1);
+    si = *(dw*)(((db*)&sintable) + bx);
+    di = *(dw*)(((db*)&costable) + bx);
+    /* scale vtas by 32 to retain resolution (vtas ~1023 max, 75kts) */
+    bp = xwindvfix;
+    cl = 5;
+    SHL(bp, cl);
+    /* delta xft = sin(dir+180) * XWindVfix * DeltaTime */
+    ax = bp;
+    IMUL1_2(si);
+    FRACADJ_DX();
+    ax = deltatime;
+    IMUL1_2(dx);
+    SAR32X7();
+    xwinddxft = dx;
+    xwinddxfine = ax;
+    /* delta yft = cos(dir+180) * XWindVfix * DeltaTime */
+    ax = bp;
+    IMUL1_2(di);
+    FRACADJ_DX();
+    ax = deltatime;
+    IMUL1_2(dx);
+    SAR32X7();
+    xwinddyft = dx;
+    xwinddyfine = ax;
+exitwinds:
+    return m2c::RETN_(0, _state);
+}
+#undef FRACADJ_AX
+#undef FRACADJ_DX
+#undef FRACADJ_BP
+#undef ABSV_AX
+#undef SAR32X7
