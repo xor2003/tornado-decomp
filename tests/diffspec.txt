@@ -1071,11 +1071,11 @@ TORNADO/INITGAME.lst:InitGame:pin=si:idx=bx,bp:wr=WayTotal:class=array
 TORNADO/INTERCPT.LST:CalcIntercept:idx=si,bx:wr=UnitVctrTgtZ:wr=UnitVctrTgtX:wr=UnitVctrTgtY
 TORNADO/INTERCPT.lst:CalcIntercept:idx=si,bx:wr=UnitVctrTgtZ:wr=UnitVctrTgtX:wr=UnitVctrTgtY
 TORNADO/JETTISON.LST:JetExtTanks:wr=Jettison
-TORNADO/JETTISON.LST:JetExtStores:wr=Jettison
+TORNADO/JETTISON.LST:JetExtStores:wr=Jettison:class=array
 TORNADO/JETTISON.LST:JetAll:wr=Jettison:class=array
 TORNADO/JETTISON.LST:Jettison3:idx=si:wr=FuelWt:wr=FuelWtFine:wr=ChaffCntr:wr=FlareCntr:wr=ECMFitted:wr=ECMActive:wr=ArmMode:wr=AirArmMode:class=array
 TORNADO/JETTISON.lst:JetExtTanks:wr=Jettison
-TORNADO/JETTISON.lst:JetExtStores:wr=Jettison
+TORNADO/JETTISON.lst:JetExtStores:wr=Jettison:class=array
 TORNADO/JETTISON.lst:JetAll:wr=Jettison:class=array
 TORNADO/JETTISON.lst:Jettison3:idx=si:wr=FuelWt:wr=FuelWtFine:wr=ChaffCntr:wr=FlareCntr:wr=ECMFitted:wr=ECMActive:wr=ArmMode:wr=AirArmMode:class=array
 TORNADO/LOADPIC.LST:LoadPicture:wr=FadeFlag:wr=CountDown:wr=DieFlag:class=ctx
