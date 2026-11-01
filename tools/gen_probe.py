@@ -36,7 +36,8 @@ def weak_proc_names(objdir):
 
 
 SEG_SUFFIXES = ("default_seg", "dronecode", "viscode", "expcode",
-                "libcode", "weaponcode", "modcode", "gcode")
+                "libcode", "weaponcode", "modcode", "gencode", "gcode",
+                "piccode", "prevcode", "sndcode", "twocode", "code")
 
 
 def dispatch_entries(srcdir, declared):

@@ -910,8 +910,15 @@ def main():
     # module is `static` and unreachable — testing that spec entry would
     # bind the wrong implementation (a guaranteed false DIFF)
     weak_owner = {}
+    SEG_SUFFIXES = ("default_seg", "dronecode", "viscode", "expcode",
+                    "libcode", "weaponcode", "modcode", "gencode", "gcode",
+                    "piccode", "prevcode", "sndcode", "twocode", "code")
     for lf in glob.glob('src/*_lifted.cpp'):
         stem = os.path.basename(lf).replace('_lifted.cpp', '')
+        for _sfx in SEG_SUFFIXES:
+            if stem.endswith('_' + _sfx):
+                stem = stem[:-(len(_sfx) + 1)]
+                break
         for wm in re.finditer(
                 r'__attribute__\(\(weak\)\)\s*bool\s+(\w+)\s*\(',
                 open(lf, errors='replace').read()):
@@ -2052,6 +2059,16 @@ def main():
         # port dump args. Ranges are sym-relative so linked-layout offsets
         # on each side land on the same logical bytes.
         wro, wrp, wmiss = [], [], []
+        # build-revision divergence: lst/map-derived disps for wr-only
+        # syms (not operand-decoded into `sol`) can be stale vs the
+        # shipped image — e.g. GLOC's DieFlag lives at 0x8d9c in
+        # FLIGHT.EXE while the MAP/lst revision says 0x8810.  When this
+        # proc's own operand table names the sym, its shipped disp16 is
+        # ground truth — decode it from the located proc's bytes.
+        _wrtab = lstsyms_all.get((lst, proc), {})
+        _wrfo = None
+        if isinstance(addr, tuple):
+            _wrfo = (addr[0] * 16 + addr[1]) - LOAD_FLAT + img
         for wn, woff, wlen in wrs:
             hit = sol.get(wn.lower()) or gsyms_l.get(wn.lower())
             if hit is None or hit[0] not in ('ds', 'ss'):
@@ -2066,6 +2083,20 @@ def main():
             if hit is None:
                 wmiss.append(wn)
                 continue
+            if _wrfo is not None:
+                _e = _wrtab.get(wn) or _wrtab.get(wn.lower())
+                if _e is not None and not _e[2] and \
+                        _wrfo + _e[0] + 2 <= len(exe) and \
+                        exe[_wrfo + _e[0] - 1] & 0xc7 == 0x06:
+                    # direct [disp16] operand — the shipped cell is truth
+                    _dd = int.from_bytes(
+                        exe[_wrfo + _e[0]:_wrfo + _e[0] + 2], 'little')
+                    if _dd != hit[1] and \
+                            os.environ.get('DIFF_DEBUG_WRMISS'):
+                        print(f'WROVR {proc} {wn} {hit[1]:#x} -> '
+                              f'{_dd:#x} (shipped operand)', file=sys.stderr)
+                    if _dd != hit[1]:
+                        hit = ('ds', _dd, True)
             ln = wn.lower()
             pln = port_name(ln, stem_l)
             if port_syms is not None and pln not in port_syms:

@@ -695,7 +695,7 @@ TORNADO/AVIONICS.LST:UpdateRadar:wr=RadarMode
 TORNADO/AVIONICS.LST:UpdateAppProg:wr=AppProgSeq:wr=AppProgTimer:class=ctx
 TORNADO/AVIONICS.LST:UpdateAirRadar:pin=si:idx=bx:wr=NumRadarTracks:wr=ScanSize:wr=ScanOffset:wr=DispAirTgtRng:wr=DispAirTgtAlt:wr=DispAirTgtVel:wr=DispAirTgtHdg:class=array
 TORNADO/AVIONICS.LST:TrackMobile:idx=si,di,bx:wr=TmpAngDiff:wr=TmpScaledRng:class=array
-TORNADO/AVIONICS.LST:ShadowCheck:idx=si,di:wr=SampleCntr
+TORNADO/AVIONICS.LST:ShadowCheck:idx=si,di:wr=SampleCntr:class=array
 TORNADO/AVIONICS.LST:BoreSight:pin=si:class=ctx
 TORNADO/AVIONICS.LST:CycleTargets:pin=di,si
 TORNADO/AVIONICS.LST:UpdateRWR:wr=OldRWRThreats:wr=NumRWRThreats:wr=ActiveSAMCntr:wr=RWRThreatIndex:wr=RWRThreatFlags:class=ctx
@@ -737,7 +737,7 @@ TORNADO/AVIONICS.lst:UpdateRadar:wr=RadarMode
 TORNADO/AVIONICS.lst:UpdateAppProg:wr=AppProgSeq:wr=AppProgTimer:class=ctx
 TORNADO/AVIONICS.lst:UpdateAirRadar:pin=si:idx=bx:wr=NumRadarTracks:wr=ScanSize:wr=ScanOffset:wr=DispAirTgtRng:wr=DispAirTgtAlt:wr=DispAirTgtVel:wr=DispAirTgtHdg:class=array
 TORNADO/AVIONICS.lst:TrackMobile:idx=si,di,bx:wr=TmpAngDiff:wr=TmpScaledRng:class=array
-TORNADO/AVIONICS.lst:ShadowCheck:idx=si,di:wr=SampleCntr
+TORNADO/AVIONICS.lst:ShadowCheck:idx=si,di:wr=SampleCntr:class=array
 TORNADO/AVIONICS.lst:BoreSight:pin=si:class=ctx
 TORNADO/AVIONICS.lst:CycleTargets:pin=di,si
 TORNADO/AVIONICS.lst:UpdateRWR:wr=OldRWRThreats:wr=NumRWRThreats:wr=ActiveSAMCntr:wr=RWRThreatIndex:wr=RWRThreatFlags:class=ctx
@@ -1068,8 +1068,8 @@ TORNADO/HUD2.lst:DrawIntercept2:class=ctx
 TORNADO/HUD2.lst:DispAirTgtData2
 TORNADO/INITGAME.LST:InitGame:pin=si:idx=bx,bp:wr=WayTotal:class=array
 TORNADO/INITGAME.lst:InitGame:pin=si:idx=bx,bp:wr=WayTotal:class=array
-TORNADO/INTERCPT.LST:CalcIntercept:idx=si,bx:wr=UnitVctrTgtZ:wr=UnitVctrTgtX:wr=UnitVctrTgtY
-TORNADO/INTERCPT.lst:CalcIntercept:idx=si,bx:wr=UnitVctrTgtZ:wr=UnitVctrTgtX:wr=UnitVctrTgtY
+TORNADO/INTERCPT.LST:CalcIntercept:idx=si,bx:wr=UnitVctrTgtZ:wr=UnitVctrTgtX:wr=UnitVctrTgtY:class=array
+TORNADO/INTERCPT.lst:CalcIntercept:idx=si,bx:wr=UnitVctrTgtZ:wr=UnitVctrTgtX:wr=UnitVctrTgtY:class=array
 TORNADO/JETTISON.LST:JetExtTanks:wr=Jettison
 TORNADO/JETTISON.LST:JetExtStores:wr=Jettison:class=array
 TORNADO/JETTISON.LST:JetAll:wr=Jettison:class=array
