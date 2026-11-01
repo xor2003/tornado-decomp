@@ -2430,8 +2430,7 @@ def main():
         PTRREGS = ('bx','cx','si','di','bp')
         norm = set()
         ok = [(ro, rp) for _v, ro, rp, _m, _n in rows
-              if not portfail(ro) and ro != 'NOORIG'
-              and not portfail(rp)]
+              if isinstance(ro, tuple) and isinstance(rp, tuple)]
         pdelta = cand_of.get((lst, proc), {0})
         for r in PTRREGS:
             if r in skip or len(ok) < 2:
