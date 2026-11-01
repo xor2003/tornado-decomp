@@ -921,7 +921,7 @@ TORNADO/HUD.LST:UpdateAoAMeter:class=ctx
 TORNADO/HUD.LST:UpdateAoA:class=ctx
 TORNADO/HUD.LST:UpdateVSI:class=ctx
 TORNADO/HUD.LST:UpdateAltClock:idx=bx:wr=PrtLn:wr=PrtCl:class=ctx
-TORNADO/HUD.LST:UpdateAlt
+TORNADO/HUD.LST:UpdateAlt:class=array
 TORNADO/HUD.LST:UpdateACSymbol:class=ctx
 TORNADO/HUD.LST:UpdateAirSpeed:wr=PrtLn:wr=PrtCl:class=ctx
 TORNADO/HUD.LST:UpdateHdg:pin=bx:wr=SpriteY:wr=SpriteX:class=ctx
@@ -959,7 +959,7 @@ TORNADO/HUD.lst:UpdateAoAMeter:class=ctx
 TORNADO/HUD.lst:UpdateAoA:class=ctx
 TORNADO/HUD.lst:UpdateVSI:class=ctx
 TORNADO/HUD.lst:UpdateAltClock:idx=bx:wr=PrtLn:wr=PrtCl:class=ctx
-TORNADO/HUD.lst:UpdateAlt
+TORNADO/HUD.lst:UpdateAlt:class=array
 TORNADO/HUD.lst:UpdateACSymbol:class=ctx
 TORNADO/HUD.lst:UpdateAirSpeed:wr=PrtLn:wr=PrtCl:class=ctx
 TORNADO/HUD.lst:UpdateHdg:pin=bx:wr=SpriteY:wr=SpriteX:class=ctx
@@ -997,7 +997,7 @@ TORNADO/HUD2.LST:UpdateAoAMeter2:class=ctx
 TORNADO/HUD2.LST:UpdateAoA2:class=ctx
 TORNADO/HUD2.LST:UpdateVSI2:class=ctx
 TORNADO/HUD2.LST:UpdateAltClock2:idx=bx:wr=PrtLn:wr=PrtCl:class=ctx
-TORNADO/HUD2.LST:UpdateAlt2
+TORNADO/HUD2.LST:UpdateAlt2:class=array
 TORNADO/HUD2.LST:UpdateACSymbol2:class=ctx
 TORNADO/HUD2.LST:UpdateAirSpeed2:wr=PrtLn:wr=PrtCl:class=ctx
 TORNADO/HUD2.LST:UpdateHdg2:pin=bx:wr=SpriteY:wr=SpriteX:class=ctx
@@ -1035,7 +1035,7 @@ TORNADO/HUD2.lst:UpdateAoAMeter2:class=ctx
 TORNADO/HUD2.lst:UpdateAoA2:class=ctx
 TORNADO/HUD2.lst:UpdateVSI2:class=ctx
 TORNADO/HUD2.lst:UpdateAltClock2:idx=bx:wr=PrtLn:wr=PrtCl:class=ctx
-TORNADO/HUD2.lst:UpdateAlt2
+TORNADO/HUD2.lst:UpdateAlt2:class=array
 TORNADO/HUD2.lst:UpdateACSymbol2:class=ctx
 TORNADO/HUD2.lst:UpdateAirSpeed2:wr=PrtLn:wr=PrtCl:class=ctx
 TORNADO/HUD2.lst:UpdateHdg2:pin=bx:wr=SpriteY:wr=SpriteX:class=ctx

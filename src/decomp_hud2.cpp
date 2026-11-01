@@ -68,3 +68,28 @@ sortflip2:
 done:
     return m2c::RETN_(0, _state);
 }
+
+//* UpdateAlt2 - update altitude display
+//*
+//* pass: DispBarAlt
+//*       TrueRadAlt
+//* ret : nothing
+//* kill: assume all
+bool updatealt2(m2c::_offsets _i, struct m2c::_STATE* _state)
+{
+    X86_REGREF
+
+    /* mov si,OFFSET RadAlt2$  ;assume disp rad alt */
+    si = m2c::near_offset_external(radalt2dol);
+    /* cmp TrueRadAlt,5000     ;disp rad alt? */
+    CMP(trueradalt, 5000);
+    /* jb @F                   ;yes -> */
+    if ((dw)(trueradalt) >= (dw)(5000)) {
+        /* mov si,OFFSET BarAlt2$ ;disp bar alt */
+        si = m2c::near_offset_external(baralt2dol);
+    }
+    /* @@: call Print$ */
+    CALLF(printdol, 0);
+
+    return m2c::RETN_(0, _state);
+}
