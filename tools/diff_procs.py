@@ -1652,7 +1652,16 @@ def main():
         # disp is a DS-relative offset (DS base = image base para) —
         # its file position is disp + header size, no LOAD_FLAT bias
         tfo = disp + HDRPARAS * 16
+        # proc's lst span (last body offset) — bounds where the shipped
+        # dispatch targets can legitimately land relative to `flat`
+        L_end = L_p
+        for bl in plines:
+            mm = re.match(r'^\s*([0-9A-Fa-f]{4,6})\s', bl)
+            if mm:
+                L_end = max(L_end, int(mm.group(1), 16))
+        span = max(0x100, (L_end - L_p) * 2)
         votes = []
+        tvs = []
         for k, (_off, lv) in enumerate(stored):
             fo_k = tfo + 2 * k
             if not (0 <= fo_k + 2 <= len(exe)):
@@ -1660,14 +1669,39 @@ def main():
             tv = int.from_bytes(exe[fo_k:fo_k + 2], 'little')
             if not tv or not lv:
                 continue
+            tvs.append(tv)
             cs16 = flat - L_p - tv + lv
             if cs16 % 16 == 0 and 0 < cs16 // 16 < 0x10000:
-                votes.append(cs16 // 16)
-        if len(votes) < 2:
+                votes.append((k, cs16 // 16))
+        if not votes:
             return None
-        seg, _cnt = max(((v, votes.count(v)) for v in set(votes)),
-                        key=lambda t: t[1])
-        return seg if votes.count(seg) * 2 > len(votes) else None
+        # Shipped-vs-lst builds can diverge mid-proc (different macro
+        # expansions), leaving only the entries before the divergence
+        # aligned — so majority voting may have too few votes.  The
+        # lst offsets are exact until the first divergent byte, so the
+        # candidate backed by the longest agreeing prefix of the table
+        # is authoritative.  Verify the winner by where the shipped
+        # cells actually point: the right cs lands most targets inside
+        # the proc's own flat span.
+        bycs = {}
+        for k, cs in votes:
+            bycs.setdefault(cs, []).append(k)
+        # prefix anchored at the lowest index present across all votes
+        k0 = min(k for ks in bycs.values() for k in ks)
+        def _prefix_rank(cs):
+            ks = sorted(bycs[cs])
+            n = 0
+            for kk in ks:
+                if kk != k0 + n:
+                    break
+                n += 1
+            return (n, len(ks))
+        seg = max(bycs, key=_prefix_rank)
+        base = seg * 16
+        sc = (sum(1 for tv in tvs
+                  if flat <= base + tv <= flat + span)
+              / float(len(tvs))) if tvs else 0.0
+        return seg if sc >= 0.5 else None
 
     # re-anchor pass: procs located before the dispatch-table bases were
     # known may still sit on flat//16 — recompute every near anchor now
