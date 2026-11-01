@@ -580,7 +580,7 @@ TORNADO/AIRCRAFT.LST:CtrlTouchDown
 TORNADO/AIRCRAFT.LST:CtrlLanding:pin=di,si:class=array
 TORNADO/AIRCRAFT.LST:InitTaxi:pin=si:idx=bx,bp:class=ctx
 TORNADO/AIRCRAFT.LST:CtrlTaxi:pin=si:class=variant
-TORNADO/AIRCRAFT.LST:SortTaxiXY:pin=di,si
+TORNADO/AIRCRAFT.LST:SortTaxiXY:pin=di,si:class=array
 TORNADO/AIRCRAFT.LST:CalcTaxiRngBrg:wr=AC_WPBrg
 TORNADO/AIRCRAFT.LST:AutoRoute:pin=si,di:wr=AC_AutoHFine:wr=AC_AutoAlt:wr=AC_AutoVtas:wr=AC_WPBrg:class=array
 TORNADO/AIRCRAFT.LST:SelectNextWP:wr=AC_WPBrg:class=array
@@ -628,7 +628,7 @@ TORNADO/AIRCRAFT.lst:CtrlTouchDown
 TORNADO/AIRCRAFT.lst:CtrlLanding:pin=di,si:class=array
 TORNADO/AIRCRAFT.lst:InitTaxi:pin=si:idx=bx,bp:class=ctx
 TORNADO/AIRCRAFT.lst:CtrlTaxi:pin=si:class=variant
-TORNADO/AIRCRAFT.lst:SortTaxiXY:pin=di,si
+TORNADO/AIRCRAFT.lst:SortTaxiXY:pin=di,si:class=array
 TORNADO/AIRCRAFT.lst:CalcTaxiRngBrg:wr=AC_WPBrg
 TORNADO/AIRCRAFT.lst:AutoRoute:pin=si,di:wr=AC_AutoHFine:wr=AC_AutoAlt:wr=AC_AutoVtas:wr=AC_WPBrg:class=array
 TORNADO/AIRCRAFT.lst:SelectNextWP:wr=AC_WPBrg:class=array
