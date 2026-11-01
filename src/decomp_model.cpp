@@ -559,6 +559,11 @@ flapsexit:
         SHL(ax, 1); RCL(dx, 1);                                     \
         SHL(ax, 1); ADC(dx, 0);                                     \
     } while (0)
+#define FRACADJ_BX() do {                                           \
+        SHL(ax, 1); RCL(dx, 1);                                     \
+        SHL(ax, 1); ADC(dx, 0);                                     \
+        bx = dx;                                                    \
+    } while (0)
 #define FRACADJ_BP() do {                                           \
         SHL(ax, 1); RCL(dx, 1);                                     \
         SHL(ax, 1); ADC(dx, 0);                                     \
@@ -726,7 +731,389 @@ gustok:
 exitwinds:
     return m2c::RETN_(0, _state);
 }
+
+/* CalcDrag — calc drag.
+ * ret: Drag, Drag4.  kill: assume all */
+bool calcdrag(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    /* DragCoeff (CD) = CD0 + KsweepCL^2 + Kgear + Kairbrakes + Kground */
+    /* calc CD0 (profile drag) */
+    si = m2c::near_offset_external(cd0table);
+    CALL(calcsfvalue, 0);
+    cd0 = ax;
+    bp = ax;                                    /* set drag coeff */
+    /* calc CL1 (induced drag):
+     *   on ground: CL1[*128] = Kfs * Alpha * 8 * 0.14
+     *   airborne:  CL1[*128] = (GForce * Weight2 / 0.085 * Vdiv)
+     *              * 256 / Vdiv */
+    al = airborne1;
+    TEST(al, al);                               /* on ground? */
+    if ((al & al) != 0) goto clairborne;
+    /* calc CL on ground — frac1 = 4588 (0.14 = 4588 / 32768) */
+    ax = kfs;
+    dx = alpha;
+    SAL(dx, 1); SAL(dx, 1); SAL(dx, 1);         /* Alpha * 8 */
+    IMUL1_2(dx);
+    FRACADJ_DX();                               /* Kfs * Alpha * 8 */
+    ax = 4588;
+    IMUL1_2(dx);
+    FRACADJ_AX();                               /* Kfs * Alpha*8 * frac1 */
+    goto setinduceddrag;
+clairborne:
+    /* calc CL airborne — frac1 = 2785 (0.085 = 2785 / 32768) */
+    ax = vdiv;
+    cx = ax;
+    dx = 2785;
+    IMUL1_2(dx);
+    FRACADJ_BX();                               /* frac1 * Vdiv */
+    ax = gforce;
+    dx = weight2;
+    IMUL1_2(dx);                                /* GForce * Weight2 */
+    IDIV2(bx);                                  /* GForce*Weight2/frac1*Vdiv */
+    CWD;                                        /* * 256 */
+    dl = ah;
+    ah = al;
+    XOR(al, al);
+    IDIV2(cx);                                  /* * 256 / Vdiv */
+setinduceddrag:
+    /* limit CL to +/-2.9 */
+    ABSV_AX();                                  /* ax = abs(CL) */
+    CMP(ax, 371);                               /* CL < 2.9? */
+    if ((dw)ax > (dw)371) ax = 371;             /* limit to 2.9 */
+    XOR(ax, dx);                                /* restore sign */
+    SUB(ax, dx);
+    cl1 = ax;
+    si = ax;                                    /* >>>>> store in si <<<<< */
+    /* calc Ksweep:
+     *   CrntWingVal < SWEEP_A_45:
+     *     Ksweep = 0.0848 - (0.0848-0.041)*CrntWingVal / SWEEP_A_45
+     *   else:
+     *     Ksweep = 0.041 + (0.105-0.041)*(CrntWingVal-SWEEP_A_45)
+     *              / (SWEEP_A_67-SWEEP_A_45)
+     * frac1 = 2779 (0.0848), frac2 = 1343 (0.041), frac3 = 3441 (0.105) */
+    ax = crntwingval;
+    CMP(ax, 333);                               /* SWEEP_A_45 */
+    if ((dw)ax > (dw)333) goto kswephi;
+    dx = 2779 - 1343;
+    MUL1_2(dx);                                 /* (frac1-frac2)*CrntWingVal */
+    bx = 333;
+    DIV2(bx);                                   /* / SWEEP_A_45 */
+    NEG(ax);
+    ADD(ax, 2779);                              /* frac1 - ... */
+    goto setksweep;
+kswephi:
+    SUB(ax, 333);                               /* CrntWingVal - SWEEP_A_45 */
+    dx = 3441 - 1343;
+    MUL1_2(dx);                                 /* (frac3-frac2)*... */
+    bx = 700 - 333;                             /* SWEEP_A_67-SWEEP_A_45 */
+    DIV2(bx);
+    ADD(ax, 1343);                              /* frac2 + ... */
+setksweep:
+    ksweep = ax;
+    di = ax;                                    /* >>>>> store in di <<<<< */
+    /* calc KsweepCL^2:
+     *   abs(CL) <= 181: KsweepCL^2 = Ksweep * (CL*CL)   (accuracy)
+     *   else:           KsweepCL^2 = (Ksweep*CL) * CL   (overflow) */
+    ax = si;
+    ABSV_AX();                                  /* abs(CL) */
+    CMP(ax, 181);                               /* CL low? */
+    if ((dw)ax > (dw)181) goto clhigh;
+    /* CL low */
+    IMUL1_2(ax);                                /* CL * CL */
+    IMUL1_2(di);
+    FRACADJ_AX();                               /* Ksweep*(CL*CL) [*16384] */
+    goto setksweepcl2;
+clhigh:
+    /* CL high */
+    ax = di;
+    IMUL1_2(si);
+    FRACADJ_AX();                               /* Ksweep * CL */
+    IMUL1_2(si);                                /* (Ksweep*CL) * CL [*16384] */
+setksweepcl2:
+    SAL(ax, 1);                                 /* *2 gives binary fraction */
+    ksweepcl2 = ax;
+    ADD(bp, ax);                                /* add to drag coeff */
+    /* Kgear - undercarriage drag */
+    al = gear;
+    TEST(al, al);
+    if ((al & al) != 0) ADD(bp, 1475);          /* Kgear */
+    /* Kairbrakes - airbrake drag */
+    al = airbrakes;
+    TEST(al, al);
+    if ((al & al) != 0) ADD(bp, 3677);          /* Kairbrakes */
+    /* Kground - ground drag */
+    al = airborne1;
+    TEST(al, al);
+    if (!(al & al)) ADD(bp, 2336);              /* Kground */
+    dragcoeff = bp;
+    /* Drag = 0.34 * DragCoeff * Vias^2 / 64 + Kwheelbrakes */
+    ax = vias;
+    XCHG(ax, bp);
+    IMUL1_2(bp);
+    FRACADJ_BX();                               /* Vias * DragCoeff */
+    ax = 11141;                                 /* 0.34 = 11141 / 32768 */
+    IMUL1_2(bp);
+    FRACADJ_AX();                               /* Vias * 0.34 */
+    IMUL1_2(bx);                                /* 0.34*DragCoeff*Vias^2 */
+    SAR(dx, 1); RCR(ax, 1); SAR(dx, 1); RCR(ax, 1);     /* /64 */
+    SAR(dx, 1); RCR(ax, 1); SAR(dx, 1); RCR(ax, 1);
+    SAR(dx, 1); RCR(ax, 1); SAR(dx, 1); RCR(ax, 1);
+    cx = dx;
+    bx = ax;
+    /* //MOD// 05.11.1992 - Modified for wheels up landing etc.
+     * if not airborne and not hit hill then
+     *   gear down: wheelbrakes ? (vtas==0 ? Kstatic : Krolling)
+     *            : (accel<0 ? Kfreewheel : none)
+     *   gear up:   Kwheelsup
+     * else 0 */
+    TEST(hithill, 1);                           /* hit hill? */
+    if ((hithill & 1) != 0) goto onground;
+    TEST(airborne1, 1);                         /* airborne? */
+    if ((airborne1 & 1) != 0) goto setdrag;     /* yes, ignore brake drag */
+onground:
+    ax = 34000;                                 /* Kwheelsup */
+    TEST(gear, 1);                              /* gear down? */
+    if (!(gear & 1)) goto addwbrakedrag;
+    TEST(wheelbrakes, 1);                       /* wheelbrakes applied? */
+    if (!(wheelbrakes & 1)) goto freewheel;
+    ax = 34000;                                 /* Kstatic */
+    CMP(vtas, 0);                               /* static? */
+    if ((dw)vtas == (dw)0) goto addwbrakedrag;
+    ax = 12000;                                 /* Krolling */
+    goto addwbrakedrag;
+freewheel:
+    CMP(accel, 0);                              /* decelerating? */
+    if ((short)accel > (short)0) goto setdrag;
+    ax = 4000;                                  /* Kfreewheel */
+addwbrakedrag:
+    ADD(bx, ax);
+    ADC(cx, 0);
+setdrag:
+    CMP(cx, 1);                                 /* drag > 131,071? */
+    if ((dw)cx > (dw)1) {                       /* yes -> limit to 01ffffh */
+        cx = 0x0001;
+        bx = 0xffff;
+    }
+    draghi = cx;
+    draglo = bx;
+    SHR(cx, 1); RCR(bx, 1);                     /* /4 */
+    SHR(cx, 1); RCR(bx, 1);
+    drag4 = bx;
+    return m2c::RETN_(0, _state);
+}
+
+/* CalcPosition — calc position.
+ * ret: Vtas, MachNum, XSec/Xft/XFine, YSec/Yft/YFine, NewSector.
+ * kill: assume all */
+bool calcposition(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    /* if spinning and not recovered then
+     *   Accel = 0
+     *   Vtas = max(-(Weight2 * 128 * 8 * M_SinP), 0) + 50 * 8 */
+    al = spinflag;
+    TEST(al, al);                               /* spinning? */
+    if (!(al & al)) goto calcaccel;
+    ax = recovery;
+    TEST(ax, ax);                               /* recovered? */
+    if ((ax & ax) == 0) goto calcaccel;         /* yes -> */
+    /* cx, bx = old Vtas for CalcVav calculation */
+    ax = vtas;                                  /* //BUG FIX// */
+    CWD;
+    bx = ax;
+    cx = dx;
+    accel = 0;
+    /* Vtas = max(-(Weight2 / 32 * M_SinP), 0) + 400 */
+    ax = weight2;
+    SAR(ax, 1); SAR(ax, 1); SAR(ax, 1);         /* /32 */
+    SAR(ax, 1); SAR(ax, 1);
+    dx = m_sinp;
+    IMUL1_2(dx);
+    FRACADJ_AX();                               /* Weight2/32 * M_SinP */
+    NEG(ax);                                    /* -(Weight2/32 * M_SinP) */
+    CWD;                                        /* dx = 0(+ve), 0ffffh(-ve) */
+    dx = ~dx;                                   /* dx = 0ffffh(+ve), 0(-ve) */
+    AND(ax, dx);                                /* max(..., 0) */
+    ADD(ax, 400);                               /* approx 30kts @ sea level */
+    vtas = ax;
+    vtasfine = 0;
+    goto calcvav;
+calcaccel:
+    /* Accel = (Thrust4 - Drag4 - Weight2/2 * M_SinP) * 256 / Weight2 */
+    ax = m_sinp;
+    bp = weight2;
+    SHR(bp, 1);                                 /* Weight2 / 2 */
+    IMUL1_2(bp);
+    FRACADJ_AX();                               /* Weight2/2 * M_SinP */
+    /* use 32-bits to avoid possible overflow */
+    CWD;
+    cx = dx;                                    /* cx,bx = Weight2/2*M_SinP */
+    bx = ax;
+    ax = thrust4;
+    SUB(ax, drag4);                             /* Thrust4 - Drag4 */
+    CWD;
+    SUB(ax, bx);                                /* - Weight2/2 * M_SinP */
+    SBB(dx, cx);
+    dl = ah;                                    /* * 256 */
+    ah = al;
+    XOR(al, al);
+    IDIV2(bp);                                  /* / Weight2/2 */
+    accel = ax;
+    /* calc Vtas
+     * //MOD// 12.05.1992 - VtasFine added (Vtas not changing when Accel
+     * is small due to truncation when Accel multiplied by DeltaTime).
+     * cx, bx = old Vtas for CalcVav calculation */
+    ax = vtas;
+    CWD;
+    bx = ax;
+    cx = dx;
+    /* Vtas = Vtas + Accel * DeltaTime */
+    ax = accel;
+    dx = deltatime;
+    IMUL1_2(dx);
+    SHL(ax, 1);
+    RCL(dx, 1);
+    /* //MOD// 13.11.1992 - Vtas never allowed < 0 now */
+    ADD(vtasfine, ax);
+    ADC(vtas, dx);
+    ax = vtas;
+    if ((short)ax >= 0) goto calcvav;
+    XOR(ax, ax);
+    vtas = ax;
+    vtasfine = ax;
+    TEST(airborne1, 1);                         /* airborne? */
+    if ((airborne1 & 1) != 0) goto calcvav;
+    accel = ax;
+calcvav:
+    /* Vav = (new Vtas + old Vtas) / 2
+     * ax = new Vtas;  cx, bx = sign extended old Vtas */
+    CWD;                                        /* dx,ax = sx new Vtas */
+    ADD(ax, bx);
+    ADC(dx, cx);
+    SAR(dx, 1);                                 /* (new + old) / 2 */
+    RCR(ax, 1);
+    vav = ax;
+    /* calc Mach1:
+     *   zft < 36,096ft: Mach1 = 1123 - 541/32768 * zft/4
+     *   else:           Mach1 = 974 */
+    bx = 974;                                   /* assume zft >= 36,096ft */
+    CMP(zfthi, 0);                              /* zft > 65,535? */
+    if ((dw)zfthi != (dw)0) goto setmach1;
+    ax = zftlo;
+    CMP(ax, 36096);                             /* zft >= 36,096? */
+    if ((dw)ax >= (dw)36096) goto setmach1;
+    SHR(ax, 1); SHR(ax, 1);                     /* zft / 4 */
+    dx = 541;
+    IMUL1_2(dx);
+    FRACADJ_DX();                               /* 541/32768 * zft/4 */
+    bx = 1123;
+    SUB(bx, dx);                                /* 1123 - 541/32768 * zft/4 */
+setmach1:
+    mach1 = bx;
+    /* calc MachNum [*16] = Vtas [*8] * 2 / Mach1 */
+    ax = vtas;
+    TEST(ax, ax);                               /* ensure Vtas >= 0 */
+    if ((short)ax < 0) XOR(ax, ax);
+    CWD;
+    SHL(ax, 1);                                 /* Vtas * 2 */
+    RCL(dx, 1);
+    IDIV2(bx);                                  /* Vtas * 2 / Mach1 */
+    machnum = ax;
+    /* calc XSec, Xft, XFine:
+     * VavX = Vav * M_CosP * M_SinH
+     * Xft, XFine += VavX * DeltaTime * 8192 */
+    ax = vav;
+    dx = m_cosp;
+    IMUL1_2(dx);
+    FRACADJ_BP();                               /* Vav*M_CosP >>> in bp <<< */
+    ax = m_sinh;
+    IMUL1_2(bp);
+    FRACADJ_DX();                               /* Vav * M_CosP * M_SinH */
+    ax = deltatime;
+    IMUL1_2(dx);
+    FRACADJ_AX();                               /* VavX * DeltaTime */
+    CWD;                                        /* * 256 */
+    dl = ah;
+    ah = al;
+    XOR(al, al);
+    SHL(ax, 1); RCL(dx, 1); SHL(ax, 1); RCL(dx, 1);     /* * 32 (*8192) */
+    SHL(ax, 1); RCL(dx, 1); SHL(ax, 1); RCL(dx, 1);
+    SHL(ax, 1); RCL(dx, 1);
+    ADD(xfine, ax);
+    ADC(xft, dx);
+    /* if airborne then take account of crosswinds */
+    TEST(airborne1, 1);
+    if ((airborne1 & 1) == 0) goto xsecupd;
+    ax = xwinddxfine;
+    dx = xwinddxft;
+    ADD(xfine, ax);
+    ADC(xft, dx);
+xsecupd:
+    /* update XSec (keep Xft in range) */
+    dx = xsec;
+    ax = xft;
+    CMP(ax, 8192);                              /* xft < 8192? */
+    if ((short)ax >= (short)8192) {             /* no -> */
+        SUB(ax, 16384);
+        INC(xsec);
+    }
+    CMP(ax, -8192);                             /* xft >= -8192? */
+    if ((short)ax < (short)-8192) {             /* no -> */
+        ADD(ax, 16384);
+        DEC(xsec);
+    }
+    xft = ax;
+    /* check for new sector */
+    XOR(al, al);                                /* assume not changed */
+    CMP(dx, xsec);                              /* changed sector? */
+    if ((dw)dx != (dw)xsec) al = 1;
+    newsector = al;
+    /* calc YSec, Yft, YFine:
+     * VavY = Vav * M_CosP * M_CosH
+     * Yft, YFine += VavY * DeltaTime * 8192 */
+    ax = m_cosh;
+    IMUL1_2(bp);
+    FRACADJ_DX();                               /* Vav * M_CosP * M_CosH */
+    ax = deltatime;
+    IMUL1_2(dx);
+    FRACADJ_AX();                               /* VavY * DeltaTime */
+    CWD;                                        /* * 256 */
+    dl = ah;
+    ah = al;
+    XOR(al, al);
+    SHL(ax, 1); RCL(dx, 1); SHL(ax, 1); RCL(dx, 1);     /* * 32 (*8192) */
+    SHL(ax, 1); RCL(dx, 1); SHL(ax, 1); RCL(dx, 1);
+    SHL(ax, 1); RCL(dx, 1);
+    ADD(yfine, ax);
+    ADC(yft, dx);
+    /* if airborne then take account of crosswinds */
+    TEST(airborne1, 1);
+    if ((airborne1 & 1) == 0) goto ysecupd;
+    ax = xwinddyfine;
+    dx = xwinddyft;
+    ADD(yfine, ax);
+    ADC(yft, dx);
+ysecupd:
+    /* update YSec (keep Yft in range) */
+    dx = ysec;
+    ax = yft;
+    CMP(ax, 8192);                              /* yft < 8192? */
+    if ((short)ax >= (short)8192) {             /* no -> */
+        SUB(ax, 16384);
+        DEC(ysec);
+    }
+    CMP(ax, -8192);                             /* yft >= -8192? */
+    if ((short)ax < (short)-8192) {             /* no -> */
+        ADD(ax, 16384);
+        INC(ysec);
+    }
+    yft = ax;
+    /* check for new sector */
+    CMP(dx, ysec);                              /* changed sector? */
+    if ((dw)dx != (dw)ysec) newsector = 1;
+    return m2c::RETN_(0, _state);
+}
 #undef FRACADJ_AX
+#undef FRACADJ_BX
 #undef FRACADJ_DX
 #undef FRACADJ_BP
 #undef ABSV_AX
