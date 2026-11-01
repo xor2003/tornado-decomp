@@ -600,7 +600,7 @@ TORNADO/AIRCRAFT.LST:DroneAction:pin=si
 TORNADO/AIRCRAFT.LST:CheckICAvail:pin=si:class=ctx
 TORNADO/AIRCRAFT.LST:SetCombatMode:pin=si
 TORNADO/AIRCRAFT.LST:FindEnemyIC:pin=si:class=ctx
-TORNADO/AIRCRAFT.LST:ProxEnemyIC:pin=si
+TORNADO/AIRCRAFT.LST:ProxEnemyIC:pin=si:class=array
 TORNADO/AIRCRAFT.LST:ProxAlliedIC:pin=si:class=ctx
 TORNADO/AIRCRAFT.LST:SetEWRTimer:wr=EWRExposeTimer
 TORNADO/AIRCRAFT.LST:SetBreakTimer:wr=BreakTimer
@@ -648,7 +648,7 @@ TORNADO/AIRCRAFT.lst:DroneAction:pin=si
 TORNADO/AIRCRAFT.lst:CheckICAvail:pin=si:class=ctx
 TORNADO/AIRCRAFT.lst:SetCombatMode:pin=si
 TORNADO/AIRCRAFT.lst:FindEnemyIC:pin=si:class=ctx
-TORNADO/AIRCRAFT.lst:ProxEnemyIC:pin=si
+TORNADO/AIRCRAFT.lst:ProxEnemyIC:pin=si:class=array
 TORNADO/AIRCRAFT.lst:ProxAlliedIC:pin=si:class=ctx
 TORNADO/AIRCRAFT.lst:SetEWRTimer:wr=EWRExposeTimer
 TORNADO/AIRCRAFT.lst:SetBreakTimer:wr=BreakTimer
