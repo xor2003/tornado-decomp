@@ -258,3 +258,84 @@ bool aircraftradar(m2c::_offsets, m2c::_STATE* _state) {
     OR(rwrthreatflags, 0x2);                   /* RWR_AC */
     return m2c::RETN_(0, _state);
 }
+
+/* RadShadCheck — radar shadow check: 7-sample MoveViewpoint/CalcGndHeight
+ * march toward the radar viewpoint.  ret: cf=0 visible, cf=1 non-visible.
+ * kill: assume all */
+bool radshadcheck(m2c::_offsets _i, struct m2c::_STATE* _state) {
+    X86_REGREF
+    if (_i) return autopilot(_i, _state);       /* dispatch-door forward */
+    /* calc range and bearing of radar */
+    si = m2c::near_offset_external(m_view);
+    di = m2c::near_offset_external(rwr_view);
+    CALLF(calcrngbrgvp_vp, 0);
+    dw rngl = ax;                               /* store range */
+    dw rngh = dx;
+    dw brg = bx;                                /* store bearing */
+    /* always visible if altitude > 65535ft */
+    CMP(*((dw*)((db*)&m_view + vp_zft_hi)), 0);
+    if ((dw)(*((dw*)((db*)&m_view + vp_zft_hi))) > (dw)0) goto radvis;
+    /* copy M_VIEW to TMP_VIEW */
+    /* COPY_VP TMP_VIEW,M_VIEW */
+    si = m2c::near_offset_external(m_view);
+    di = m2c::near_offset_external(tmp_view);
+    cx = 18 / 2;                                /* VIEW_REC_SIZE/2 */
+    REP MOVSW;
+    /* calc sample dist (Dx / 8, Dy / 8) */
+    ax = ((dw*)&flatdx)[0];
+    dx = ((dw*)&flatdx)[1];
+    bx = ((dw*)&flatdy)[0];
+    cx = ((dw*)&flatdy)[1];
+    SAR(dx, 1); RCR(ax, 1); SAR(cx, 1); RCR(bx, 1);
+    SAR(dx, 1); RCR(ax, 1); SAR(cx, 1); RCR(bx, 1);
+    SAR(dx, 1); RCR(ax, 1); SAR(cx, 1); RCR(bx, 1);
+    /* calc Dz = zft / 8 */
+    di = *((dw*)((db*)&m_view + vp_zft_lo));
+    SHR(di, 1);
+    SHR(di, 1);
+    SHR(di, 1);
+    /* shadow test loop */
+    bp = 7;                                     /* loop count */
+radshadloop:
+    {
+        dw sax = ax, sbx = bx, scx = cx, sdx = dx, sdi = di, sbp = bp;
+        si = m2c::near_offset_external(tmp_view);
+        CALLF(moveviewpoint, 0);
+        di = sdi;
+        ax = *((dw*)((db*)&tmp_view + vp_zft_lo));
+        SUB(ax, di);
+        /* MINM ax — clamp to 0 on unsigned underflow */
+        CMC;
+        RCR(ax, 1);
+        CWD;
+        RCL(ax, 1);
+        AND(ax, dx);
+        *((dw*)((db*)&tmp_view + vp_zft_lo)) = ax;
+        CMP(ax, 256 * 15);                      /* alt > max gnd ht? */
+        if ((dw)ax > (dw)(256 * 15)) goto radsampled;
+        CALLF(calcgndheight, 0);
+        CMP(*((dw*)((db*)&tmp_view + vp_zft_lo)), ax);  /* alt > gnd ht? */
+radsampled:
+        bp = sbp;
+        di = sdi;
+        dx = sdx;
+        cx = scx;
+        bx = sbx;
+        ax = sax;
+    }
+    if (CF || ZF) goto radnonvis;               /* alt <= gnd ht -> */
+    DEC(bp);                                    /* next test */
+    if (!ZF) goto radshadloop;
+radvis:
+    bx = brg;                                   /* restore bearing */
+    dx = rngh;                                  /* restore range */
+    ax = rngl;
+    CLC;                                        /* cf = 0 (visible) */
+    return m2c::RETN_(0, _state);
+radnonvis:
+    bx = brg;                                   /* restore bearing */
+    dx = rngh;                                  /* restore range */
+    ax = rngl;
+    STC;                                        /* cf = 1 (non-visible) */
+    return m2c::RETN_(0, _state);
+}
