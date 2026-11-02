@@ -226,9 +226,17 @@ def parse_lst_pattern(path, proc, maxlen=64):
                                 cadd = -1
                         else:
                             cadd = -1
+                    # operand sig: the concrete opcode/modrm bytes
+                    # immediately before the disp16 — lets the shipped-
+                    # operand override relocate an operand whose listing
+                    # offset skewed (listing built from a different
+                    # revision than the exe)
+                    _sig = tuple(b for b in
+                                 bs[max(0, marked[0] - 2):marked[0]]
+                                 if b is not None)
                     if name not in syms:
                         syms[name] = (poff + marked[0], seg, is_imm,
-                                      fname, idxr, osize, cadd)
+                                      fname, idxr, osize, cadd, _sig)
                     # member reads (VP.FIELD): record the qualified name
                     # too — a record's later fields need their own pokes
                     # (VP.V_SCALE_DN was masked by earlier VP.V_SCALE_UP)
@@ -236,7 +244,7 @@ def parse_lst_pattern(path, proc, maxlen=64):
                         qn = name + '.' + fname
                         if qn not in syms:
                             syms[qn] = (poff + marked[0], seg, is_imm,
-                                        fname, idxr, osize, cadd)
+                                        fname, idxr, osize, cadd, _sig)
                     break
             for mi in marked:
                 bs[mi] = None
@@ -1040,9 +1048,10 @@ def main():
                 pat_ov = None
         if pat_ov is None:
             pat, kind, syms = lpat, kind_ov or lkind, lsyms
-            for n, (o, s, im, mb, ir, oz, ca) in list(syms.items()):
+            for n, _v in list(syms.items()):
+                o, s, im = _v[0], _v[1], _v[2]
                 if not im and n.lower().lstrip('_') in known_labels:
-                    syms[n] = (o, s, True, mb, ir, oz, ca)
+                    syms[n] = (o, s, True) + tuple(_v[3:])
             hits = locate(exe, pat) if pat else []
         if not hits and pat and pat_ov is None:
             # mid-pattern divergence (encoder/linker variant): fall back
@@ -1204,9 +1213,10 @@ def main():
             # or maxlen when the score check was skipped)
             vrun = rescue_run.get((lst, proc), 1 << 30)
             symoff[(lst, proc)] = {
-                n: (s, int.from_bytes(exe[img+h+o:img+h+o+2], 'little'),
-                    im, mb, ir, oz, ca)
-                for n, (o, s, im, mb, ir, oz, ca) in syms.items()
+                n: (v[1], int.from_bytes(exe[img+h+o:img+h+o+2], 'little'),
+                    ) + tuple(v[2:7])
+                for n, v in syms.items()
+                for o in (v[0],)
                 if o < vrun}
         else:
             addrs[(lst, proc)] = None
@@ -1528,7 +1538,8 @@ def main():
             scored = []
             for h in hits:
                 score = 0
-                for n, (o, s, im, mb, ir, oz, ca) in syms.items():
+                for n, v in syms.items():
+                    o, s, im, ca = v[0], v[1], v[2], v[6]
                     if s != 'ds' or o is None:
                         continue
                     if im:
@@ -1585,10 +1596,10 @@ def main():
                 addrs[(lst, proc)] = (seg, flat - seg * 16,
                                       addrs[(lst, proc)][2])
                 symoff[(lst, proc)] = {
-                    n: (s, int.from_bytes(exe[img+h+o:img+h+o+2],
-                                          'little'),
-                        im, mb, ir, oz, ca)
-                    for n, (o, s, im, mb, ir, oz, ca) in syms.items()}
+                    n: (v[1], int.from_bytes(exe[img+h+o:img+h+o+2],
+                                             'little')) + tuple(v[2:7])
+                    for n, v in syms.items()
+                    for o in (v[0],)}
 
     # near-dispatch anchor solver: a proc entered via `jmp Tbl[reg]`
     # runs at the segment the linker assigned — the shipped table cells
@@ -1867,9 +1878,8 @@ def main():
             # unlocated: fall back to the listing's own sym table — the
             # shipped disp is unknown (disp=0; orig calls never run) but
             # port-side seeding still reaches the proc's data refs
-            so = {n: (s, 0, im, mb, ir, oz, ca)
-                  for n, (o, s, im, mb, ir, oz, ca)
-                  in lstsyms_all.get((lst, proc), {}).items()}
+            so = {n: (v[1], 0) + tuple(v[2:7])
+                  for n, v in lstsyms_all.get((lst, proc), {}).items()}
         opokes, ppokes, missing = [], [], []
         for sn, ov, pv, sz in pokes:
             # poke=sym+hexoff:val — seed an array element past the base
@@ -1933,13 +1943,26 @@ def main():
                     missing.append(f'{sn}(orig)')
                     continue
             s, disp = hit[0], hit[1] + off
-            pln = port_name(base.lower(), stem_l)
-            if port_syms is not None and pln not in port_syms:
+            # Base.Field member poke: the qualified name resolves to the
+            # field's own operand disp orig-side (shipped-truth — bare
+            # `FloatWP` decl disps can be build-revision stale), while the
+            # port sym names the record base — shift by the struc-declared
+            # field offset like the operand seeding does for `vp.field`.
+            pb, _, pf = base.partition('.')
+            if pf:
+                # the operand tuple's addend [6] IS the member's field
+                # offset for `Base.FIELD` extern operands (the listing
+                # encodes `FloatWP.WP_XSEC` as `FloatWP+2`) — shift the
+                # port poke past the record base by exactly that
+                _fo = hit[6] if len(hit) > 6 else None
+                off += _fo if _fo and _fo > 0 else 0
+            pbpn = port_name(pb.lower(), stem_l)
+            if port_syms is not None and pbpn not in port_syms:
                 missing.append(f'{sn}(port)')
                 continue
             pvseeds.append((
                 DS_SEG if s == 'ds' else int(SS.split(':')[0], 16),
-                disp, pln + ('+%x' % off if off else ''), vals))
+                disp, pbpn + ('+%x' % off if off else ''), vals))
         if missing:
             print(f'{proc}: poke syms unresolved: {missing} - skipped',
                   file=sys.stderr)
@@ -2094,16 +2117,39 @@ def main():
             if _wrfo is not None:
                 _e = _wrtab.get(wn) or _wrtab.get(wn.lower())
                 if _e is not None and not _e[2] and \
-                        _wrfo + _e[0] + 2 <= len(exe) and \
-                        exe[_wrfo + _e[0] - 1] & 0xc7 == 0x06:
+                        _wrfo + _e[0] + 2 <= len(exe):
                     # direct [disp16] operand — the shipped cell is truth
-                    _dd = int.from_bytes(
-                        exe[_wrfo + _e[0]:_wrfo + _e[0] + 2], 'little')
-                    if _dd != hit[1] and \
+                    _dd = None
+                    if exe[_wrfo + _e[0] - 1] & 0xc7 == 0x06:
+                        _dd = int.from_bytes(
+                            exe[_wrfo + _e[0]:_wrfo + _e[0] + 2], 'little')
+                    elif len(_e) > 7 and _e[7]:
+                        # listing-vs-shipped build skew: the operand's
+                        # byte offset drifted (e.g. MOVEMAP's listing
+                        # carries a 7-byte SplitScreen check the exe
+                        # lacks) — relocate by the operand's opcode/modrm
+                        # signature, closest hit to the listing offset
+                        _s = bytes(_e[7])
+                        _sl = len(_s)
+                        _b = None
+                        for _q in range(max(0, _e[0] - 32),
+                                        min(len(exe) - _wrfo - 2 - _sl,
+                                            _e[0] + 32)):
+                            if exe[_wrfo + _q:
+                                    _wrfo + _q + _sl] == _s:
+                                if _b is None or \
+                                        abs(_q + _sl - _e[0]) < \
+                                        abs(_b + _sl - _e[0]):
+                                    _b = _q
+                        if _b is not None:
+                            _dd = int.from_bytes(
+                                exe[_wrfo + _b + _sl:
+                                    _wrfo + _b + _sl + 2], 'little')
+                    if _dd is not None and _dd != hit[1] and \
                             os.environ.get('DIFF_DEBUG_WRMISS'):
                         print(f'WROVR {proc} {wn} {hit[1]:#x} -> '
                               f'{_dd:#x} (shipped operand)', file=sys.stderr)
-                    if _dd != hit[1]:
+                    if _dd is not None and _dd != hit[1]:
                         hit = ('ds', _dd, True)
             ln = wn.lower()
             pln = port_name(ln, stem_l)
@@ -2132,7 +2178,13 @@ def main():
         # index, not a pointer, plus range-seeded array elements
         idxset = frozenset(idx)
         for vi in range(len(VECTORS)):
-            op, pp = list(opokes), list(ppokes)
+            # spec pokes (poke=, pv=) emit LAST: auto operand seeds land
+            # first so explicit values win overlapping cells on both
+            # sides — SortFloatWP's FloatWP+1 pv was clobbered by the
+            # proc's own member-operand seeds (last-wins order on orig's
+            # dedup dict and port's pokefile alike).
+            op, pp = [], []
+            specop, specpp = list(opokes), list(ppokes)
             # record-window seeds go FIRST so named sym pokes (ptr cells,
             # record members) land last and win inside the window on both
             # layouts — a *ptr cell packed inside the record region keeps
@@ -2149,8 +2201,9 @@ def main():
             pv = list(ov)
             for pseg, pdisp, psn, pvals in pvseeds:
                 pv2 = pvals[vi % len(pvals)]
-                opush((pseg, pdisp, pv2, 2))
-                pp.append((psn, pv2, 2))
+                if not port_only:
+                    specop.append((pseg, pdisp, pv2, 2))
+                specpp.append((psn, pv2, 2))
             for reg, (s, e) in pinmap.items():
                 # pin the reg 64 bytes into the seeded scratch: backward
                 # member reads ([si-8] poly-buffer walks) stay in bounds
@@ -2479,6 +2532,9 @@ def main():
                 print(f'FINALOP {proc} v{vi} '
                       f'{[(i, o) for i, o in enumerate(winop + op) if o[0]==DS_SEG and _lo<=o[1]<=_hi]}',
                       file=sys.stderr)
+            # spec pokes last — explicit values override every auto-seed
+            op += specop
+            pp += specpp
             tasks.append((proc, vi, tuple(ov), tuple(pv), addr, skip,
                           tuple(winop + op), tuple(winpp + pp), lst, cls,
                           tuple(wro), tuple(wrp), membox))

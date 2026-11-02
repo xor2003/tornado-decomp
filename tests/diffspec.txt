@@ -1226,7 +1226,7 @@ TORNADO/MOVEMAP.LST:DrawFeatures:pin=si:idx=di,bx,bp:wr=Col1:wr=Xe:wr=Ye:class=a
 TORNADO/MOVEMAP.LST:DrawHills:idx=bp
 TORNADO/MOVEMAP.LST:DrawGndObjects:pin=bx:idx=bp:wr=GndObjectCol:class=ctx
 TORNADO/MOVEMAP.LST:SortCurrentWP:pin=si:wr=CurrentWPX:wr=CurrentWPY:class=variant
-TORNADO/MOVEMAP.LST:SortFloatWP:wr=FloatWPX:wr=FloatWPY
+TORNADO/MOVEMAP.LST:SortFloatWP:wr=FloatWPX:wr=FloatWPY:class=ctx:pv=FloatWP.WP_ATTR=0,80,80,80,80:pv=FloatWP.WP_XSEC=0,3,5,5,5:pv=FloatWP.WP_YSEC=0,3,7,7,7:pv=FloatWP.WP_XFT=0,0,1000,7fff,1000:pv=FloatWP.WP_YFT=0,0,2000,2000,1000:pv=XSec=0,5,5,5,5:pv=YSec=0,7,7,7,7:pv=XSecRef=0,10,10,10,10:pv=YSecRef=0,20,20,20,20:pv=SctrScale=0,2,2,2,2
 TORNADO/MOVEMAP.LST:SortACDatum:wr=ACDatumX:wr=ACDatumY:class=ctx
 TORNADO/MOVEMAP.LST:DrawStatMobiles:pin=si:idx=bx,bp:class=ctx
 TORNADO/MOVEMAP.LST:DrawMobiles:pin=si:class=ctx
@@ -1251,7 +1251,7 @@ TORNADO/MOVEMAP.lst:DrawFeatures:pin=si:idx=di,bx,bp:wr=Col1:wr=Xe:wr=Ye:class=a
 TORNADO/MOVEMAP.lst:DrawHills:idx=bp
 TORNADO/MOVEMAP.lst:DrawGndObjects:pin=bx:idx=bp:wr=GndObjectCol:class=ctx
 TORNADO/MOVEMAP.lst:SortCurrentWP:pin=si:wr=CurrentWPX:wr=CurrentWPY:class=variant
-TORNADO/MOVEMAP.lst:SortFloatWP:wr=FloatWPX:wr=FloatWPY
+TORNADO/MOVEMAP.lst:SortFloatWP:wr=FloatWPX:wr=FloatWPY:class=ctx:pv=FloatWP.WP_ATTR=0,80,80,80,80:pv=FloatWP.WP_XSEC=0,3,5,5,5:pv=FloatWP.WP_YSEC=0,3,7,7,7:pv=FloatWP.WP_XFT=0,0,1000,7fff,1000:pv=FloatWP.WP_YFT=0,0,2000,2000,1000:pv=XSec=0,5,5,5,5:pv=YSec=0,7,7,7,7:pv=XSecRef=0,10,10,10,10:pv=YSecRef=0,20,20,20,20:pv=SctrScale=0,2,2,2,2
 TORNADO/MOVEMAP.lst:SortACDatum:wr=ACDatumX:wr=ACDatumY:class=ctx
 TORNADO/MOVEMAP.lst:DrawStatMobiles:pin=si:idx=bx,bp:class=ctx
 TORNADO/MOVEMAP.lst:DrawMobiles:pin=si:class=ctx
