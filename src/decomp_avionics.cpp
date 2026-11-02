@@ -339,3 +339,230 @@ radnonvis:
     STC;                                        /* cf = 1 (non-visible) */
     return m2c::RETN_(0, _state);
 }
+
+/* AutoPilot — auto-pilot mode state machine: ADC-damage disengage,
+ * cancel/approach/track/hold/TF/throttle requests, then the ordered
+ * AutoRoute/AutoApproach/TerrainFollow/AutoAltitude/AutoHeading/
+ * AutoThrottle update chain and malfunction cancel.  kill: assume all */
+bool autopilot(m2c::_offsets _i, struct m2c::_STATE* _state) {
+    X86_REGREF
+    if (_i) return autoroute(_i, _state);       /* dispatch-door forward */
+    /* ADC damaged - disengage autopilot (if on) */
+    TEST(ssf_adc, 1);
+    if (!(ssf_adc & 1)) goto adcok;
+    CMP(automode, auto_off);
+    if (automode != auto_off) {
+        CALL(autocancel, 0);
+        redwarnings2 |= red_aut;
+    }
+    TEST(autothrot, 1);
+    if (!(autothrot & 1)) goto exitautopilot;
+    autothrot = 0;
+    redwarnings2 |= red_aut;
+    goto exitautopilot;
+adcok:
+    /* cancel auto-pilot request? */
+    al = *(db*)(((db*)&kf_autocancel) + k_status);  /* KTEST KF_AutoCancel */
+    TEST(al, al);
+    if (!al) goto skipcancel;
+    CALL(autocancel, 0);
+    goto contautopilot;
+skipcancel:
+    /* approach mode request? */
+    al = *(db*)(((db*)&kf_approach) + k_status);    /* KTEST KF_Approach */
+    TEST(al, al);
+    if (!al) goto skipapproach;
+    CALL(autocancel, 0);
+    CLI;                                        /* <<<<< IMPORTANT <<<<< */
+    automode = auto_approach;
+    appflag = 1;
+    altmode = alt_approach;
+    aaflag = 1;
+    hdgmode = hdg_approach;
+    ahflag = 1;
+    autothrot = 1;
+    CALLF(selectautomfd, 0);
+    STI;                                        /* <<<<< IMPORTANT <<<<< */
+    goto contautopilot;
+skipapproach:
+    /* track mode request? */
+    al = *(db*)(((db*)&kf_track) + k_status);   /* KFETCH KF_Track */
+    al |= autotrack;                            /* track request or auto-start? */
+    if (!al) goto skiptrack;                    /* no -> */
+    autotrack = 0;
+    /* preserve vars for SortWPAlt — cancel again if track cannot
+     * be selected so vars are reset to manual */
+    {
+        dw saltmode = altmode;
+        al = tfauto;
+        ah = aaflag;
+        dw sax = ax;
+        CALL(autocancel, 0);
+        ax = sax;
+        aaflag = ah;
+        tfauto = al;
+        altmode = saltmode;
+    }
+    /* cannot select track mode if weapon release in progress,
+     * or if no waypoints (even if floating waypoint valid) */
+    if (!(armlock & 1) && (dw)waytotal > 0) goto conttrack;
+    CALL(autocancel, 0);
+    goto skiptrack;
+conttrack:
+    CLI;                                        /* <<<<< IMPORTANT <<<<< */
+    automode = auto_track;
+    arflag = 1;
+    CALL(sortwpalt, 0);
+    /* set heading for waypoint */
+    hdgmode = hdg_track;
+    ahflag = 1;
+    ax = wpbrgfine;
+    dx = 360;
+    MUL1_2(dx);
+    autohdg = dx;
+    autohdgfine = ax;
+    CALLF(selectautomfd, 0);
+    STI;                                        /* <<<<< IMPORTANT <<<<< */
+    goto contautopilot;
+skiptrack:
+    /* hold mode request? */
+    al = *(db*)(((db*)&kf_hold) + k_status);    /* KTEST KF_Hold */
+    TEST(al, al);
+    if (!al) goto skiphold;
+    CALL(autocancel, 0);
+    CLI;                                        /* <<<<< IMPORTANT <<<<< */
+    automode = auto_hold;
+    /* hold current altitude */
+    altmode = alt_acquire;
+    aaflag = 1;
+    dx = zfthi;
+    ax = zftlo;
+    bx = 10;
+    DIV2(bx);
+    /* UBOUND ax,MIN_AUTO_ALT,MAX_AUTO_ALT */
+    if ((dw)ax < (dw)min_auto_alt) ax = min_auto_alt;
+    else if ((dw)ax > (dw)max_auto_alt) ax = max_auto_alt;
+    autoalt = ax;
+    autoaltfine = 0;
+    /* hold current heading */
+    hdgmode = hdg_acquire;
+    ahflag = 1;
+    ax = hfine;
+    dx = 360;
+    MUL1_2(dx);
+    autohdg = dx;
+    autohdgfine = ax;
+    CALLF(selectautomfd, 0);
+    STI;                                        /* <<<<< IMPORTANT <<<<< */
+    goto contautopilot;
+skiphold:
+    /* terrain follow request? */
+    al = *(db*)(((db*)&kf_tfollow) + k_status); /* KTEST KF_TFollow */
+    TEST(al, al);
+    if (!al) goto skiptfollow;
+    /* terrain following not available in ADV */
+    CMP(tornadotype, adv_tornado);
+    if ((dw)tornadotype == (dw)adv_tornado) goto skiptfollow;
+    /* toggle alt mode whilst in track mode? */
+    CMP(automode, auto_track);
+    if (automode == auto_track) goto togglealtmode;      /* yes -> */
+    CALL(autocancel, 0);
+    CLI;                                        /* <<<<< IMPORTANT <<<<< */
+    automode = auto_tf;
+    /* sort TF ride alt wrt current rad alt */
+    altmode = alt_tf;
+    tfauto = 1;
+    ax = trueradalt;
+    CALL(calctfrideindex, 0);
+    /* hold current heading */
+    hdgmode = hdg_acquire;
+    ahflag = 1;
+    ax = hfine;
+    dx = 360;
+    MUL1_2(dx);
+    autohdg = dx;
+    autohdgfine = ax;
+    CALLF(selectautomfd, 0);
+    STI;                                        /* <<<<< IMPORTANT <<<<< */
+    goto contautopilot;
+    /* toggle ALT_ACQUIRE / ALT_TF */
+togglealtmode:
+    CMP(altmode, alt_tf);
+    if (altmode != alt_tf) goto setalt_tf;           /* no -> */
+    /* set ALT_ACQUIRE mode */
+    CLI;                                        /* <<<<< IMPORTANT <<<<< */
+    tfauto = 0;
+    altmode = alt_acquire;
+    aaflag = 1;
+    dx = zfthi;
+    ax = zftlo;
+    bx = 10;
+    DIV2(bx);
+    /* UBOUND ax,MIN_AUTO_ALT,MAX_AUTO_ALT */
+    if ((dw)ax < (dw)min_auto_alt) ax = min_auto_alt;
+    else if ((dw)ax > (dw)max_auto_alt) ax = max_auto_alt;
+    autoalt = ax;
+    autoaltfine = 0;
+    STI;                                        /* <<<<< IMPORTANT <<<<< */
+    goto contautopilot;
+setalt_tf:
+    /* set ALT_TF mode */
+    CLI;                                        /* <<<<< IMPORTANT <<<<< */
+    aaflag = 0;
+    altmode = alt_tf;
+    tfauto = 1;
+    ax = trueradalt;
+    CALL(calctfrideindex, 0);
+    STI;                                        /* <<<<< IMPORTANT <<<<< */
+    goto contautopilot;
+skiptfollow:
+    /* auto-throttle request? */
+    al = *(db*)(((db*)&kf_throttle) + k_status);    /* KTEST KF_Throttle */
+    TEST(al, al);
+    if (!al) goto contautopilot;
+    /* cannot engage / disengage auto-throttle if approach mode */
+    CMP(automode, auto_approach);
+    if (automode == auto_approach) goto contautopilot;
+    CLI;                                        /* <<<<< IMPORTANT <<<<< */
+    autothrot ^= 1;                             /* toggle on / off */
+    if (!autothrot) goto autothrotok;           /* off -> */
+    /* hold current airspeed */
+    ax = vkts;
+    CMP(ax, max_auto_vias);                     /* <= max value? */
+    if ((dw)ax <= (dw)max_auto_vias) goto viasok;
+    ax = max_auto_vias;
+viasok:
+    autovias = ax;
+    autoviasfine = 0;
+    CALLF(selectautomfd, 0);
+autothrotok:
+    STI;                                        /* <<<<< IMPORTANT <<<<< */
+contautopilot:
+    /* update auto-pilot systems — order is important, DO NOT CHANGE */
+    CALL(autoroute, 0);
+    CALL(autoapproach, 0);
+    CALL(terrainfollow, 0);
+    CALL(autoaltitude, 0);
+    CALL(autoheading, 0);
+    CALL(autothrottle, 0);
+    /* test for auto-pilot malfunction */
+    al = tferror;
+    al |= aterror;
+    al |= aherror;
+    al |= aaerror;
+    al |= apperror;
+    if (!al) goto exitautopilot;                /* no malfunction -> */
+    /* cancel auto-pilot */
+    CALL(autocancel, 0);
+    /* clear errors */
+    al = 0;
+    tferror = al;
+    aterror = al;
+    aherror = al;
+    aaerror = al;
+    apperror = al;
+    /* warning */
+    redwarnings2 |= red_aut;
+exitautopilot:
+    return m2c::RETN_(0, _state);
+}
