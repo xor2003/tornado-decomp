@@ -1230,7 +1230,7 @@ TORNADO/MOVEMAP.LST:SortFloatWP:wr=FloatWPX:wr=FloatWPY:class=ctx:pv=FloatWP.WP_
 TORNADO/MOVEMAP.LST:SortACDatum:wr=ACDatumX:wr=ACDatumY:class=ctx
 TORNADO/MOVEMAP.LST:DrawStatMobiles:pin=si:idx=bx,bp:class=ctx
 TORNADO/MOVEMAP.LST:DrawMobiles:pin=si:class=ctx
-TORNADO/MOVEMAP.LST:ShadowCheck:wr=QuadTested:wr=QuadMask:wr=QuadResult
+TORNADO/MOVEMAP.LST:ShadowCheck:wr=QuadTested:wr=QuadMask:wr=QuadResult:class=array
 TORNADO/MOVEMAP.LST:DrawSpecials:idx=bp:class=ctx
 TORNADO/MOVEMAP.LST:DrawAirfield:idx=bx:class=ctx
 TORNADO/MOVEMAP.LST:DrawRunways:pin=si:class=ctx
@@ -1255,7 +1255,7 @@ TORNADO/MOVEMAP.lst:SortFloatWP:wr=FloatWPX:wr=FloatWPY:class=ctx:pv=FloatWP.WP_
 TORNADO/MOVEMAP.lst:SortACDatum:wr=ACDatumX:wr=ACDatumY:class=ctx
 TORNADO/MOVEMAP.lst:DrawStatMobiles:pin=si:idx=bx,bp:class=ctx
 TORNADO/MOVEMAP.lst:DrawMobiles:pin=si:class=ctx
-TORNADO/MOVEMAP.lst:ShadowCheck:wr=QuadTested:wr=QuadMask:wr=QuadResult
+TORNADO/MOVEMAP.lst:ShadowCheck:wr=QuadTested:wr=QuadMask:wr=QuadResult:class=array
 TORNADO/MOVEMAP.lst:DrawSpecials:idx=bp:class=ctx
 TORNADO/MOVEMAP.lst:DrawAirfield:idx=bx:class=ctx
 TORNADO/MOVEMAP.lst:DrawRunways:pin=si:class=ctx
