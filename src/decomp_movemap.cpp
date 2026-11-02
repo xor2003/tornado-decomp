@@ -74,3 +74,48 @@ fullmap:
 exitfloatwp:
     return m2c::RETN_(0, _state);
 }
+
+/* SortACDatum — pass XSec/YSec; ret ACDatumX/ACDatumY if the aircraft
+ * is in sector.  kill: assume all */
+bool sortacdatum(m2c::_offsets, m2c::_STATE* _state) {
+    X86_REGREF
+    /* is aircraft in sector? */
+    ax = m_view.vp_xsec;
+    CMP(ax, xsec);                              /* x sector match? */
+    if ((dw)ax != (dw)xsec) goto exitacdatum;
+    ax = m_view.vp_ysec;
+    CMP(ax, ysec);                              /* y sector match? */
+    if ((dw)ax != (dw)ysec) goto exitacdatum;
+    /* calc aircraft position relative to display origin */
+    ax = m_view.vp_xft;
+    bx = m_view.vp_yft;
+    ADD(ax, 8192);
+    cl = 8;
+    SUB(cl, *(sctrscale));
+    SHR(ax, cl);
+    ADD(ax, xsecref);
+    *(dw*)(((db*)&xe) + 0) = ax;
+    ADD(bx, 8192);
+    cl = 8;
+    SUB(cl, *(sctrscale));
+    SHR(bx, cl);
+    ADD(bx, ysecref);
+    *(dw*)(((db*)&ye) + 0) = bx;
+    CALLF(vdotclip, 0);
+    if (CF) goto exitacdatum;                   /* non-visible -> */
+    /* calc x, y position relative to display origin */
+    CMP(splitscreenbigmapison, 1);
+    if ((db)splitscreenbigmapison != (db)1) goto fullmap;
+    SUB(cx, vp.v_x_org);
+    acdatumx = cx;
+    SUB(bx, vp.v_y_org);
+    acdatumy = bx;
+    goto exitacdatum;
+fullmap:
+    SUB(cx, vp_full.v_x_org);
+    acdatumx = cx;
+    SUB(bx, vp_full.v_y_org);
+    acdatumy = bx;
+exitacdatum:
+    return m2c::RETN_(0, _state);
+}
