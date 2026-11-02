@@ -51,8 +51,10 @@ bool randx(m2c::_offsets, m2c::_STATE* _state) {
 
 /* FastRandX - lookup 8-bit random number from the precomputed table.
  * pass: RndIndex; ret: ax = random number, RndIndex++. */
-bool fastrandx(m2c::_offsets, m2c::_STATE* _state) {
+bool fastrandx(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return randx(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
     ax = rndtable[rndindex[0]];             /* xlat: al = ds:[bx+al] */
     XOR(ah, ah);                            /* xor ah,ah — flags */
     INC(rndindex[0]);                       /* inc RndIndex — flags */

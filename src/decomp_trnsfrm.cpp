@@ -203,8 +203,10 @@ bool calctgtrelco(m2c::_offsets, m2c::_STATE* _state) {
  *
  * Each axis sums the three FULL 32-bit imul products then rounds once
  * (shl/rcl/shl/adc) — not a sum of individually rounded terms. */
-bool calc3doffset(m2c::_offsets, m2c::_STATE* _state) {
+bool calc3doffset(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return calceyecoords(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
     bp = ax;                        /* bp = x offset */
 
     /* x' = A1.x + A4.y + A7.z;  y' = A2.x + A5.y + A8.z */

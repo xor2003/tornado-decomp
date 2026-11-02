@@ -19,8 +19,10 @@
  * The status bit position is taken relative to the mask's lowest set
  * bit; MINM forces the result to 0 when the subtraction borrows.
  * cx/dx are preserved by pushes as in the original. */
-bool calcbitfieldval(m2c::_offsets, m2c::_STATE* _state) {
+bool calcbitfieldval(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return cls(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
 
     PUSH(cx);
     PUSH(dx);

@@ -702,8 +702,10 @@ bool polyfill(m2c::_offsets, m2c::_STATE* _state) {
     return into_poly_fill(_state, false);
 }
 
-bool meshfill(m2c::_offsets, m2c::_STATE* _state) {
+bool meshfill(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return polyfill(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
     bx = m2c::near_offset_external(palette);
     XLAT;
     ah = al;

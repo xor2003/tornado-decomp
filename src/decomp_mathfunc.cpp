@@ -16,8 +16,10 @@
 
 /* CalcDeltaTime - look up delta time wrt frame rate.
  * pass: LastFrame; ret: DeltaTime; kill: ax, bx, flags. */
-bool calcdeltatime(m2c::_offsets, m2c::_STATE* _state) {
+bool calcdeltatime(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return sqrt(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
 
     /* check LastFrame <= max time */
     dw frame = lastframe;

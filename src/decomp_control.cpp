@@ -10,8 +10,10 @@
  * and ElapsedTime (32-bit) reaches TimeLimit.  The counter read is
  * bracketed cli/sti so both halves are consistent.
  * kill: assume all */
-bool checktimeout(m2c::_offsets, m2c::_STATE* _state) {
+bool checktimeout(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return fadeloadscreen(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
     TEST(globaltimeout, 1);
     if (ZF) return m2c::RETF_(0, _state);      /* jz SkipTimeout */
 

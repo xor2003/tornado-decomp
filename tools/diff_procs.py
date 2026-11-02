@@ -1915,23 +1915,31 @@ def main():
         # per-vector pokes: resolve to (seg, disp, portname, vals)
         pvseeds = []
         for sn, vals in pvlist:
+            # pv=sym+hexoff=v0,.. — seed an array element past the base
+            base, off = sn, 0
+            if '+' in sn:
+                b, _, o = sn.partition('+')
+                try:
+                    base, off = b, int(o, 16)
+                except ValueError:
+                    pass
             hit = next((v for n, v in so.items()
-                        if n.lower() == sn.lower()),
-                       None) or gsyms_l.get(sn.lower())
+                        if n.lower() == base.lower()),
+                       None) or gsyms_l.get(base.lower())
             if hit is None:
                 if port_only:
                     hit = ('ds', 0, False, '', frozenset(), 2, 0)
                 else:
                     missing.append(f'{sn}(orig)')
                     continue
-            s, disp = hit[0], hit[1]
-            pln = port_name(sn.lower(), stem_l)
+            s, disp = hit[0], hit[1] + off
+            pln = port_name(base.lower(), stem_l)
             if port_syms is not None and pln not in port_syms:
                 missing.append(f'{sn}(port)')
                 continue
             pvseeds.append((
                 DS_SEG if s == 'ds' else int(SS.split(':')[0], 16),
-                disp, pln, vals))
+                disp, pln + ('+%x' % off if off else ''), vals))
         if missing:
             print(f'{proc}: poke syms unresolved: {missing} - skipped',
                   file=sys.stderr)

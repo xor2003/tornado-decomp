@@ -15,6 +15,9 @@
  */
 #include "vislib.h"
 
+/* weak rep kept in the lifted TU — the calcscale1 dispatch door */
+extern __attribute__((weak)) bool calcscale1(m2c::_offsets, m2c::_STATE*);
+
 #define FRACADJ_D(dest) do { \
     SHL(ax, 1);  RCL(dx, 1); \
     SHL(ax, 1);  ADC(dx, 0); \
@@ -133,8 +136,10 @@ bool calcangles(m2c::_offsets, m2c::_STATE* _state) {
 /* CalcAFactors — V_SinH .. V_CosR globals -> A1..A9 matrix (same
  * equations as TRNSFRM CalcTransMatrix).
  * kill: assume all */
-bool calcafactors(m2c::_offsets, m2c::_STATE* _state) {
+bool calcafactors(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return calcscale1(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
 
     ax = v_cosr; bp = ax;               /* bp = cosR */
     ax = v_cosh; si = ax;               /* si = cosH */

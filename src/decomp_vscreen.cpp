@@ -129,8 +129,10 @@ bool vtransform(m2c::_offsets, m2c::_STATE* _state) {
  * ret : ObjectDrawMode = DRAW/CLIP/SKIP_OBJECT, cf = non-visible
  *       XCrt[]/YCrt[] filled when DRAW_OBJECT
  * kill: assume all (except cf) */
-bool vcalcoutcodes(m2c::_offsets, m2c::_STATE* _state) {
+bool vcalcoutcodes(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return clippoly(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
     PUSH(si);                                /* last vertex index */
     cl = vp.v_scale_up;
     dx = 0x00ff;                             /* dl = non-vis, dh = vis mask */

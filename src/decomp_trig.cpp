@@ -17,6 +17,9 @@
  */
 #include "trig.h"
 
+/* weak rep kept in the lifted TU — the quad1 dispatch door */
+extern __attribute__((weak)) bool quad1(m2c::_offsets, m2c::_STATE*);
+
 /* Tangent - tan look up.
  * pass: ax = angle (0..511 pdegs); ret: dx = tan(theta) * 256
  * (quadrant 1 direct, quadrant 4 reversed+negated, else 0). */
@@ -71,8 +74,10 @@ bool fastarctan(m2c::_offsets, m2c::_STATE* _state) {
  *
  * Table index = |frac|/128; the low 7 bits linearly interpolate to the
  * next entry (diff * rem / 128, half-bit rounded). */
-bool arctan(m2c::_offsets, m2c::_STATE* _state) {
+bool arctan(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return quad1(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
 
     CWD;                                /* ax = abs(frac), dx = sign(frac) */
     XOR(ax, dx);

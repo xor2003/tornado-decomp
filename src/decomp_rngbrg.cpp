@@ -168,8 +168,10 @@ exitrngbrg:
  * ret : ax = abs(ang diff) (0 .. 256 pdeg)
  *       dx = sign(ang diff)
  * kill: cl, flags. */
-bool calcangdiff(m2c::_offsets, m2c::_STATE* _state) {
+bool calcangdiff(m2c::_offsets _i, m2c::_STATE* _state) {
     X86_REGREF
+    if (_i) return calcrngbrg(_i, _state);   /* keep the weak-rep
+        * dispatch door for module-static siblings */
 
     cl = 7;                         /* scale by 128 */
     AND(ax, 0x01ff);                /* ensure 0 .. 511 pdeg */
