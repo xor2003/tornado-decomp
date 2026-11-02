@@ -1790,7 +1790,7 @@ VISUAL/CLOUDS.LST:ScanVertex2:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/CLOUDS.LST:ScanVertex8:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/CLOUDS.LST:ScanVertex16:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/CLOUDS.LST:RandomizeClouds:idx=di:class=array
-VISUAL/CLOUDS.lst:InitClouds:wr=CloudMode
+VISUAL/CLOUDS.lst:InitClouds:wr=CloudMode:class=ctx
 VISUAL/CLOUDS.lst:DrawClouds1:idx=bx,bp:wr=FaceCyclic:wr=CloudNum:class=ctx
 VISUAL/CLOUDS.lst:DrawClouds2:idx=bx,bp:wr=FaceCyclic:wr=CloudNum:class=ctx
 VISUAL/CLOUDS.lst:DrawOneCloud:pin=si:idx=bx:wr=Colours:class=ctx
