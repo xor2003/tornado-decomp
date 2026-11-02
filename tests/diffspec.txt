@@ -773,7 +773,7 @@ TORNADO/COMPANEL.lst:Null:class=variant
 TORNADO/CONTROL.LST:Control:wr=DieFlag:wr=MaxFrameRate:wr=SeedLo:wr=SeedHi:wr=Frames:wr=GradEnabled:wr=StarsEnabled:wr=NVG_set:wr=HUDEnabled2:wr=HUDLevel:wr=ReturnCode:wr=RxFlag:class=ctx
 TORNADO/CONTROL.LST:SortCmndLine:idx=si,bx:wr=SSF_AirBrakes:wr=AmbWarnings2:wr=SSF_ADC:wr=StartAirspeed:wr=StartAirborne:wr=BaudRate:wr=CHStick:wr=PanelLight:wr=DataExchange:wr=FadeOutFlag:wr=DemoMode:wr=SSF_ECM:wr=SSF_Engine1:wr=RedWarnings2:wr=SSF_Engine2:wr=ExploreMode:wr=SSF_Flaps:wr=MaxFrameRate:wr=Fog:wr=Overcast:wr=SSF_Gear:wr=GlobalTimeout:wr=SSF_HUD:wr=InfiniteFuel:wr=InfiniteGForce:wr=InfiniteWeapons:wr=MusicCard:wr=MapTestMode:wr=NoCollisions:wr=SSF_NavigMFD:wr=Night:wr=PreviewMode:wr=SSF_PilotMFD:wr=FixedWeight:wr=DebugWeight:wr=SSF_Radar:wr=RadarTest:wr=SSF_RWR:wr=SoundCard:wr=FullScreen:wr=ShakeUp:wr=SSF_SPILS:wr=SSF_Sweep:wr=TwoPlayer:wr=CommsDevice:wr=SSF_TAB1:wr=SSF_ThrustRvrs:wr=SSF_TAB2:wr=ThrustMaster:wr=SSF_WheelBrakes:wr=TornadoType:wr=XWindVmax:wr=XWindDir:class=array
 TORNADO/CONTROL.LST:SortPause:wr=Paused:wr=Frames:wr=DieFlag
-TORNADO/CONTROL.LST:InitDemo:pin=si:wr=InfiniteFuel:wr=NoCollisions:wr=NoFire:wr=StartAirborne:wr=AutoTrack:wr=TrkCamBrg:wr=StartAirspeed
+TORNADO/CONTROL.LST:InitDemo:@@80 3e ?? ?? 01 75 ?? c6 06 ?? ?? 80 c6 06 ?? ?? 01 c6 06 ?? ?? 01:pin=si:wr=InfiniteFuel:wr=NoCollisions:wr=NoFire:wr=StartAirborne:wr=AutoTrack:wr=TrkCamBrg:wr=StartAirspeed
 TORNADO/CONTROL.LST:MapTest:wr=DieFlag:class=ctx
 TORNADO/CONTROL.LST:ResizeMemory:wr=DieFlag:class=ptrlayout
 TORNADO/CONTROL.LST:FadeLoadScreen:class=hwio
@@ -781,7 +781,7 @@ TORNADO/CONTROL.LST:CheckTimeout:wr=DieFlag
 TORNADO/CONTROL.lst:Control:wr=DieFlag:wr=MaxFrameRate:wr=SeedLo:wr=SeedHi:wr=Frames:wr=GradEnabled:wr=StarsEnabled:wr=NVG_set:wr=HUDEnabled2:wr=HUDLevel:wr=ReturnCode:wr=RxFlag:class=ctx
 TORNADO/CONTROL.lst:SortCmndLine:idx=si,bx:wr=SSF_AirBrakes:wr=AmbWarnings2:wr=SSF_ADC:wr=StartAirspeed:wr=StartAirborne:wr=BaudRate:wr=CHStick:wr=PanelLight:wr=DataExchange:wr=FadeOutFlag:wr=DemoMode:wr=SSF_ECM:wr=SSF_Engine1:wr=RedWarnings2:wr=SSF_Engine2:wr=ExploreMode:wr=SSF_Flaps:wr=MaxFrameRate:wr=Fog:wr=Overcast:wr=SSF_Gear:wr=GlobalTimeout:wr=SSF_HUD:wr=InfiniteFuel:wr=InfiniteGForce:wr=InfiniteWeapons:wr=MusicCard:wr=MapTestMode:wr=NoCollisions:wr=SSF_NavigMFD:wr=Night:wr=PreviewMode:wr=SSF_PilotMFD:wr=FixedWeight:wr=DebugWeight:wr=SSF_Radar:wr=RadarTest:wr=SSF_RWR:wr=SoundCard:wr=FullScreen:wr=ShakeUp:wr=SSF_SPILS:wr=SSF_Sweep:wr=TwoPlayer:wr=CommsDevice:wr=SSF_TAB1:wr=SSF_ThrustRvrs:wr=SSF_TAB2:wr=ThrustMaster:wr=SSF_WheelBrakes:wr=TornadoType:wr=XWindVmax:wr=XWindDir:class=array
 TORNADO/CONTROL.lst:SortPause:wr=Paused:wr=Frames:wr=DieFlag
-TORNADO/CONTROL.lst:InitDemo:pin=si:wr=InfiniteFuel:wr=NoCollisions:wr=NoFire:wr=StartAirborne:wr=AutoTrack:wr=TrkCamBrg:wr=StartAirspeed
+TORNADO/CONTROL.lst:InitDemo:@@80 3e ?? ?? 01 75 ?? c6 06 ?? ?? 80 c6 06 ?? ?? 01 c6 06 ?? ?? 01:pin=si:wr=InfiniteFuel:wr=NoCollisions:wr=NoFire:wr=StartAirborne:wr=AutoTrack:wr=TrkCamBrg:wr=StartAirspeed
 TORNADO/CONTROL.lst:MapTest:wr=DieFlag:class=ctx
 TORNADO/CONTROL.lst:ResizeMemory:wr=DieFlag:class=ptrlayout
 TORNADO/CONTROL.lst:FadeLoadScreen:class=hwio
