@@ -1030,7 +1030,7 @@ TORNADO/HUD2.LST:DrawIntercept2:class=ctx
 TORNADO/HUD2.LST:DispAirTgtData2
 TORNADO/HUD2.lst:UpdateHUD2:idx=bx:class=ctx
 TORNADO/HUD2.lst:InitHUD2:wr=HUDEnabled2:wr=MachOption2:wr=SSF_Engine1:wr=HUDLevel:wr=HdgYOff2:wr=CLIP_ABOVE2:wr=CLIP_BELOW2
-TORNADO/HUD2.lst:DrawHUDBrackets2
+TORNADO/HUD2.lst:DrawHUDBrackets2:class=array
 TORNADO/HUD2.lst:UpdateAoAMeter2:class=ctx
 TORNADO/HUD2.lst:UpdateAoA2:class=ctx
 TORNADO/HUD2.lst:UpdateVSI2:class=ctx
@@ -1043,9 +1043,9 @@ TORNADO/HUD2.lst:UpdatePitch2:wr=Px02:wr=Py02:wr=Px1b:wr=Py1b:wr=Px2b:wr=Py2b:wr
 TORNADO/HUD2.lst:LimitPitch2
 TORNADO/HUD2.lst:DrawPitchBar2:wr=SpriteX:wr=SpriteY:class=ctx
 TORNADO/HUD2.lst:DrawZeroBar2
-TORNADO/HUD2.lst:DrawSolidBar2
-TORNADO/HUD2.lst:DrawBrokenBar2
-TORNADO/HUD2.lst:DrawDownStroke2
+TORNADO/HUD2.lst:DrawSolidBar2:class=array
+TORNADO/HUD2.lst:DrawBrokenBar2:class=array
+TORNADO/HUD2.lst:DrawDownStroke2:class=array
 TORNADO/HUD2.lst:SetHUDClip2:class=array
 TORNADO/HUD2.lst:ClipLine2:class=ctx
 TORNADO/HUD2.lst:UpdateEarlyLate2:class=ctx
