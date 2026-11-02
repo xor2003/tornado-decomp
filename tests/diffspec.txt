@@ -608,7 +608,7 @@ TORNADO/AIRCRAFT.LST:SetVeryFast:wr=VERY_FAST
 TORNADO/AIRCRAFT.LST:AAActivity:pin=si:idx=bp:class=array
 TORNADO/AIRCRAFT.LST:SetAATimer:pin=si
 TORNADO/AIRCRAFT.LST:AutoBomb:idx=si,bx
-TORNADO/AIRCRAFT.LST:AutoLaydown:idx=si,bx:wr=WeaponType:wr=WeaponNum
+TORNADO/AIRCRAFT.LST:AutoLaydown:idx=si,bx:wr=WeaponType:wr=WeaponNum:class=ctx
 TORNADO/AIRCRAFT.LST:AutoLGB:idx=si:wr=WeaponNum
 TORNADO/AIRCRAFT.LST:AutoJP233:idx=si,bx
 TORNADO/AIRCRAFT.LST:AutoAlarm:idx=si:wr=WeaponNum:class=ctx
@@ -874,7 +874,7 @@ TORNADO/GLOC.LST:UpdateGLOC:wr=GLOCTimer:wr=BlkTimer:wr=FadeLevel2:wr=FadeRCol2:
 TORNADO/GLOC.lst:UpdateGLOC:wr=GLOCTimer:wr=BlkTimer:wr=FadeLevel2:wr=FadeRCol2:wr=FadeGCol2:wr=FadeBCol2:wr=FadeStart2:wr=FadeCount2:wr=RedTimer:wr=DisableInput:wr=OxyTimer:wr=Curtains:wr=CurtainsTimer:wr=DieFlag
 TORNADO/HELICOPS.LST:InitHelicops:class=array
 TORNADO/HELICOPS.LST:InitOneHeli:pin=si,di:class=array
-TORNADO/HELICOPS.LST:UpdateHelicops
+TORNADO/HELICOPS.LST:UpdateHelicops:class=ctx
 TORNADO/HELICOPS.LST:UpdateOneHeli:pin=si:idx=bx:class=ctx
 TORNADO/HELICOPS.LST:CtrlNull:class=variant
 TORNADO/HELICOPS.LST:CtrlTakeoff:pin=di:idx=bx:class=array

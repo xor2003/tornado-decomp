@@ -1488,7 +1488,13 @@ def main():
     # to this module's body
     if ambig:
         modsym = {}
+        # vote base restricted to UNAMBIGUOUS locates (keys not in ambig):
+        # a false-located sibling must not be able to vote a candidate —
+        # otherwise the base shifts with subset composition and the
+        # same proc resolves to different bodies (spurious diffs)
         for (l2, _p2), so in symoff.items():
+            if (l2, _p2) in ambig:
+                continue
             for n2, t2 in so.items():
                 # store the base disp (shipped operand minus the listing's
                 # constant addend) so `Sym[$MID][si]` and `Sym[si]` agree;
@@ -1506,7 +1512,9 @@ def main():
         # the sample mode so a minority of false-located extractions
         # cannot outvote correct ones.
         _db = {}
-        for _so2 in symoff.values():
+        for (_k2, _p2), _so2 in symoff.items():
+            if (_k2, _p2) in ambig:
+                continue
             for _n2, _t2 in _so2.items():
                 if _t2[2] or _t2[0] != 'ds' or _t2[6] < 0:
                     continue
