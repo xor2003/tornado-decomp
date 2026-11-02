@@ -52,7 +52,7 @@ LIB8086/CGA_DRVR.lst:CGA_UncompPic:class=array
 LIB8086/CGA_DRVR.lst:CGA_HFill:idx=bx:class=array
 LIB8086/CHSPRITE.LST:CharSprite:wr=Col:skip=si,bp:vec0=0f,5,41,5,0,0,0:vec1=07,10,42,10,0,0,0:vec2=0e,20,7e,20,0,0,0:vec3=08,8,30,8,0,0,0:vec4=0a,40,61,40,0,0,0
 LIB8086/CHSPRITE.LST:CellSprite:wr=Col:class=variant
-LIB8086/CHSPRITE.lst:CharSprite:wr=Col:skip=si,bp:vec0=0f,5,41,5,0,0,0:vec1=07,10,42,10,0,0,0:vec2=0e,20,7e,20,0,0,0:vec3=08,8,30,8,0,0,0:vec4=0a,40,61,40,0,0,0
+LIB8086/CHSPRITE.lst:CharSprite:wr=Col:skip=si,bp:vec0=0f,5,41,5,0,0,0:vec1=07,10,42,10,0,0,0:vec2=0e,20,7e,20,0,0,0:vec3=08,8,30,8,0,0,0:vec4=0a,40,61,40,0,0,0:class=ctx
 LIB8086/CHSPRITE.lst:CellSprite:wr=Col:class=variant
 LIB8086/CIRCLE.LST:CircleFill:idx=si,bx:wr=FillVector:wr=MinY:wr=MaxY:wr=RhsX:wr=LhsX:wr=CircleFlag:class=codeptr
 LIB8086/CIRCLE.lst:CircleFill:idx=si,bx:wr=FillVector:wr=MinY:wr=MaxY:wr=RhsX:wr=LhsX:wr=CircleFlag:class=codeptr
@@ -629,7 +629,7 @@ TORNADO/AIRCRAFT.lst:CtrlLanding:pin=di,si:class=array
 TORNADO/AIRCRAFT.lst:InitTaxi:pin=si:idx=bx,bp:class=ctx
 TORNADO/AIRCRAFT.lst:CtrlTaxi:pin=si:class=variant
 TORNADO/AIRCRAFT.lst:SortTaxiXY:pin=di,si:class=array
-TORNADO/AIRCRAFT.lst:CalcTaxiRngBrg:wr=AC_WPBrg
+TORNADO/AIRCRAFT.lst:CalcTaxiRngBrg:wr=AC_WPBrg:class=array
 TORNADO/AIRCRAFT.lst:AutoRoute:pin=si,di:wr=AC_AutoHFine:wr=AC_AutoAlt:wr=AC_AutoVtas:wr=AC_WPBrg:class=array
 TORNADO/AIRCRAFT.lst:SelectNextWP:wr=AC_WPBrg:class=array
 TORNADO/AIRCRAFT.lst:CalcNextWP:pin=si,di:class=array
@@ -638,7 +638,7 @@ TORNADO/AIRCRAFT.lst:AutoHeading:pin=di:idx=bx:class=array
 TORNADO/AIRCRAFT.lst:AutoAltitude:pin=si,di:class=ctx
 TORNADO/AIRCRAFT.lst:AutoThrottle:pin=di:idx=bx:wr=AC_Vmin:wr=AC_Vmax:class=array
 TORNADO/AIRCRAFT.lst:CalcAngles
-TORNADO/AIRCRAFT.lst:CalcDeltaXYZ:idx=bx
+TORNADO/AIRCRAFT.lst:CalcDeltaXYZ:idx=bx:class=array
 TORNADO/AIRCRAFT.lst:GroundCheck:pin=si:class=array
 TORNADO/AIRCRAFT.lst:SortControlMode:pin=si:class=ctx
 TORNADO/AIRCRAFT.lst:CtrlCombat:pin=di:idx=si,bx:wr=OppVtas:wr=AC_Vias:wr=AC_DivVias:wr=AC_DivVtas:wr=OppBehind:wr=ErrorScale:wr=ScaledRange:wr=Xt:wr=Yt:wr=Zt:wr=CosBrgError:wr=BrgError:wr=HdgError:wr=PitchError:wr=MaxRRate:wr=MaxGForce:wr=MaxPRate:wr=RollDemand:wr=DampedRoll:wr=PitchRate:wr=AC_Vmin:wr=AC_Vtrim:wr=AC_Vmax:class=array
@@ -656,7 +656,7 @@ TORNADO/AIRCRAFT.lst:SetVeryFast:wr=VERY_FAST
 TORNADO/AIRCRAFT.lst:AAActivity:pin=si:idx=bp:class=array
 TORNADO/AIRCRAFT.lst:SetAATimer:pin=si
 TORNADO/AIRCRAFT.lst:AutoBomb:idx=si,bx
-TORNADO/AIRCRAFT.lst:AutoLaydown:idx=si,bx:wr=WeaponType:wr=WeaponNum
+TORNADO/AIRCRAFT.lst:AutoLaydown:idx=si,bx:wr=WeaponType:wr=WeaponNum:class=ctx
 TORNADO/AIRCRAFT.lst:AutoLGB:idx=si:wr=WeaponNum
 TORNADO/AIRCRAFT.lst:AutoJP233:idx=si,bx
 TORNADO/AIRCRAFT.lst:AutoAlarm:idx=si:wr=WeaponNum:class=ctx
@@ -739,15 +739,15 @@ TORNADO/AVIONICS.lst:UpdateAirRadar:pin=si:idx=bx:wr=NumRadarTracks:wr=ScanSize:
 TORNADO/AVIONICS.lst:TrackMobile:idx=si,di,bx:wr=TmpAngDiff:wr=TmpScaledRng:class=array
 TORNADO/AVIONICS.lst:ShadowCheck:idx=si,di:wr=SampleCntr:class=array
 TORNADO/AVIONICS.lst:BoreSight:pin=si:class=ctx
-TORNADO/AVIONICS.lst:CycleTargets:pin=di,si
+TORNADO/AVIONICS.lst:CycleTargets:pin=di,si:class=array
 TORNADO/AVIONICS.lst:UpdateRWR:wr=OldRWRThreats:wr=NumRWRThreats:wr=ActiveSAMCntr:wr=RWRThreatIndex:wr=RWRThreatFlags:class=ctx
 TORNADO/AVIONICS.lst:ScanEWR:idx=si,bx,bp:wr=RWRThreatIndex:wr=RWRThreatFlags:class=ctx
 TORNADO/AVIONICS.lst:ScanSAM:pin=si:idx=bp:wr=RWRThreatIndex:wr=RWRThreatFlags:class=array
 TORNADO/AVIONICS.lst:ScanAAA:pin=si:idx=bp:wr=RWRThreatIndex:wr=RWRThreatFlags:class=array
 TORNADO/AVIONICS.lst:ScanAC:class=array
-TORNADO/AVIONICS.lst:AircraftRadar:pin=si:idx=bp:wr=RWRThreatIndex:wr=RWRThreatFlags
+TORNADO/AVIONICS.lst:AircraftRadar:pin=si:idx=bp:wr=RWRThreatIndex:wr=RWRThreatFlags:class=ctx
 TORNADO/AVIONICS.lst:ScanMSL:pin=si:idx=bp:wr=RWRThreatIndex:wr=RWRThreatFlags:class=array
-TORNADO/AVIONICS.lst:RadShadCheck
+TORNADO/AVIONICS.lst:RadShadCheck:class=array
 TORNADO/COMPANEL.LST:SetPanelMode:idx=bx:wr=PanelMode:wr=PanelLoad:class=ctx
 TORNADO/COMPANEL.LST:InitPanels:idx=bx:class=ctx
 TORNADO/COMPANEL.LST:LoadPanel:idx=bx:class=array
@@ -762,7 +762,7 @@ TORNADO/COMPANEL.LST:Null:class=variant
 TORNADO/COMPANEL.lst:SetPanelMode:idx=bx:wr=PanelMode:wr=PanelLoad:class=ctx
 TORNADO/COMPANEL.lst:InitPanels:idx=bx:class=ctx
 TORNADO/COMPANEL.lst:LoadPanel:idx=bx:class=array
-TORNADO/COMPANEL.lst:ClearPilotPanel:idx=bx
+TORNADO/COMPANEL.lst:ClearPilotPanel:idx=bx:class=ctx
 TORNADO/COMPANEL.lst:ClearNavigPanel:idx=bx:class=codeptr
 TORNADO/COMPANEL.lst:DrawPilotPanel:idx=bx
 TORNADO/COMPANEL.lst:DrawNavigPanel:idx=bx
@@ -895,7 +895,7 @@ TORNADO/HELICOPS.LST:SortControlMode:pin=si:class=ctx
 TORNADO/HELICOPS.LST:EvasionTactics:pin=si:class=array
 TORNADO/HELICOPS.lst:InitHelicops:class=array
 TORNADO/HELICOPS.lst:InitOneHeli:pin=si,di:class=array
-TORNADO/HELICOPS.lst:UpdateHelicops
+TORNADO/HELICOPS.lst:UpdateHelicops:class=ctx
 TORNADO/HELICOPS.lst:UpdateOneHeli:pin=si:idx=bx:class=ctx
 TORNADO/HELICOPS.lst:CtrlNull:class=variant
 TORNADO/HELICOPS.lst:CtrlTakeoff:pin=di:idx=bx:class=array
@@ -992,7 +992,7 @@ TORNADO/HUD.lst:DrawIntercept:class=ctx
 TORNADO/HUD.lst:DispAirTgtData
 TORNADO/HUD2.LST:UpdateHUD2:idx=bx:class=ctx
 TORNADO/HUD2.LST:InitHUD2:wr=HUDEnabled2:wr=MachOption2:wr=SSF_Engine1:wr=HUDLevel:wr=HdgYOff2:wr=CLIP_ABOVE2:wr=CLIP_BELOW2
-TORNADO/HUD2.LST:DrawHUDBrackets2
+TORNADO/HUD2.LST:DrawHUDBrackets2:class=array
 TORNADO/HUD2.LST:UpdateAoAMeter2:class=ctx
 TORNADO/HUD2.LST:UpdateAoA2:class=ctx
 TORNADO/HUD2.LST:UpdateVSI2:class=ctx
@@ -1004,10 +1004,10 @@ TORNADO/HUD2.LST:UpdateHdg2:pin=bx:wr=SpriteY:wr=SpriteX:class=ctx
 TORNADO/HUD2.LST:UpdatePitch2:wr=Px02:wr=Py02:wr=Px1b:wr=Py1b:wr=Px2b:wr=Py2b:wr=Px3b:wr=Py3b:wr=Px4b:wr=Py4b:wr=Px5b:wr=Py5b:wr=Px6b:wr=Py6b:wr=Px7b:wr=Py7b:wr=Px8b:wr=Py8b:wr=Px9b:wr=Py9b:wr=Px10b:wr=Py10b:wr=Px11b:wr=Py11b:wr=Px12b:wr=Py12b:wr=BarXOff2:wr=BarYOff2:class=ctx
 TORNADO/HUD2.LST:LimitPitch2
 TORNADO/HUD2.LST:DrawPitchBar2:wr=SpriteX:wr=SpriteY:class=ctx
-TORNADO/HUD2.LST:DrawZeroBar2
-TORNADO/HUD2.LST:DrawSolidBar2
-TORNADO/HUD2.LST:DrawBrokenBar2
-TORNADO/HUD2.LST:DrawDownStroke2
+TORNADO/HUD2.LST:DrawZeroBar2:class=array
+TORNADO/HUD2.LST:DrawSolidBar2:class=array
+TORNADO/HUD2.LST:DrawBrokenBar2:class=array
+TORNADO/HUD2.LST:DrawDownStroke2:class=array
 TORNADO/HUD2.LST:SetHUDClip2:class=array
 TORNADO/HUD2.LST:ClipLine2:class=ctx
 TORNADO/HUD2.LST:UpdateEarlyLate2:class=ctx
@@ -1042,7 +1042,7 @@ TORNADO/HUD2.lst:UpdateHdg2:pin=bx:wr=SpriteY:wr=SpriteX:class=ctx
 TORNADO/HUD2.lst:UpdatePitch2:wr=Px02:wr=Py02:wr=Px1b:wr=Py1b:wr=Px2b:wr=Py2b:wr=Px3b:wr=Py3b:wr=Px4b:wr=Py4b:wr=Px5b:wr=Py5b:wr=Px6b:wr=Py6b:wr=Px7b:wr=Py7b:wr=Px8b:wr=Py8b:wr=Px9b:wr=Py9b:wr=Px10b:wr=Py10b:wr=Px11b:wr=Py11b:wr=Px12b:wr=Py12b:wr=BarXOff2:wr=BarYOff2:class=ctx
 TORNADO/HUD2.lst:LimitPitch2
 TORNADO/HUD2.lst:DrawPitchBar2:wr=SpriteX:wr=SpriteY:class=ctx
-TORNADO/HUD2.lst:DrawZeroBar2
+TORNADO/HUD2.lst:DrawZeroBar2:class=array
 TORNADO/HUD2.lst:DrawSolidBar2:class=array
 TORNADO/HUD2.lst:DrawBrokenBar2:class=array
 TORNADO/HUD2.lst:DrawDownStroke2:class=array
@@ -1415,7 +1415,7 @@ TORNADO/RNGBRG.lst:CalcRngBrgVP_VP:pin=si,di:class=ctx
 TORNADO/RNGBRG.lst:CalcRngBrgVP_WP:pin=si,di:class=ctx
 TORNADO/RNGBRG.lst:CalcRngBrgWP_WP:pin=si,di:class=ctx
 TORNADO/RNGBRG.lst:CalcRngBrgVP_AF:pin=si,di,bp:class=ptrlayout
-TORNADO/RNGBRG.lst:CalcRngBrg:idx=si,bx
+TORNADO/RNGBRG.lst:CalcRngBrg:idx=si,bx:class=array
 TORNADO/RNGBRG.lst:CalcAngDiff
 TORNADO/RNGBRG.lst:CalcNMiles
 TORNADO/RNGBRG.lst:CalcETA
@@ -1508,13 +1508,13 @@ TORNADO/TAB.lst:SnapGndObject:pin=bx:idx=bp:class=array
 TORNADO/TAB.lst:FLIRDisp:idx=bx:wr=InCockpit:wr=IronWork:class=ctx
 TORNADO/TAB.lst:ValidateTIALD:wr=TDMode:wr=LaserActive:wr=TIALDActive:class=ctx
 TORNADO/TAB.lst:TIALDDisp:idx=si,bx:wr=InCockpit:wr=TDMode:wr=GradEnabled:wr=CloudsEnabled:wr=HillTextEnabled:wr=SecScanCnt1:wr=SecScanOff1:wr=SecScanCnt2:wr=SecScanOff2:wr=TDDrag:wr=XMickeys:wr=YMickeys:wr=TDZoomKey:wr=TDBlinkTimer:wr=TDBlink:wr=TDCross:wr=LaserActive:wr=TIALDActive:class=ctx
-TORNADO/TAB.lst:CalcScanSize:wr=TDScanSize
+TORNADO/TAB.lst:CalcScanSize:wr=TDScanSize:class=array
 TORNADO/TAB.lst:DrawCrossSymbol:class=ctx
 TORNADO/TAB.lst:DrawLaserSymbol:class=ctx
 TORNADO/TAB.lst:DrawTrackSymbol:class=ctx
 TORNADO/TAB.lst:SetDatum
 TORNADO/TAB.lst:SetTarget
-TORNADO/TAB.lst:TargetMoved
+TORNADO/TAB.lst:TargetMoved:class=array
 TORNADO/TAB.lst:AdjustXYOffsets:wr=TDXOffset:wr=TDYOffset
 TORNADO/TAB.lst:RotateXYOffsets:idx=bx
 TORNADO/TAB.lst:RecalcXYOffsets:idx=bx:wr=TDDrag:wr=TmpX:wr=TmpY:wr=TDXOffset:wr=TDYOffset
@@ -1543,7 +1543,7 @@ TORNADO/TRNSFRM.LST:Calc3DOffset
 TORNADO/TRNSFRM.LST:CalcRngRelCo:pin=si,di:wr=SlantDx:wr=SlantDy:wr=SlantDz
 TORNADO/TRNSFRM.lst:CalcTransMatrix:pin=si:idx=bx:wr=V_SinH:wr=V_CosH:wr=V_SinP:wr=V_CosP:wr=V_SinR:wr=V_CosR:wr=A1:wr=A2:wr=A7:wr=A8:wr=A3:wr=A4:wr=A5:wr=A9:wr=A6:class=ctx
 TORNADO/TRNSFRM.lst:CalcEyeCoords
-TORNADO/TRNSFRM.lst:CalcTgtRelCo:pin=si
+TORNADO/TRNSFRM.lst:CalcTgtRelCo:pin=si:class=ctx
 TORNADO/TRNSFRM.lst:Calc3DOffset
 TORNADO/TRNSFRM.lst:CalcRngRelCo:pin=si,di:wr=SlantDx:wr=SlantDy:wr=SlantDz
 TORNADO/TWOPLYR.LST:InitTwoPlayer
@@ -1555,7 +1555,7 @@ TORNADO/TWOPLYR.LST:OppRelDecoy:class=ctx
 TORNADO/TWOPLYR.lst:InitTwoPlayer
 TORNADO/TWOPLYR.lst:TxTornadoData:wr=DieFlag:wr=TxGameEnd:class=array
 TORNADO/TWOPLYR.lst:RxOpponentData:wr=CountDown:wr=OppFlags1:wr=OppFlags2:wr=OppFlags3:wr=OppVtas:wr=DieFlag:wr=RxGameEnd:class=array
-TORNADO/TWOPLYR.lst:OppFireCannon
+TORNADO/TWOPLYR.lst:OppFireCannon:class=ctx
 TORNADO/TWOPLYR.lst:OppFireMissile:class=ctx
 TORNADO/TWOPLYR.lst:OppRelDecoy:class=ctx
 TORNADO/USERVIS.LST:UserVisual:pin=si
@@ -1835,7 +1835,7 @@ VISUAL/COLLIDE.lst:TestInsideArea:idx=si
 VISUAL/COLLIDE.lst:GroundCollision:pin=di:idx=si,bx,bp:wr=TmpXErr:wr=TmpYErr:class=ctx
 VISUAL/COLLIDE.lst:StaticCollision:pin=di:idx=si,bx,bp:wr=TmpXErr:wr=TmpYErr:class=ctx
 VISUAL/COLLIDE.lst:MobileCollision:pin=di:idx=si,bx:wr=TmpXErr:wr=TmpYErr:wr=TmpZErr:class=ctx
-VISUAL/COLLIDE.lst:TreeCollision:idx=si,bx,bp
+VISUAL/COLLIDE.lst:TreeCollision:idx=si,bx,bp:class=ctx
 VISUAL/COLLIDE.lst:ScanTrees:idx=si,bx:class=ctx
 VISUAL/COLLIDE.lst:CraterCollision:pin=di:idx=si,bx:wr=TmpXErr:wr=TmpYErr:class=ctx
 VISUAL/COM_CLIP.LST:SetViewMode:idx=si:wr=ViewMode:wr=ClipWndwXOrg:wr=ClipWndwYOrg:wr=CircleXMin:wr=ClipWndwWidth:wr=ClipWndwXMax:wr=CircleXMax:wr=ClipWndwYMax:class=ctx
@@ -1874,7 +1874,7 @@ VISUAL/COM_CLIP.LST:QuickLineClip:idx=si:wr=OutCode:wr=XCrt:class=ctx
 VISUAL/COM_CLIP.LST:HorizonClip:idx=si:wr=OutCode:wr=XCrt:class=ctx
 VISUAL/COM_CLIP.LST:DotClip:class=ctx
 VISUAL/COM_CLIP.LST:XDotClip:class=ctx
-VISUAL/COM_CLIP.LST:CyclicCheck:idx=bx
+VISUAL/COM_CLIP.LST:CyclicCheck:@@8b 1e ?? ?? ff a7 ?? ?? ad 85 c0 78:idx=bx:class=ctx
 VISUAL/COM_CLIP.LST:FastCyclic:class=array
 VISUAL/COM_CLIP.LST:SlowCyclic:wr=TempPtr1:class=array
 VISUAL/COM_CLIP.LST:NullCyclic
@@ -1887,11 +1887,11 @@ VISUAL/COM_CLIP.lst:CalcOCode
 VISUAL/COM_CLIP.lst:ScaleVPyramid:class=ctx
 VISUAL/COM_CLIP.lst:CalcCRT:class=ctx
 VISUAL/COM_CLIP.lst:CircleCRT:class=ctx
-VISUAL/COM_CLIP.lst:PolyClip:idx=bx
+VISUAL/COM_CLIP.lst:PolyClip:idx=bx:class=ctx
 VISUAL/COM_CLIP.lst:DrawPoly:idx=bx:class=array
 VISUAL/COM_CLIP.lst:ClipPoly:pin=di,si:idx=bx:wr=TempPtr1:wr=LookAhead:class=ctx
-VISUAL/COM_CLIP.lst:PolyClipCheck
-VISUAL/COM_CLIP.lst:PolyClipBehind:pin=si,di
+VISUAL/COM_CLIP.lst:PolyClipCheck:class=ctx
+VISUAL/COM_CLIP.lst:PolyClipBehind:pin=si,di:class=ctx
 VISUAL/COM_CLIP.lst:PolyClipAbove:pin=si,di:class=ctx
 VISUAL/COM_CLIP.lst:PolyClipBelow:pin=si,di:class=ctx
 VISUAL/COM_CLIP.lst:PolyClipRight:pin=si,di:class=ctx
@@ -1916,7 +1916,7 @@ VISUAL/COM_CLIP.lst:QuickLineClip:idx=si:wr=OutCode:wr=XCrt:class=ctx
 VISUAL/COM_CLIP.lst:HorizonClip:idx=si:wr=OutCode:wr=XCrt:class=ctx
 VISUAL/COM_CLIP.lst:DotClip:class=ctx
 VISUAL/COM_CLIP.lst:XDotClip:class=ctx
-VISUAL/COM_CLIP.lst:CyclicCheck:idx=bx
+VISUAL/COM_CLIP.lst:CyclicCheck:@@8b 1e ?? ?? ff a7 ?? ?? ad 85 c0 78:idx=bx:class=ctx
 VISUAL/COM_CLIP.lst:FastCyclic:class=array
 VISUAL/COM_CLIP.lst:SlowCyclic:wr=TempPtr1:class=array
 VISUAL/COM_CLIP.lst:NullCyclic
@@ -1938,7 +1938,7 @@ VISUAL/FEATURES.LST:ScanVertex1:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/FEATURES.LST:ScanVertex2:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/FEATURES.LST:ScanVertex8:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/FEATURES.LST:ScanVertex16:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
-VISUAL/FEATURES.lst:DrawRivers:idx=bx,bp
+VISUAL/FEATURES.lst:DrawRivers:idx=bx,bp:class=ctx
 VISUAL/FEATURES.lst:DrawFeatures1:pin=si:idx=bx,bp:wr=Col1:class=ctx
 VISUAL/FEATURES.lst:ScanVertex1:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
 VISUAL/FEATURES.lst:ScanVertex2:idx=di,bx:wr=Xe:wr=Ye:wr=Ze:class=array
@@ -2096,7 +2096,7 @@ VISUAL/RAILWAYS.lst:LineRail16:idx=si,di,bx:class=ctx
 VISUAL/RAILWAYS.lst:SingleTrack1:idx=si,di,bx:class=ctx
 VISUAL/RAILWAYS.lst:SingleTrack2:idx=si,di,bx:class=ctx
 VISUAL/RAILWAYS.lst:DoubleTrack1:idx=si,di,bx:class=ctx
-VISUAL/RAILWAYS.lst:DoubleTrack2:idx=si,di,bx
+VISUAL/RAILWAYS.lst:DoubleTrack2:idx=si,di,bx:class=ctx
 VISUAL/RAILWAYS.lst:SortDoubleEnd:idx=si,di,bx:wr=Xe:wr=Ye:wr=Ze
 VISUAL/ROADS.LST:DrawRoads:idx=bx,bp:wr=DrawRoadType:class=ctx
 VISUAL/ROADS.LST:DrawNode:idx=bx:class=codeptr
@@ -2179,7 +2179,7 @@ VISUAL/SCANFACE.LST:IfThen:class=array
 VISUAL/SCANFACE.LST:IfThenElse:class=array
 VISUAL/SCANFACE.LST:SelectCase:class=array
 VISUAL/SCANFACE.LST:Gosub:class=array
-VISUAL/SCANFACE.LST:Illegal
+VISUAL/SCANFACE.LST:Illegal:class=ctx
 VISUAL/SCANFACE.lst:ScanFace:idx=bx:class=array
 VISUAL/SCANFACE.lst:SortPrmPoly1:pin=si,di:wr=Cyclic:class=array
 VISUAL/SCANFACE.lst:SortPrmPoly2:pin=di:idx=bx:wr=Col2:wr=Cyclic:class=array
@@ -2197,7 +2197,7 @@ VISUAL/SCANFACE.lst:IfThen:class=array
 VISUAL/SCANFACE.lst:IfThenElse:class=array
 VISUAL/SCANFACE.lst:SelectCase:class=array
 VISUAL/SCANFACE.lst:Gosub:class=array
-VISUAL/SCANFACE.lst:Illegal
+VISUAL/SCANFACE.lst:Illegal:class=ctx
 VISUAL/SECDATA1.LST:BuildSctrTables:pin=di:idx=si:class=array
 VISUAL/SECDATA1.lst:BuildSctrTables:pin=di:idx=si:class=array
 VISUAL/SECDRAW.LST:DrawSector:pin=di,bx:idx=si,bp:class=array
@@ -2232,13 +2232,13 @@ VISUAL/SMOKE.LST:CtrlNull:class=variant
 VISUAL/SMOKE.LST:CtrlGnd1
 VISUAL/SMOKE.LST:CtrlAir1:class=variant
 VISUAL/SMOKE.lst:MakeSmokeEffect:idx=si,bx:class=ctx
-VISUAL/SMOKE.lst:MakeSingleSmoke:pin=di
-VISUAL/SMOKE.lst:InitGnd1:pin=si
-VISUAL/SMOKE.lst:InitAir1:idx=si
+VISUAL/SMOKE.lst:MakeSingleSmoke:pin=di:class=array
+VISUAL/SMOKE.lst:InitGnd1:pin=si:class=array
+VISUAL/SMOKE.lst:InitAir1:idx=si:class=array
 VISUAL/SMOKE.lst:CheckAirPos
 VISUAL/SMOKE.lst:ScanSmoke:idx=si,bx:class=ctx
 VISUAL/SMOKE.lst:CtrlNull:class=variant
-VISUAL/SMOKE.lst:CtrlGnd1
+VISUAL/SMOKE.lst:CtrlGnd1:class=array
 VISUAL/SMOKE.lst:CtrlAir1:class=variant
 VISUAL/SMOKEDRW.LST:DrawSmoke:pin=di:idx=si,bx:class=array
 VISUAL/SMOKEDRW.LST:DrawSmokeObject:pin=si:class=ctx

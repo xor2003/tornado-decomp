@@ -2246,7 +2246,11 @@ def main():
                                   file=sys.stderr)
                     if s_kind not in ('ds', 'ss') or is_imm:
                         continue        # immediate bases left alone; named
-                                        # ss-syms (HillLayerN[bp] etc.) are
+                    if not 0 <= disp <= 0xffff:
+                        continue        # bogus/negative operand disp
+                                        # (marker EQU like VARCLIPORG) — a
+                                        # poke would emit an invalid addr
+                    # ss-syms (HillLayerN[bp] etc.) are
                                         # seeded like ds — orig pokes go to
                                         # the SS frame, port pokes resolve
                                         # the _seg_stack ref by name.

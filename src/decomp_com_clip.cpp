@@ -67,3 +67,26 @@ ocodeexit:
     TEST(al, al);                               /* zf = 1 = visible */
     return m2c::RETN_(0, _state);
 }
+
+/* NullCyclic — clockwise + cyclic-error marker.  kill: ax,flags */
+bool nullcyclic(m2c::_offsets _i, struct m2c::_STATE* _state) {
+    X86_REGREF
+    if (_i) return calccrt(_i, _state);         /* dispatch-door forward */
+    XOR(ax, ax);                                /* clockwise */
+    STC;                                        /* cyclic error */
+    return m2c::RETN_(0, _state);
+}
+
+/* CyclicCheck — dispatch through the CyclicMode table
+ * (fastcyclic/slowcyclic/nullcyclic entries).  kill: bx,flags */
+bool cycliccheck(m2c::_offsets _i, struct m2c::_STATE* _state) {
+    X86_REGREF
+    if (_i) return calccrt(_i, _state);         /* dispatch-door forward */
+    bx = objectdrawmode;
+    /* jmp CyclicMode[bx] — table: DRAW_OBJECT/CLIP_OBJECT/SKIP_OBJECT */
+    switch (bx) {
+    case draw_object: return fastcyclic(0, _state);
+    case clip_object: return slowcyclic(0, _state);
+    default:          return nullcyclic(0, _state);
+    }
+}

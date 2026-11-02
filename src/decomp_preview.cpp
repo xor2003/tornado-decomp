@@ -167,3 +167,21 @@ bool previewintr100(m2c::_offsets, m2c::_STATE* _state) {
     }
     return m2c::RETF_(0, _state);
 }
+
+/* UpdateTimer — auto-run preview timeout: Show3DTimer decays by the
+ * frame delta; on underflow sets Exit3DFlag.  kill: ax,flags */
+bool updatetimer(m2c::_offsets _i, m2c::_STATE* _state) {
+    X86_REGREF
+    if (_i) return forwardevent(_i, _state);    /* dispatch-door forward */
+    CMP(previewmode, 2);                        /* auto-run? */
+    if ((db)previewmode != 2) goto done;        /* jne — no -> */
+    ax = show3dtimer;
+    SUB(ax, lastframe);
+    if (!CF) goto store;                        /* jnc — ok -> */
+    OR(exit3dflag, 1);
+    XOR(ax, ax);
+store:
+    show3dtimer = ax;
+done:
+    return m2c::RETN_(0, _state);
+}
