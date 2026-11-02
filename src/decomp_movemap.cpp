@@ -276,3 +276,100 @@ radarnonvis:
     STC;                                        /* cf = 1 = non-visible */
     return m2c::RETN_(0, _state);
 }
+
+/* DrawRivers — draw rivers; tail-jumps IntoFeatures with river data.
+ * kill: assume all */
+bool drawrivers(m2c::_offsets _i, struct m2c::_STATE* _state) {
+    X86_REGREF
+    if (_i) return drawfeatures(_i, _state);    /* dispatch-door forward */
+    bp = mapindex;
+    al = *((db*)&riverlayer1 + bp);             /* RiverLayer1[bp] */
+    TEST(al, al);                               /* null river? */
+    if (!al) goto exitrivers;                   /* yes -> */
+    /* fetch pointer to river data */
+    ah = 0;
+    bx = ax;
+    SHL(bx, 1);                                 /* *2 index */
+    si = *((dw*)&rivertable + bx);              /* RiverTable[bx] */
+    /* jmp IntoFeatures */
+    return drawfeatures(m2c::kintofeatures, _state);
+exitrivers:
+    return m2c::RETN_(0, _state);
+}
+
+/* DrawHills — draw hills; 8 faces from HillFaceList0..7 via
+ * VPolyClip/PolyFill.  kill: assume all */
+
+/* per-face block: colour from `lay` (lo/hi nibble), crease test `clay`,
+ * face list `fl`, skip label `lb` */
+#define HILLFACE(lb, lay, hi, clay, fl) do {                        \
+        bp = mapindex;                                            \
+        al = *((db*)&lay + bp);                                   \
+        if (hi) al >>= 4; else al &= 0x0f;                        \
+        if (!al) goto lb;                         /* no face -> */\
+        si = m2c::near_offset_external(fl);                       \
+        if (*((db*)&clay + bp) & 0x80) si += 4;   /* z crease */   \
+        { dw _a = ax;                                             \
+          di = m2c::near_offset_external(crtbuffer);              \
+          CALLF(vpolyclip, 0);                                    \
+          ax = _a; }                                              \
+        if (CF) goto lb;                        /* non-visible -> */\
+        al += col_map_hill1;                                      \
+        si = m2c::near_offset_external(crtbuffer);                \
+        CALLF(polyfill, 0);                                       \
+    lb:                                                           \
+        ;                                                         \
+    } while (0)
+
+bool drawhills(m2c::_offsets _i, struct m2c::_STATE* _state) {
+    X86_REGREF
+    if (_i) return drawfeatures(_i, _state);    /* dispatch-door forward */
+    /* test for hills in sector */
+    bp = mapindex;
+    al = *((db*)&hilllayer9 + bp);
+    TEST(al, al);                               /* null hills? */
+    if (!(al & 0x80)) goto exithills;           /* yes -> */
+    /* calc spot height co-ords (ZA .. ZI) */
+    cl = *(sctrscale);
+    dx = 32;
+    SAL(dx, cl);
+    ax = xsecref;
+    *(dw*)(((db*)&xe) + 0) = ax;                /* Xe[$ZA] */
+    *(dw*)(((db*)&xe) + 6) = ax;                /* Xe[$ZD] */
+    *(dw*)(((db*)&xe) + 12) = ax;               /* Xe[$ZG] */
+    ADD(ax, dx);
+    *(dw*)(((db*)&xe) + 2) = ax;                /* Xe[$ZB] */
+    *(dw*)(((db*)&xe) + 8) = ax;                /* Xe[$ZE] */
+    *(dw*)(((db*)&xe) + 14) = ax;               /* Xe[$ZH] */
+    ADD(ax, dx);
+    *(dw*)(((db*)&xe) + 4) = ax;                /* Xe[$ZC] */
+    *(dw*)(((db*)&xe) + 10) = ax;               /* Xe[$ZF] */
+    *(dw*)(((db*)&xe) + 16) = ax;               /* Xe[$ZI] */
+    ax = ysecref;
+    *(dw*)(((db*)&ye) + 12) = ax;               /* Ye[$ZG] */
+    *(dw*)(((db*)&ye) + 14) = ax;               /* Ye[$ZH] */
+    *(dw*)(((db*)&ye) + 16) = ax;               /* Ye[$ZI] */
+    ADD(ax, dx);
+    *(dw*)(((db*)&ye) + 6) = ax;                /* Ye[$ZD] */
+    *(dw*)(((db*)&ye) + 8) = ax;                /* Ye[$ZE] */
+    *(dw*)(((db*)&ye) + 10) = ax;               /* Ye[$ZF] */
+    ADD(ax, dx);
+    *(dw*)(((db*)&ye) + 0) = ax;                /* Ye[$ZA] */
+    *(dw*)(((db*)&ye) + 2) = ax;                /* Ye[$ZB] */
+    *(dw*)(((db*)&ye) + 4) = ax;                /* Ye[$ZC] */
+    /* generate virtual co-ords */
+    si = 16;                                    /* $ZI */
+    CALLF(vcalcoutcodes, 0);
+    if (CF) goto exithills;                     /* non-visible -> */
+    /* draw faces */
+    HILLFACE(skipface0, hilllayer5, 0, hilllayer1, hillfacelist0);
+    HILLFACE(skipface1, hilllayer5, 1, hilllayer1, hillfacelist1);
+    HILLFACE(skipface2, hilllayer6, 0, hilllayer2, hillfacelist2);
+    HILLFACE(skipface3, hilllayer6, 1, hilllayer2, hillfacelist3);
+    HILLFACE(skipface4, hilllayer7, 0, hilllayer3, hillfacelist4);
+    HILLFACE(skipface5, hilllayer7, 1, hilllayer3, hillfacelist5);
+    HILLFACE(skipface6, hilllayer8, 0, hilllayer4, hillfacelist6);
+    HILLFACE(skipface7, hilllayer8, 1, hilllayer4, hillfacelist7);
+exithills:
+    return m2c::RETN_(0, _state);
+}
