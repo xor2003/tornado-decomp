@@ -1099,7 +1099,7 @@ TORNADO/MESSAGES.lst:DispMessage:idx=si,bx:wr=MsgQueue:wr=MsgQueueIndex:postpone
 TORNADO/MFD.LST:UpdateMFD:pin=si:idx=bx:wr=XOrg:wr=YOrg:wr=CellXMin:wr=CellXMax:wr=CellYMin:wr=CellYMax:class=ctx
 TORNADO/MFD.LST:CheckTABMap:idx=bx
 TORNADO/MFD.LST:StealMouse:pin=bx:class=ctx
-TORNADO/MFD.LST:SelectRadarMFD:idx=si
+TORNADO/MFD.LST:SelectRadarMFD:@@be ?? ?? 83 3e ?? ?? ?? 74 03 be ?? ?? c7 44 04 02 00:idx=si
 TORNADO/MFD.LST:SelectAutoMFD:idx=si
 TORNADO/MFD.LST:MapDisp:idx=si:class=ctx
 TORNADO/MFD.LST:RadarDisp:class=ctx
@@ -1117,13 +1117,13 @@ TORNADO/MFD.LST:ClearDisp:pin=si:class=ctx
 TORNADO/MFD.LST:DamagedDisp:pin=si:class=ctx
 TORNADO/MFD.LST:DamagedDispMFD:pin=si:class=ctx
 TORNADO/MFD.LST:InvalidDisp:pin=si:class=ctx
-TORNADO/MFD.LST:UpdateMapZoom:pin=si
+TORNADO/MFD.LST:UpdateMapZoom:pin=si:class=array
 TORNADO/MFD.LST:FLIRDisp_ori:class=ctx
 TORNADO/MFD.LST:RotateHdg:class=ctx
 TORNADO/MFD.lst:UpdateMFD:pin=si:idx=bx:wr=XOrg:wr=YOrg:wr=CellXMin:wr=CellXMax:wr=CellYMin:wr=CellYMax:class=ctx
 TORNADO/MFD.lst:CheckTABMap:idx=bx
 TORNADO/MFD.lst:StealMouse:pin=bx:class=ctx
-TORNADO/MFD.lst:SelectRadarMFD:idx=si
+TORNADO/MFD.lst:SelectRadarMFD:@@be ?? ?? 83 3e ?? ?? ?? 74 03 be ?? ?? c7 44 04 02 00:idx=si
 TORNADO/MFD.lst:SelectAutoMFD:idx=si
 TORNADO/MFD.lst:MapDisp:idx=si:class=ctx
 TORNADO/MFD.lst:RadarDisp:class=ctx
@@ -1141,7 +1141,7 @@ TORNADO/MFD.lst:ClearDisp:pin=si:class=ctx
 TORNADO/MFD.lst:DamagedDisp:pin=si:class=ctx
 TORNADO/MFD.lst:DamagedDispMFD:pin=si:class=ctx
 TORNADO/MFD.lst:InvalidDisp:pin=si:class=ctx
-TORNADO/MFD.lst:UpdateMapZoom:pin=si
+TORNADO/MFD.lst:UpdateMapZoom:pin=si:class=array
 TORNADO/MFD.lst:FLIRDisp_ori:class=ctx
 TORNADO/MFD.lst:RotateHdg:class=ctx
 TORNADO/MODEL.LST:InitModel:wr=XSec:wr=YSec:wr=Xft:wr=Yft:wr=ZftLo:wr=ZftHi:wr=HFine:wr=PFine:wr=RFine:wr=Throttle:wr=Rpm1:wr=Rpm2:wr=Gear:wr=WheelBrakes:wr=Airborne1:wr=Airborne2:wr=StallFlag1:wr=CrntFlapPos:wr=DestFlapPos:wr=CrntFlapVal:wr=DestFlapVal:wr=Vtas:wr=Vav:wr=Mach1:wr=MachNum:wr=CrntWingPos:wr=DestWingPos:wr=CrntWingVal:wr=DestWingVal:wr=AutoVias:wr=AutoViasFine:wr=AutoThrot:wr=SSF_Engine1:wr=RedWarnings2:wr=SSF_Engine2:wr=DebugWeight:wr=FixedWeight:class=ctx
